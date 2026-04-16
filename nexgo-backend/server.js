@@ -39,7 +39,7 @@ const startServer = async () => {
     process.exit(1);
   }
 
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     logger.info('');
     logger.info('═══════════════════════════════════════════════');
     logger.info('  🚀 NEXGO API — Nacionales Delivery Services  ');
