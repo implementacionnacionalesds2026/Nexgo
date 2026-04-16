@@ -12,6 +12,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
+  <!-- ERROR CATCHER TEMPORAL -->
+  <script>
+    window.addEventListener('error', function(event) {
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:white; color:red; z-index:999999; padding:20px; font-family:monospace; overflow:auto;';
+      errorDiv.innerHTML = `
+        <h2>Error de JavaScript 🚨</h2>
+        <b>Mensaje:</b> ${event.message}<br><br>
+        <b>Pila de ejecución:</b><br>
+        <pre>${event.error ? event.error.stack : 'N/A'}</pre>
+        <br><b>Archivo:</b> ${event.filename}:${event.lineno}
+      `;
+      document.body.appendChild(errorDiv);
+    });
+    window.addEventListener('unhandledrejection', function(event) {
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:white; color:orange; z-index:999999; padding:20px; font-family:monospace; overflow:auto;';
+      errorDiv.innerHTML = `
+        <h2>Promesa Rechazada (Unhandled Rejection) 🚨</h2>
+        <b>Razón:</b> ${event.reason}<br><br>
+        <pre>${event.reason ? event.reason.stack : 'N/A'}</pre>
+      `;
+      document.body.appendChild(errorDiv);
+    });
+  </script>
+  
   <app-root></app-root>
 </body>
 </html>
