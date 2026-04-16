@@ -1,9 +1,9 @@
-import { Component }          from '@angular/core';
-import { CommonModule }         from '@angular/common';
-import { RouterModule }         from '@angular/router';
-import { FormsModule }          from '@angular/forms';
-import { AuthService }          from '../../../core/services/auth.service';
-import { SidebarComponent }     from '../../../shared/components/sidebar/sidebar.component';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
+import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-login',
@@ -76,48 +76,20 @@ import { SidebarComponent }     from '../../../shared/components/sidebar/sidebar
           </button>
         </form>
 
-        <!-- Demo Accounts -->
-        <div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-          <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-bottom:.75rem;">
-            Cuentas de demostración
-          </p>
-          <div style="display:flex;flex-direction:column;gap:.45rem;">
-            @for (demo of demoCredentials; track demo.email) {
-              <button
-                class="nx-btn btn-ghost btn-sm"
-                (click)="fillDemo(demo)"
-              >
-                <span>{{ demo.icon }}</span>
-                {{ demo.label }}
-                <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted)">{{ demo.email }}</span>
-              </button>
-            }
-          </div>
-        </div>
+
       </div>
     </div>
   `,
 })
 export class LoginComponent {
 
-  email     = '';
-  password  = '';
-  loading   = false;
-  error     = '';
+  email = '';
+  password = '';
+  loading = false;
+  error = '';
   showPassword = false;
 
-  demoCredentials = [
-    { email: 'admin@nexgo.gt',       password: 'Admin1234!',   label: 'Administrador', icon: '🔑' },
-    { email: 'cliente@demo.gt',      password: 'Admin1234!',   label: 'Cliente',       icon: '🏢' },
-    { email: 'repartidor@nexgo.gt',  password: 'Admin1234!',   label: 'Repartidor',    icon: '🚚' },
-  ];
-
-  constructor(private authService: AuthService) {}
-
-  fillDemo(demo: { email: string; password: string }) {
-    this.email    = demo.email;
-    this.password = demo.password;
-  }
+  constructor(private authService: AuthService) { }
 
   onLogin() {
     if (!this.email || !this.password) {
@@ -126,14 +98,14 @@ export class LoginComponent {
     }
 
     this.loading = true;
-    this.error   = '';
+    this.error = '';
 
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
         this.loading = false;
         const role = res.data.user.role;
         // La redirección la maneja el guard/HomeComponent
-        if (role === 'ADMIN')       window.location.href = '/admin/dashboard';
+        if (role === 'ADMIN') window.location.href = '/admin/dashboard';
         else if (role === 'CLIENTE') window.location.href = '/cliente/cotizador';
         else window.location.href = '/repartidor/guias';
       },
