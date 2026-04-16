@@ -18,6 +18,7 @@ const io = new Server(server, {
     origin: [
       process.env.FRONTEND_URL || 'http://localhost:4200',
       'https://nexgo.vercel.app',
+      'https://nexgof-production.up.railway.app',
     ],
     credentials: true,
     methods: ['GET', 'POST'],
