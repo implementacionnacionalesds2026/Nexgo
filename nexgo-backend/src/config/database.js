@@ -1,20 +1,13 @@
 const { Pool } = require('pg');
 const logger = require('../utils/logger');
 
-// Supabase: el host directo es solo IPv6, usamos el pooler IPv4
-const poolConfig = {
-  host:     process.env.PGHOST     || 'aws-0-us-east-1.pooler.supabase.com',
-  port:     parseInt(process.env.PGPORT || '5432'),
-  database: process.env.PGDATABASE || 'postgres',
-  user:     process.env.PGUSER,
-  password: process.env.PGPASSWORD,
-  ssl: { rejectUnauthorized: false },
-  max: 5,
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
-};
-
-const pool = new Pool(poolConfig);
+  connectionTimeoutMillis: 10000,
+});
 
 pool.on('connect', () => {
   logger.info('Nueva conexión establecida con PostgreSQL');
