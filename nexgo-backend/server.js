@@ -15,11 +15,13 @@ const server = http.createServer(app);
 // Configurar Socket.io
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.FRONTEND_URL || 'http://localhost:4200',
-      'https://nexgo.vercel.app',
-      'https://nexgof-production.up.railway.app',
-    ],
+    origin: (origin, callback) => {
+      if (!origin || origin.endsWith('.up.railway.app') || origin === 'http://localhost:4200' || origin === 'https://nexgo.vercel.app') {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS blocked'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST'],
   },

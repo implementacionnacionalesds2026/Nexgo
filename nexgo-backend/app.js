@@ -31,11 +31,13 @@ app.use(helmet({
 
 // CORS
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:4200',
-    'https://nexgo.vercel.app',
-    'https://nexgof-production.up.railway.app',
-  ],
+  origin: (origin, callback) => {
+    if (!origin || origin.endsWith('.up.railway.app') || origin === 'http://localhost:4200' || origin === 'https://nexgo.vercel.app') {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS blocked'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
