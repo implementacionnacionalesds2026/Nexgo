@@ -45,7 +45,7 @@ interface NavItem {
       <!-- Footer: User info + Logout -->
       <div class="sidebar-footer">
         <div class="user-info" style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;">
-          <div class="avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1B3FA0,#1AAFC8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;">
+          <div class="avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;color:white;">
             {{ userInitial }}
           </div>
           <div style="overflow:hidden;">

@@ -126,8 +126,8 @@ import JsBarcode from 'jsbarcode';
                   <div style="font-size:14px; font-weight:900; margin-left:4px; color: black;">GT</div>
                 </div>
                 <div style="display:flex; gap:10px; margin-top:2px;">
-                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">4</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Orden</div></div>
-                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">4</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Ticket</div></div>
+                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">{{ printShipment.order_number || '0' }}</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Orden</div></div>
+                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">{{ printShipment.ticket_number || '0' }}</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Ticket</div></div>
                 </div>
               </div>
             </div>
@@ -138,23 +138,25 @@ import JsBarcode from 'jsbarcode';
               <div style="flex:1; padding: 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden;">
                 <div style="font-size: 16px; font-weight: 800; color: black;">Nombre: {{ printShipment.recipient_name || printShipment.recipientName }}</div>
                 <div style="font-size: 11px; font-weight: 700; color: black;">Tel: {{ printShipment.recipient_phone || printShipment.recipientPhone }}</div>
-                <div style="font-size: 11px; font-weight: 500; line-height: 1.1; color: black;">Dirección: {{ printShipment.recipient_address || printShipment.recipientAddress }}</div>
-                <div style="font-size: 11px; font-weight: 700; margin-top:2px; color: black;">Favor Cobrar Q{{ printShipment.total_price || '0.00' }} con envío incluido</div>
+                <div style="font-size: 11px; font-weight: 500; line-height: 1.1; color: black;">Dir: {{ printShipment.recipient_address || printShipment.recipientAddress }}, {{ printShipment.recipient_municipality || printShipment.destination_city }}, {{ printShipment.recipient_department || '' }} {{ printShipment.recipient_zone || '' }}</div>
+                <div style="font-size: 11px; font-weight: 700; margin-top:2px; color: black;">
+                  {{ printShipment.payment_instructions || 'Favor Cobrar Q' + (printShipment.total_payment_amount || '0.00') + ' con envío incluido' }}
+                </div>
               </div>
               <div style="width: 80px; border-left: 2px solid black; display: flex; align-items: center; justify-content: center;">
-                <div style="border: 3px solid black; font-size: 24px; font-weight: 900; padding: 6px 4px; color: black;">DOM</div>
+                <div style="border: 3px solid black; font-size: 24px; font-weight: 900; padding: 6px 4px; color: black;">{{ printShipment.service_tag || 'DOM' }}</div>
               </div>
             </div>
 
             <!-- Row 3: MIDDLE SECTION (BARCODE) -->
             <div style="display:flex; border-bottom: 2px solid black; flex: 1; align-items:stretch;">
-              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: white; color: black; width: 22px; font-size: 9px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; border-right: 2px solid black; font-family: monospace;">Guía No.<br>{{ printShipment.tracking_number || printShipment.trackingNumber | slice:0:12 }}</div>
+              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: white; color: black; width: 22px; font-size: 9px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; border-right: 2px solid black; font-family: monospace;">Guía No.<br>{{ getTrackingPrefix(printShipment) }}</div>
               <div style="flex:1; display:flex; align-items:center; justify-content:center; padding: 5px;">
                 <svg id="barcodeCanvas"></svg>
               </div>
               <div style="width: 75px; border-left: 2px solid black; display: flex; flex-direction: column;">
                 <div style="flex:1; border-bottom: 2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
-                  PIEZA<br><span style="font-size: 28px; line-height: 1;">01</span>DE<br><span style="font-size: 24px; line-height: 0.8;">{{ printShipment.quantity | number:'2.0' }}</span>
+                  PIEZA<br><span style="font-size: 28px; line-height: 1;">01</span>DE<br><span style="font-size: 24px; line-height: 0.8;">{{ (printShipment.quantity || 1) | number:'2.0' }}</span>
                 </div>
               </div>
             </div>
@@ -162,7 +164,7 @@ import JsBarcode from 'jsbarcode';
             <!-- Row 4: GUA SECTION -->
             <div style="display:flex; border-bottom: 2px solid black; height: 110px; align-items:stretch;">
               <div style="flex:1; display:flex; align-items:center; padding: 5px; gap: 10px;">
-                <div style="border: 3px solid black; font-size: 64px; font-weight: 900; padding: 4px 10px; line-height: 1; color: black;">GUA</div>
+                <div style="border: 3px solid black; font-size: 64px; font-weight: 900; padding: 4px 10px; line-height: 1; color: black;">{{ printShipment.destination_code || 'GUA' }}</div>
                 <div style="font-size: 14px; font-weight: 800; line-height: 1.1; color: black;">GT-004:<br>paquete<br>pequeño</div>
               </div>
               <div style="width: 140px; display:flex; flex-direction:column;">
@@ -188,15 +190,15 @@ import JsBarcode from 'jsbarcode';
             <!-- Row 5: FOOTER -->
             <div style="display:flex; height: 35px; background: black; color: white;">
               <div style="flex:1; border-right: 1px solid white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size: 18px; font-weight: 900; line-height: 1;">QTZ</div>
+                <div style="font-size: 18px; font-weight: 900; line-height: 1;">{{ getDeptCode(printShipment) }}</div>
                 <div style="font-size: 7px; font-weight: bold;">Departamento</div>
               </div>
               <div style="flex:3; border-right: 1px solid white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size: 18px; font-weight: 900; line-height: 1;">Xela</div>
+                <div style="font-size: 18px; font-weight: 900; line-height: 1;">{{ printShipment.recipient_municipality || printShipment.destination_city || 'Xela' }}</div>
                 <div style="font-size: 7px; font-weight: bold;">Municipio</div>
               </div>
               <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size: 20px; font-weight: 900; line-height: 1;">3</div>
+                <div style="font-size: 20px; font-weight: 900; line-height: 1;">{{ printShipment.recipient_zone || 'S/D' }}</div>
                 <div style="font-size: 7px; font-weight: bold;">Zona</div>
               </div>
             </div>
@@ -285,14 +287,16 @@ import JsBarcode from 'jsbarcode';
     /* Dropdown menu */
     .dropdown-container .dropdown-menu {
       position: absolute; left: calc(100% + 5px); top: -5px; z-index: 99;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5); min-width: 160px; text-align: left; overflow: hidden;
+      background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); 
+      box-shadow: var(--shadow-card); min-width: 180px; text-align: left; overflow: hidden;
+      border: 1px solid var(--primary);
     }
     .dropdown-item {
-      display: block; width: 100%; text-align: left; background: none; border: none; 
-      padding: 10px 15px; color: var(--text); cursor: pointer; text-decoration: none; font-size: 13px;
+      display: flex; align-items: center; width: 100%; text-align: left; background: none; border: none; 
+      padding: 12px 16px; color: var(--text); cursor: pointer; text-decoration: none; font-size: 14px;
+      transition: all var(--tr-fast);
     }
-    .dropdown-item:hover { background: var(--bg-hover, #1F2937); color: white; }
+    .dropdown-item:hover { background: var(--bg-card); color: var(--primary); font-weight: 600; }
 
     /* Print styles */
     .print-container { 
@@ -452,5 +456,17 @@ export class MisEnviosComponent implements OnInit {
       this.printMode = null;
       this.printShipment = null;
     }, 300);
+  }
+
+  getTrackingPrefix(s: any): string {
+    if (!s) return '';
+    const t = s.tracking_number || s.trackingNumber || '';
+    return t.toString().substring(0, 12);
+  }
+
+  getDeptCode(s: any): string {
+    if (!s) return 'GUA';
+    const d = s.recipient_department || 'GUA';
+    return d.toString().substring(0, 3).toUpperCase();
   }
 }

@@ -9,7 +9,10 @@ const createShipment = async (data, clientId) => {
   const {
     senderName, senderPhone, senderAddress, originCity, originLat, originLng,
     recipientName, recipientPhone, recipientAddress, destinationCity, destinationLat, destinationLng,
+    recipientMunicipality, recipientDepartment, recipientZone,
     weightKg, lengthCm, widthCm, heightCm, quantity, description, isFragile,
+    totalPaymentAmount, paymentInstructions, orderNumber, ticketNumber,
+    destinationCode, serviceTag, comments,
     distanceKm, pricingRuleId,
   } = data;
 
@@ -31,16 +34,30 @@ const createShipment = async (data, clientId) => {
       tracking_number, client_id, pricing_rule_id,
       sender_name, sender_phone, sender_address, origin_city, origin_lat, origin_lng,
       recipient_name, recipient_phone, recipient_address, destination_city, destination_lat, destination_lng,
+      recipient_municipality, recipient_department, recipient_zone,
       weight_kg, length_cm, width_cm, height_cm, quantity, description, is_fragile,
+      total_payment_amount, payment_instructions, order_number, ticket_number,
+      destination_code, service_tag, comments,
       distance_km, estimated_cost, final_cost, current_status
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$24,'PENDIENTE')
-    RETURNING *`,
+    ) VALUES (
+      $1,$2,$3,
+      $4,$5,$6,$7,$8,$9,
+      $10,$11,$12,$13,$14,$15,
+      $16,$17,$18,
+      $19,$20,$21,$22,$23,$24,$25,
+      $26,$27,$28,$29,
+      $30,$31,$32,
+      $33,$34,$34,'PENDIENTE'
+    ) RETURNING *`,
     [
       trackingNumber, clientId, pricingRuleId,
       senderName, senderPhone, senderAddress, originCity, originLat, originLng,
       recipientName, recipientPhone, recipientAddress, destinationCity, destinationLat, destinationLng,
+      recipientMunicipality, recipientDepartment, recipientZone,
       weightKg, lengthCm, widthCm, heightCm, quantity || 1, description, isFragile || false,
-      distanceKm, estimatedCost,
+      totalPaymentAmount, paymentInstructions, orderNumber, ticketNumber,
+      destinationCode, serviceTag, comments,
+      distanceKm, estimatedCost
     ]
   );
 

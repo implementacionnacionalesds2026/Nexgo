@@ -41,6 +41,11 @@ export interface Shipment {
   destinationCity: string;
   destinationLat?: number;
   destinationLng?: number;
+  
+  // Ubicación Detallada
+  recipientMunicipality?: string;
+  recipientDepartment?: string;
+  recipientZone?: string;
 
   // Paquete
   weightKg: number;
@@ -50,6 +55,17 @@ export interface Shipment {
   quantity: number;
   description?: string;
   isFragile: boolean;
+
+  // Pago y Etiquetas
+  totalPaymentAmount?: number;
+  paymentInstructions?: string;
+  paymentMethod?: string;
+  serviceType?: string;
+  orderNumber?: string;
+  ticketNumber?: string;
+  destinationCode?: string;
+  serviceTag?: string;
+  comments?: string;
 
   // Costos
   distanceKm?: number;
@@ -75,12 +91,19 @@ export interface CreateShipmentRequest {
   originCity: string;
   originLat?: number;
   originLng?: number;
+  
   recipientName: string;
   recipientPhone: string;
   recipientAddress: string;
   destinationCity: string;
   destinationLat?: number;
   destinationLng?: number;
+
+  // Ubicación Detallada
+  recipientMunicipality?: string;
+  recipientDepartment?: string;
+  recipientZone?: string;
+
   weightKg: number;
   lengthCm?: number;
   widthCm?: number;
@@ -88,6 +111,16 @@ export interface CreateShipmentRequest {
   quantity: number;
   description?: string;
   isFragile?: boolean;
+  
+  // Pago y Etiquetas
+  totalPaymentAmount?: number;
+  paymentInstructions?: string;
+  orderNumber?: string;
+  ticketNumber?: string;
+  destinationCode?: string;
+  serviceTag?: string;
+  comments?: string;
+
   distanceKm?: number;
   pricingRuleId?: number;
 }
