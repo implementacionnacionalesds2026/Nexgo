@@ -43,7 +43,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
 
                   <div style="padding:.75rem;background:var(--bg-card);border-radius:var(--radius-sm);">
                     <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.35rem;">DIRECCIÓN DE ENTREGA</div>
-                    <div style="font-weight:600;">📍 {{ shipment.recipient_address }}</div>
+                    <div style="font-weight:600;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> {{ shipment.recipient_address }}</div>
                     <div style="color:var(--accent);font-size:.83rem;margin-top:.25rem;">{{ shipment.destination_city }}</div>
                   </div>
 
@@ -78,10 +78,10 @@ import { Shipment }            from '../../../core/models/shipment.model';
                 <div class="card-header"><h3>Cambiar estado</h3></div>
 
                 @if (success) {
-                  <div class="nx-alert alert-success">✅ Estado actualizado correctamente</div>
+                  <div class="nx-alert alert-success"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span> Estado actualizado correctamente</div>
                 }
                 @if (error) {
-                  <div class="nx-alert alert-error">⚠️ {{ error }}</div>
+                  <div class="nx-alert alert-error"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ error }}</div>
                 }
 
                 <div class="nx-form-group">
@@ -111,7 +111,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
                   [disabled]="saving || !newStatus"
                 >
                   @if (saving) { <span class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;"></span> Actualizando... }
-                  @else { ✅ Confirmar cambio de estado }
+                  @else { <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span> Confirmar cambio de estado }
                 </button>
 
                 <button class="nx-btn btn-ghost btn-block" style="margin-top:.5rem;" (click)="router.navigate(['/repartidor/guias'])">
@@ -137,9 +137,9 @@ export class ActualizarEstadoComponent implements OnInit {
 
   validStatuses = [
     { value: 'RECOGIDO',    label: 'Recogido',    icon: '📥' },
-    { value: 'EN_TRANSITO', label: 'En tránsito', icon: '🚚' },
-    { value: 'EN_DESTINO',  label: 'En destino',  icon: '📍' },
-    { value: 'ENTREGADO',   label: 'Entregado',   icon: '✅' },
+    { value: 'EN_TRANSITO', label: 'En tránsito', icon: '<span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">local_shipping</span>' },
+    { value: 'EN_DESTINO',  label: 'En destino',  icon: '<span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span>' },
+    { value: 'ENTREGADO',   label: 'Entregado',   icon: '<span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span>' },
     { value: 'CANCELADO',   label: 'Cancelado',   icon: '❌' },
   ];
 

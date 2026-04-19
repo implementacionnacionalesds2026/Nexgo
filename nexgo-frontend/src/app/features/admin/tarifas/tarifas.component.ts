@@ -13,7 +13,7 @@ import { PricingRule }         from '../../../core/models/shipment.model';
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">💰 Configuración de Tarifas</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">payments</span> Configuración de Tarifas</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Tarifas de Envío</h1>

@@ -14,7 +14,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">👁️ Ver Solicitud</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">visibility</span> Ver Solicitud</span></div>
         <div class="nx-content">
           <div class="nx-page-header" style="display:flex; justify-content:space-between; align-items:center;">
             <div>
@@ -25,7 +25,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
           </div>
 
           @if (loading) { <div class="nx-loader"><div class="spinner"></div></div> }
-          @if (error) { <div class="nx-alert alert-error">⚠️ {{ error }}</div> }
+          @if (error) { <div class="nx-alert alert-error"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ error }}</div> }
 
           @if (!loading && shipment) {
             <div class="nx-card">
@@ -42,7 +42,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
               </div>
 
               <!-- Remitente -->
-              <div class="card-header"><h3>📍 Datos del Remitente</h3></div>
+              <div class="card-header"><h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Datos del Remitente</h3></div>
               <div class="nx-form-row cols-2">
                 <div class="nx-form-group">
                   <label>Nombre del remitente</label>
@@ -88,7 +88,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
               <div style="margin: 2rem 0; border-top: 1px solid var(--border);"></div>
 
               <!-- Paquete -->
-              <div class="card-header"><h3>📦 Información del Paquete</h3></div>
+              <div class="card-header"><h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Información del Paquete</h3></div>
               <div class="nx-form-row cols-2">
                 <div class="nx-form-group">
                   <label>Peso (kg)</label>

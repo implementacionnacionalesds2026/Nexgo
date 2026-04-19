@@ -14,7 +14,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">📋 Mis Guías Asignadas</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">assignment</span> Mis Guías Asignadas</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Mis Guías</h1>
@@ -27,7 +27,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
             <div style="display:flex;flex-direction:column;gap:.75rem;">
               @for (s of shipments; track s.id) {
                 <div class="nx-card" style="display:flex;align-items:center;gap:1.25rem;">
-                  <div style="width:48px;height:48px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--primary),var(--accent-2));display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">📦</div>
+                  <div style="width:48px;height:48px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--primary),var(--accent-2));display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span></div>
                   <div style="flex:1;">
                     <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.25rem;">
                       <span class="font-mono" style="font-size:.85rem;font-weight:700;color:var(--accent);">{{ s.tracking_number }}</span>
@@ -35,7 +35,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
                     </div>
                     <div style="font-size:.875rem;font-weight:600;">{{ s.sender_name }} → {{ s.recipient_name }}</div>
                     <div style="font-size:.8rem;color:var(--text-muted);">{{ s.origin_city }} → {{ s.destination_city }}</div>
-                    <div style="font-size:.78rem;color:var(--text-muted);margin-top:.15rem;">📍 {{ s.recipient_address }}</div>
+                    <div style="font-size:.78rem;color:var(--text-muted);margin-top:.15rem;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> {{ s.recipient_address }}</div>
                   </div>
                   <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;">
                     <a [routerLink]="['/repartidor/actualizar', s.id]" class="nx-btn btn-primary btn-sm">Actualizar estado</a>
@@ -45,7 +45,7 @@ import { Shipment }            from '../../../core/models/shipment.model';
               }
               @if (shipments.length === 0) {
                 <div class="nx-empty">
-                  <div class="empty-icon">📋</div>
+                  <div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">assignment</span></div>
                   <h3>Sin guías asignadas</h3>
                   <p>No tienes envíos asignados por el momento</p>
                 </div>

@@ -15,7 +15,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       <app-sidebar />
       <main class="nx-main">
         <div class="nx-navbar">
-          <span class="navbar-title">📦 Gestión de Envíos</span>
+          <span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Gestión de Envíos</span>
         </div>
         <div class="nx-content">
           <div class="nx-page-header">
@@ -55,7 +55,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
                       </tr>
                     }
                     @if (shipments.length === 0) {
-                      <tr><td colspan="8"><div class="nx-empty"><div class="empty-icon">📦</div><h3>Sin envíos</h3></div></td></tr>
+                      <tr><td colspan="8"><div class="nx-empty"><div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span></div><h3>Sin envíos</h3></div></td></tr>
                     }
                   </tbody>
                 </table>
@@ -64,9 +64,9 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 
             <!-- Paginación -->
             <div class="nx-pagination">
-              <button [disabled]="page <= 1" (click)="changePage(-1)">‹</button>
+              <button [disabled]="page <= 1" (click)="changePage(-1)"><span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span></button>
               <button class="active">{{ page }}</button>
-              <button [disabled]="shipments.length < 20" (click)="changePage(1)">›</button>
+              <button [disabled]="shipments.length < 20" (click)="changePage(1)"><span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span></button>
             </div>
           }
         </div>
@@ -79,7 +79,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
         <div class="nx-modal" style="max-width:620px;" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h3>Envío {{ selected.tracking_number }}</h3>
-            <button class="close-btn" (click)="selected=null">✕</button>
+            <button class="close-btn" (click)="selected=null"><span class="material-symbols-outlined">close</span></button>
           </div>
           <div class="modal-body">
             <div class="nx-form-row cols-2">

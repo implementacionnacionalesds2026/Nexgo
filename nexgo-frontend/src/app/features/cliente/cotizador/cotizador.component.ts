@@ -13,7 +13,7 @@ import { CotizacionResult, PricingRule } from '../../../core/models/shipment.mod
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">🧮 Cotizador de Envíos</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">calculate</span> Cotizador de Envíos</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Cotizador</h1>
@@ -62,7 +62,7 @@ import { CotizacionResult, PricingRule } from '../../../core/models/shipment.mod
                 </div>
               </div>
 
-              @if (error) { <div class="nx-alert alert-error">⚠️ {{ error }}</div> }
+              @if (error) { <div class="nx-alert alert-error"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ error }}</div> }
 
               <button
                 class="nx-btn btn-accent btn-block btn-lg"
@@ -70,7 +70,7 @@ import { CotizacionResult, PricingRule } from '../../../core/models/shipment.mod
                 [disabled]="loading || !form.weightKg || !form.distanceKm"
               >
                 @if (loading) { <span class="spinner" style="width:18px;height:18px;border-width:2px;"></span> Calculando... }
-                @else { 🧮 Calcular cotización }
+                @else { <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">calculate</span> Calcular cotización }
               </button>
             </div>
 
@@ -108,11 +108,11 @@ import { CotizacionResult, PricingRule } from '../../../core/models/shipment.mod
                 }
 
                 <button class="nx-btn btn-primary btn-block" routerLink="/cliente/nuevo-envio">
-                  📮 Registrar envío con esta tarifa →
+                  <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">local_post_office</span> Registrar envío con esta tarifa →
                 </button>
               } @else if (!loading) {
                 <div class="nx-empty">
-                  <div class="empty-icon" style="font-size:4rem;">🧮</div>
+                  <div class="empty-icon" style="font-size:4rem;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">calculate</span></div>
                   <h3>Ingresa los datos</h3>
                   <p>Completa los campos y haz clic en "Calcular cotización" para ver las opciones disponibles</p>
                 </div>

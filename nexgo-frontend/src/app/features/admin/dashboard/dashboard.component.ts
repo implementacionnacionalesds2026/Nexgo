@@ -16,7 +16,7 @@ import { RouterLink }           from '@angular/router';
       <main class="nx-main">
         <!-- Navbar -->
         <div class="nx-navbar">
-          <span class="navbar-title">📊 Dashboard</span>
+          <span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">dashboard</span> Dashboard</span>
           <div class="navbar-right">
             <span style="font-size:.8rem;color:var(--text-muted);">{{today}}</span>
           </div>
@@ -38,31 +38,31 @@ import { RouterLink }           from '@angular/router';
             <!-- KPI Grid -->
             <div class="nx-grid kpi-grid" style="margin-bottom:2rem;">
               <div class="nx-kpi-card">
-                <div class="kpi-icon">📦</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span></div>
                 <div class="kpi-label">Total Envíos</div>
                 <div class="kpi-value">{{ stats.totalEnvios | number }}</div>
                 <div class="kpi-sub">Registrados en el sistema</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">🟡</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">pending_actions</span></div>
                 <div class="kpi-label">Pendientes</div>
                 <div class="kpi-value" style="color:var(--status-pending)">{{ stats.porEstado['PENDIENTE'] || 0 }}</div>
                 <div class="kpi-sub">Esperando recolección</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">🚚</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">local_shipping</span></div>
                 <div class="kpi-label">En Tránsito</div>
                 <div class="kpi-value" style="color:#60A5FA;">{{ stats.porEstado['EN_TRANSITO'] || 0 }}</div>
                 <div class="kpi-sub">En ruta de entrega</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">✅</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span></div>
                 <div class="kpi-label">Entregados</div>
                 <div class="kpi-value" style="color:var(--status-delivered)">{{ stats.porEstado['ENTREGADO'] || 0 }}</div>
                 <div class="kpi-sub">Completados hoy</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">🏍️</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">motorcycle</span></div>
                 <div class="kpi-label">Repartidores Activos</div>
                 <div class="kpi-value" style="color:var(--accent);">{{ stats.repartidoresActivos }}</div>
                 <div class="kpi-sub">Últimos 60 minutos</div>

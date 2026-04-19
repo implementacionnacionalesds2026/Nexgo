@@ -14,13 +14,13 @@ import { Shipment } from '../../../core/models/shipment.model';
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">📦 Mis Envíos</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom;">inventory_2</span> Mis Envíos</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Historial de Envíos</h1>
             <p>Todos tus envíos registrados en Nexgo</p>
             <div class="header-actions">
-              <a routerLink="/cliente/nuevo-envio" class="nx-btn btn-accent">📮 Nuevo envío</a>
+              <a routerLink="/cliente/nuevo-envio" class="nx-btn btn-accent"><span class="material-symbols-outlined">add_box</span> Nuevo envío</a>
             </div>
           </div>
 
@@ -30,22 +30,22 @@ import { Shipment } from '../../../core/models/shipment.model';
             <!-- Stats row -->
             <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
               <div class="nx-kpi-card">
-                <div class="kpi-icon">📦</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">inventory_2</span></div>
                 <div class="kpi-label">Total envíos</div>
                 <div class="kpi-value">{{ total }}</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">🟡</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">pending_actions</span></div>
                 <div class="kpi-label">Pendientes</div>
                 <div class="kpi-value" style="color:var(--status-pending);">{{ countByStatus('PENDIENTE') }}</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">🚚</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">local_shipping</span></div>
                 <div class="kpi-label">En tránsito</div>
                 <div class="kpi-value" style="color:#60A5FA;">{{ countByStatus('EN_TRANSITO') }}</div>
               </div>
               <div class="nx-kpi-card">
-                <div class="kpi-icon">✅</div>
+                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">check_circle</span></div>
                 <div class="kpi-label">Entregados</div>
                 <div class="kpi-value" style="color:var(--status-delivered);">{{ countByStatus('ENTREGADO') }}</div>
               </div>
@@ -71,9 +71,9 @@ import { Shipment } from '../../../core/models/shipment.model';
                           <div class="dropdown-container" style="position:relative; display:inline-block;">
                             <button (click)="toggleDropdown(s.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
                             <div class="dropdown-menu" [style.display]="openDropdownId === s.id ? 'block' : 'none'">
-                              <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">👁️ Ver Solicitud</a>
-                              <a (click)="imprimirGuia(s)" class="dropdown-item">🖨️ Imprimir Guía</a>
-                              <a (click)="imprimirFormulario(s)" class="dropdown-item">📄 Formulario</a>
+                              <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item"><span class="material-symbols-outlined" style="font-size:16px; margin-right:6px">visibility</span> Ver Solicitud</a>
+                              <a (click)="imprimirGuia(s)" class="dropdown-item"><span class="material-symbols-outlined" style="font-size:16px; margin-right:6px">print</span> Imprimir Guía</a>
+                              <a (click)="imprimirFormulario(s)" class="dropdown-item"><span class="material-symbols-outlined" style="font-size:16px; margin-right:6px">description</span> Formulario</a>
                             </div>
                           </div>
                         </td>
@@ -112,7 +112,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                     <div style="font-size:14px; margin-top:2px;">Tel. {{ printShipment.sender_phone || printShipment.senderPhone }}</div>
                   </div>
                   <div style="display:flex; align-items:center;">
-                    <div style="font-size:32px; line-height:1; margin-right: 14px;">📦</div>
+                    <div style="font-size:32px; line-height:1; margin-right: 14px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span></div>
                     <div style="text-align:center; font-size:10px;">
                       <b style="font-size:14px;letter-spacing:-0.5px;">Nacionales</b><br>
                       Delivery Services<br>
@@ -201,7 +201,7 @@ import { Shipment } from '../../../core/models/shipment.model';
       <div class="print-container">
         <div style="padding: 2cm; font-family: 'Helvetica', Arial, sans-serif; max-width: 800px; margin: 0 auto; color: black;">
           <div style="text-align:center; margin-bottom: 2rem; border-bottom: 2px solid #070b24; padding-bottom: 1rem;">
-            <h1 style="margin:0; font-size: 28px; color: #070b24;">📦 Nacionales Delivery Services</h1>
+            <h1 style="margin:0; font-size: 28px; color: #070b24;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Nacionales Delivery Services</h1>
             <p style="margin:5px 0 0 0; color: #444; font-size: 16px;">Formulario Detallado de Envío</p>
           </div>
 
@@ -218,7 +218,7 @@ import { Shipment } from '../../../core/models/shipment.model';
 
           <div style="display:flex; gap: 2rem; margin-bottom: 2rem;">
             <div style="flex:1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;">📍 Datos del Remitente</h3>
+              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Datos del Remitente</h3>
               <p style="margin: 5px 0;"><b>Nombre:</b> {{ printShipment.sender_name || printShipment.senderName }}</p>
               <p style="margin: 5px 0;"><b>Teléfono:</b> {{ printShipment.sender_phone || printShipment.senderPhone }}</p>
               <p style="margin: 5px 0;"><b>Dirección:</b> {{ printShipment.sender_address || printShipment.senderAddress }}</p>
@@ -234,7 +234,7 @@ import { Shipment } from '../../../core/models/shipment.model';
           </div>
 
           <div style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-            <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;">📦 Información del Paquete</h3>
+            <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Información del Paquete</h3>
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
               <tr style="border-bottom: 1px solid #eee;">
                 <th style="padding: 8px 0; color:#070b24;">Peso (kg)</th><td style="padding: 8px 0;">{{ printShipment.weight_kg || printShipment.weightKg }} kg</td>
@@ -250,7 +250,15 @@ import { Shipment } from '../../../core/models/shipment.model';
               </tr>
               <tr>
                 <th style="padding: 8px 0; color:#070b24;">Manejo Especial</th>
-                <td colspan="3" style="padding: 8px 0;"><b>{{ (printShipment.is_fragile || printShipment.isFragile) ? '⚠️ Paquete Frágil' : 'Normal' }}</b></td>
+                <td colspan="3" style="padding: 8px 0;">
+                  <b>
+                    @if (printShipment.is_fragile || printShipment.isFragile) {
+                      <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> Paquete Frágil
+                    } @else {
+                      Normal
+                    }
+                  </b>
+                </td>
               </tr>
             </table>
           </div>

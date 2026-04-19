@@ -14,7 +14,7 @@ import { Subscription }    from 'rxjs';
       <app-sidebar />
       <main class="nx-main">
         <div class="nx-navbar">
-          <span class="navbar-title">🗺️ Rastreo en Tiempo Real</span>
+          <span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">map</span> Rastreo en Tiempo Real</span>
           <div class="navbar-right">
             <span style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--accent);">
               <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:spin .8s linear infinite;display:inline-block;"></span>
@@ -33,7 +33,7 @@ import { Subscription }    from 'rxjs';
             <!-- Mapa -->
             <div class="nx-card" style="padding:0;overflow:hidden;aspect-ratio:1;">
               <div id="nexgo-map" style="width:100%;height:100%;min-height:450px;background:linear-gradient(135deg,#060919,#0d1440);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;">
-                <div style="font-size:3rem;">🗺️</div>
+                <div style="font-size:3rem;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">map</span></div>
                 <div style="color:var(--text-muted);text-align:center;">
                   <div style="font-weight:600;margin-bottom:.35rem;">Google Maps</div>
                   <div style="font-size:.8rem;">Configura tu API Key en environment.ts</div>

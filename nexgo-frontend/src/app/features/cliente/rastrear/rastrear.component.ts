@@ -16,7 +16,7 @@ import { Subscription }    from 'rxjs';
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">🔍 Rastreo de Envío</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">search</span> Rastreo de Envío</span></div>
         <div class="nx-content">
 
           @if (loading) { <div class="nx-loader"><div class="spinner"></div></div> }
@@ -30,7 +30,7 @@ import { Subscription }    from 'rxjs';
             <div class="nx-grid cols-2">
               <!-- Detalles del envío -->
               <div class="nx-card">
-                <div class="card-header"><h3>📦 Detalles del envío</h3></div>
+                <div class="card-header"><h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Detalles del envío</h3></div>
                 <div style="display:flex;flex-direction:column;gap:.75rem;">
                   <div style="display:flex;">
                     <div style="width:50%;">
@@ -76,7 +76,7 @@ import { Subscription }    from 'rxjs';
 
               <!-- Timeline de estados -->
               <div class="nx-card">
-                <div class="card-header"><h3>📋 Historial de estados</h3></div>
+                <div class="card-header"><h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">assignment</span> Historial de estados</h3></div>
                 <div style="position:relative;padding-left:1.5rem;">
                   @for (entry of shipment.statusHistory; track entry.id) {
                     <div style="position:relative;padding-bottom:1.25rem;">

@@ -36,7 +36,7 @@ interface NavItem {
             class="nx-nav-item"
             [title]="item.label"
           >
-            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-icon material-symbols-outlined">{{ item.icon }}</span>
             <span class="nav-label">{{ item.label }}</span>
           </a>
         }
@@ -54,7 +54,7 @@ interface NavItem {
           </div>
         </div>
         <button class="nx-nav-item" (click)="logout()" style="color:#F87171;">
-          <span class="nav-icon">🚪</span>
+          <span class="nav-icon material-symbols-outlined">logout</span>
           <span>Cerrar sesión</span>
         </button>
       </div>
@@ -69,21 +69,21 @@ export class SidebarComponent implements OnInit {
 
   private allNavItems: NavItem[] = [
     // ADMIN
-    { label: 'Dashboard',     icon: '📊', route: '/admin/dashboard',     roles: ['ADMIN'] },
-    { label: 'Usuarios',      icon: '👥', route: '/admin/usuarios',       roles: ['ADMIN'] },
-    { label: 'Envíos',        icon: '📦', route: '/admin/envios',         roles: ['ADMIN'] },
-    { label: 'Rastreo Live',  icon: '🗺️', route: '/admin/rastreo',        roles: ['ADMIN'] },
-    { label: 'Tarifas',       icon: '💰', route: '/admin/tarifas',        roles: ['ADMIN'] },
-    { label: 'Reportes',      icon: '📈', route: '/admin/reportes',       roles: ['ADMIN'] },
+    { label: 'Dashboard',     icon: 'dashboard', route: '/admin/dashboard',     roles: ['ADMIN'] },
+    { label: 'Usuarios',      icon: 'group', route: '/admin/usuarios',       roles: ['ADMIN'] },
+    { label: 'Envíos',        icon: 'inventory_2', route: '/admin/envios',         roles: ['ADMIN'] },
+    { label: 'Rastreo Live',  icon: 'location_on', route: '/admin/rastreo',        roles: ['ADMIN'] },
+    { label: 'Tarifas',       icon: 'payments', route: '/admin/tarifas',        roles: ['ADMIN'] },
+    { label: 'Reportes',      icon: 'monitoring', route: '/admin/reportes',       roles: ['ADMIN'] },
 
     // CLIENTE
-    { label: 'Cotizador',     icon: '🧮', route: '/cliente/cotizador',    roles: ['CLIENTE'] },
-    { label: 'Nuevo Envío',   icon: '📮', route: '/cliente/nuevo-envio',  roles: ['CLIENTE'] },
-    { label: 'Mis Envíos',    icon: '📦', route: '/cliente/mis-envios',   roles: ['CLIENTE'] },
+    { label: 'Cotizador',     icon: 'calculate', route: '/cliente/cotizador',    roles: ['CLIENTE'] },
+    { label: 'Nuevo Envío',   icon: 'add_box', route: '/cliente/nuevo-envio',  roles: ['CLIENTE'] },
+    { label: 'Mis Envíos',    icon: 'inventory_2', route: '/cliente/mis-envios',   roles: ['CLIENTE'] },
 
     // REPARTIDOR
-    { label: 'Mis Guías',     icon: '📋', route: '/repartidor/guias',     roles: ['REPARTIDOR'] },
-    { label: 'Mi Ubicación',  icon: '📍', route: '/repartidor/ubicacion', roles: ['REPARTIDOR'] },
+    { label: 'Mis Guías',     icon: 'assignment', route: '/repartidor/guias',     roles: ['REPARTIDOR'] },
+    { label: 'Mi Ubicación',  icon: 'my_location', route: '/repartidor/ubicacion', roles: ['REPARTIDOR'] },
   ];
 
   get visibleItems(): NavItem[] {

@@ -14,7 +14,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
     <div class="nx-layout print-hide">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">📮 Registrar Nuevo Envío</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">local_post_office</span> Registrar Nuevo Envío</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Nueva Guía de Envío</h1>
@@ -39,17 +39,17 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
 
           @if (success) {
             <div class="nx-card" style="text-align:center;padding:3rem;">
-              <div style="font-size:4rem;margin-bottom:1rem;">✅</div>
+              <div style="font-size:4rem;margin-bottom:1rem;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span></div>
               <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;margin-bottom:.5rem;">¡Envío registrado!</h2>
               <p style="color:var(--text-muted);margin-bottom:1rem;">Tu número de guía es:</p>
               <div class="font-mono" style="font-size:1.75rem;font-weight:800;color:var(--accent);letter-spacing:.05em;margin-bottom:2rem;">{{ trackingNumber }}</div>
               <div style="display:flex;gap:.75rem;justify-content:center;margin-top:2rem;">
-                <button class="nx-btn btn-ghost" (click)="resetForm()">📮 Nuevo envío</button>
-                <button class="nx-btn btn-primary" (click)="goToEnvios()">📦 Ver mis envíos</button>
+                <button class="nx-btn btn-ghost" (click)="resetForm()"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">local_post_office</span> Nuevo envío</button>
+                <button class="nx-btn btn-primary" (click)="goToEnvios()"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Ver mis envíos</button>
               </div>
               <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1rem;">
-                <button class="nx-btn btn-secondary" (click)="imprimirGuia()" style="background:var(--accent);color:black;font-weight:bold;border:none;">🖨️ Imprimir GUÍA</button>
-                <button class="nx-btn btn-secondary" (click)="imprimirFormulario()" style="background:var(--accent-2);color:white;font-weight:bold;border:none;">📄 Imprimir Formulario</button>
+                <button class="nx-btn btn-secondary" (click)="imprimirGuia()" style="background:var(--accent);color:black;font-weight:bold;border:none;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">print</span> Imprimir GUÍA</button>
+                <button class="nx-btn btn-secondary" (click)="imprimirFormulario()" style="background:var(--accent-2);color:white;font-weight:bold;border:none;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">description</span> Imprimir Formulario</button>
               </div>
             </div>
           }
@@ -58,7 +58,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
             <div class="nx-card">
               <!-- Step 1: Remitente -->
               @if (step === 1) {
-                <div class="card-header"><h3>📍 Datos del Remitente</h3></div>
+                <div class="card-header"><h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Datos del Remitente</h3></div>
                 <div class="nx-form-row cols-2">
                   <div class="nx-form-group">
                     <label>Nombre del remitente *</label>
@@ -108,7 +108,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
 
               <!-- Step 3: Paquete -->
               @if (step === 3) {
-                <div class="card-header"><h3>📦 Información del Paquete</h3></div>
+                <div class="card-header"><h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Información del Paquete</h3></div>
                 <div class="nx-form-row cols-2">
                   <div class="nx-form-group">
                     <label>Peso (kg) *</label>
@@ -145,7 +145,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
                 </div>
               }
 
-              @if (error) { <div class="nx-alert alert-error" style="margin-top:1rem;">⚠️ {{ error }}</div> }
+              @if (error) { <div class="nx-alert alert-error" style="margin-top:1rem;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ error }}</div> }
 
               <!-- Navigation buttons -->
               <div style="display:flex;justify-content:space-between;margin-top:1.5rem;">
@@ -157,7 +157,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
                 } @else {
                   <button class="nx-btn btn-accent" (click)="submit()" [disabled]="saving">
                     @if (saving) { <span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Registrando... }
-                    @else { 🚀 Registrar envío }
+                    @else { <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">rocket_launch</span> Registrar envío }
                   </button>
                 }
               </div>
@@ -183,7 +183,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
                     <div style="font-size:14px; margin-top:2px;">Tel. {{ form.senderPhone }}</div>
                   </div>
                   <div style="display:flex; align-items:center;">
-                    <div style="font-size:32px; line-height:1; margin-right: 14px;">📦</div>
+                    <div style="font-size:32px; line-height:1; margin-right: 14px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span></div>
                     <div style="text-align:center; font-size:10px;">
                       <b style="font-size:14px;letter-spacing:-0.5px;">Nacionales</b><br>
                       Delivery Services<br>
@@ -272,7 +272,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
       <div class="print-container">
         <div style="padding: 2cm; font-family: 'Helvetica', Arial, sans-serif; max-width: 800px; margin: 0 auto; color: black;">
           <div style="text-align:center; margin-bottom: 2rem; border-bottom: 2px solid #070b24; padding-bottom: 1rem;">
-            <h1 style="margin:0; font-size: 28px; color: #070b24;">📦 Nacionales Delivery Services</h1>
+            <h1 style="margin:0; font-size: 28px; color: #070b24;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Nacionales Delivery Services</h1>
             <p style="margin:5px 0 0 0; color: #444; font-size: 16px;">Formulario Detallado de Envío</p>
           </div>
 
@@ -289,7 +289,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
 
           <div style="display:flex; gap: 2rem; margin-bottom: 2rem;">
             <div style="flex:1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;">📍 Datos del Remitente</h3>
+              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Datos del Remitente</h3>
               <p style="margin: 5px 0;"><b>Nombre:</b> {{ form.senderName }}</p>
               <p style="margin: 5px 0;"><b>Teléfono:</b> {{ form.senderPhone }}</p>
               <p style="margin: 5px 0;"><b>Dirección:</b> {{ form.senderAddress }}</p>
@@ -305,7 +305,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
           </div>
 
           <div style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-            <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;">📦 Información del Paquete</h3>
+            <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Información del Paquete</h3>
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
               <tr style="border-bottom: 1px solid #eee;">
                 <th style="padding: 8px 0; color:#070b24;">Peso (kg)</th><td style="padding: 8px 0;">{{ form.weightKg }} kg</td>
@@ -321,7 +321,15 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
               </tr>
               <tr>
                 <th style="padding: 8px 0; color:#070b24;">Manejo Especial</th>
-                <td colspan="3" style="padding: 8px 0;"><b>{{ form.isFragile ? '⚠️ Paquete Frágil' : 'Normal' }}</b></td>
+                <td colspan="3" style="padding: 8px 0;">
+                  <b>
+                    @if (form.isFragile) {
+                      <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> Paquete Frágil
+                    } @else {
+                      Normal
+                    }
+                  </b>
+                </td>
               </tr>
             </table>
           </div>

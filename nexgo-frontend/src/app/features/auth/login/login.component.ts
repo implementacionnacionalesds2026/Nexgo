@@ -24,7 +24,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
         <!-- Alert -->
         @if (error) {
           <div class="nx-alert alert-error">
-            <span>⚠️</span> {{ error }}
+            <span><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span></span> {{ error }}
           </div>
         }
 
@@ -61,7 +61,12 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
               (click)="showPassword = !showPassword"
               style="background:none;border:none;color:var(--text-muted);font-size:.78rem;cursor:pointer;margin-top:.35rem;padding:0;"
             >
-              {{ showPassword ? '🙈 Ocultar' : '👁️ Mostrar' }} contraseña
+              @if (showPassword) {
+                <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">visibility_off</span> Ocultar
+              } @else {
+                <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">visibility</span> Mostrar
+              }
+              contraseña
             </button>
           </div>
 
@@ -72,7 +77,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
             style="margin-top:.5rem;"
           >
             @if (loading) { <span class="spinner" style="width:18px;height:18px;border-width:2px;"></span> Iniciando... }
-            @else { 🚀 Iniciar sesión }
+            @else { <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">rocket_launch</span> Iniciar sesión }
           </button>
         </form>
 

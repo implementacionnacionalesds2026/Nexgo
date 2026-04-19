@@ -14,7 +14,7 @@ import { environment }    from '../../../../environments/environment';
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">📍 Mi Ubicación</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Mi Ubicación</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Reportar Ubicación GPS</h1>
@@ -23,7 +23,13 @@ import { environment }    from '../../../../environments/environment';
 
           <div class="nx-grid cols-2" style="align-items:start;">
             <div class="nx-card" style="text-align:center;">
-              <div style="font-size:4rem;margin-bottom:1rem;">{{ isTracking ? '🟢' : '🔴' }}</div>
+              <div style="font-size:4rem;margin-bottom:1rem;">
+                @if (isTracking) {
+                  <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span>
+                } @else {
+                  <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">error</span>
+                }
+              </div>
               <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.25rem;margin-bottom:.5rem;">
                 {{ isTracking ? 'Rastreo activo' : 'Rastreo detenido' }}
               </h3>
@@ -40,19 +46,19 @@ import { environment }    from '../../../../environments/environment';
                 </div>
               }
 
-              @if (error) { <div class="nx-alert alert-error">⚠️ {{ error }}</div> }
-              @if (lastSent) { <div class="nx-alert alert-success" style="text-align:left;">✅ Ubicación enviada: {{ lastSent }}</div> }
+              @if (error) { <div class="nx-alert alert-error"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ error }}</div> }
+              @if (lastSent) { <div class="nx-alert alert-success" style="text-align:left;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">check_circle</span> Ubicación enviada: {{ lastSent }}</div> }
 
               <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1rem;">
                 @if (!isTracking) {
                   <button class="nx-btn btn-accent btn-lg" (click)="startTracking()">
-                    🛰️ Iniciar rastreo GPS
+                    <span class="material-symbols-outlined">satellite_alt</span> Iniciar rastreo GPS
                   </button>
                 } @else {
                   <button class="nx-btn btn-danger" (click)="stopTracking()">
-                    ⏹️ Detener rastreo
+                    <span class="material-symbols-outlined">stop_circle</span> Detener rastreo
                   </button>
-                  <button class="nx-btn btn-ghost" (click)="sendOnce()">📡 Enviar ahora</button>
+                  <button class="nx-btn btn-ghost" (click)="sendOnce()"><span class="material-symbols-outlined">sensors</span> Enviar ahora</button>
                 }
               </div>
 
@@ -63,22 +69,22 @@ import { environment }    from '../../../../environments/environment';
 
             <!-- Info privacidad -->
             <div class="nx-card">
-              <div class="card-header"><h3>ℹ️ Sobre el rastreo</h3></div>
+              <div class="card-header"><h3><span class="material-symbols-outlined">info</span> Sobre el rastreo</h3></div>
               <div style="display:flex;flex-direction:column;gap:.75rem;">
                 <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                  <span style="font-size:1.25rem;">🔒</span>
+                  <span style="font-size:1.25rem;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">lock</span></span>
                   <div><div style="font-weight:600;font-size:.875rem;">Privacidad</div><div style="font-size:.8rem;color:var(--text-muted);">Tu ubicación solo es visible para administradores de Nexgo mientras el rastreo esté activo.</div></div>
                 </div>
                 <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                  <span style="font-size:1.25rem;">🌐</span>
+                  <span style="font-size:1.25rem;"><span class="material-symbols-outlined">public</span></span>
                   <div><div style="font-weight:600;font-size:.875rem;">GPS del dispositivo</div><div style="font-size:.8rem;color:var(--text-muted);">Usa el GPS de tu teléfono. Asegúrate de tener el servicio habilitado.</div></div>
                 </div>
                 <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                  <span style="font-size:1.25rem;">⚡</span>
+                  <span style="font-size:1.25rem;"><span class="material-symbols-outlined">bolt</span></span>
                   <div><div style="font-weight:600;font-size:.875rem;">Auto-envío</div><div style="font-size:.8rem;color:var(--text-muted);">Cada 30 segundos tu posición se envía al servidor automáticamente.</div></div>
                 </div>
                 <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                  <span style="font-size:1.25rem;">📱</span>
+                  <span style="font-size:1.25rem;"><span class="material-symbols-outlined">smartphone</span></span>
                   <div><div style="font-weight:600;font-size:.875rem;">Mantén la app abierta</div><div style="font-size:.8rem;color:var(--text-muted);">El rastreo se pausará si cierras el navegador o la pantalla se apaga.</div></div>
                 </div>
               </div>

@@ -13,7 +13,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
-        <div class="nx-navbar"><span class="navbar-title">📈 Reportes</span></div>
+        <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">monitoring</span> Reportes</span></div>
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Reportes de Envíos</h1>
@@ -40,7 +40,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
                 </select>
               </div>
               <div class="nx-form-group" style="margin-bottom:0;display:flex;align-items:flex-end;">
-                <button class="nx-btn btn-primary btn-block" (click)="load()">🔍 Buscar</button>
+                <button class="nx-btn btn-primary btn-block" (click)="load()"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">search</span> Buscar</button>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
                       </tr>
                     }
                     @if (shipments.length === 0) {
-                      <tr><td colspan="10"><div class="nx-empty"><div class="empty-icon">📊</div><h3>Sin datos</h3><p>Ajusta los filtros y busca de nuevo</p></div></td></tr>
+                      <tr><td colspan="10"><div class="nx-empty"><div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">dashboard</span></div><h3>Sin datos</h3><p>Ajusta los filtros y busca de nuevo</p></div></td></tr>
                     }
                   </tbody>
                 </table>

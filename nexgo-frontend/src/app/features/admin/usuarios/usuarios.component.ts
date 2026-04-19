@@ -15,7 +15,7 @@ import { User }                from '../../../core/models/user.model';
       <app-sidebar />
       <main class="nx-main">
         <div class="nx-navbar">
-          <span class="navbar-title">👥 Gestión de Usuarios</span>
+          <span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">group</span> Gestión de Usuarios</span>
         </div>
 
         <div class="nx-content">
@@ -70,7 +70,7 @@ import { User }                from '../../../core/models/user.model';
                       </tr>
                     }
                     @if (users.length === 0) {
-                      <tr><td colspan="6"><div class="nx-empty"><div class="empty-icon">👥</div><h3>Sin usuarios</h3></div></td></tr>
+                      <tr><td colspan="6"><div class="nx-empty"><div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">group</span></div><h3>Sin usuarios</h3></div></td></tr>
                     }
                   </tbody>
                 </table>
@@ -90,7 +90,7 @@ import { User }                from '../../../core/models/user.model';
             <button class="close-btn" (click)="closeModal()">✕</button>
           </div>
           <div class="modal-body">
-            @if (modalError) { <div class="nx-alert alert-error">⚠️ {{ modalError }}</div> }
+            @if (modalError) { <div class="nx-alert alert-error"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ modalError }}</div> }
 
             <div class="nx-form-row cols-2">
               <div class="nx-form-group">
