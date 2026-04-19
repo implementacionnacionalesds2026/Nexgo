@@ -128,7 +128,20 @@ import { Shipment }            from '../../../core/models/shipment.model';
         </div>
       </main>
     </div>
-  `
+  `,
+  styles: [`
+    .nx-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+    }
+    input[type="checkbox"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  `]
 })
 export class VerSolicitudComponent implements OnInit {
   shipment: Shipment | null = null;
