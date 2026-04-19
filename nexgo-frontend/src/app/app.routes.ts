@@ -75,6 +75,11 @@ export const routes: Routes = [
           import('./features/cliente/mis-envios/mis-envios.component').then((m) => m.MisEnviosComponent),
       },
       {
+        path: 'ver-solicitud/:id',
+        loadComponent: () =>
+          import('./features/cliente/ver-solicitud/ver-solicitud.component').then((m) => m.VerSolicitudComponent),
+      },
+      {
         path: 'rastrear/:id',
         loadComponent: () =>
           import('./features/cliente/rastrear/rastrear.component').then((m) => m.RastrearComponent),
