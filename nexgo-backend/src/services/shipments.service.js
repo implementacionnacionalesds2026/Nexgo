@@ -114,6 +114,10 @@ const getShipments = async (filters = {}) => {
  * Obtener envío por ID
  */
 const getShipmentById = async (id) => {
+  // Evitar error de PostgreSQL al comparar UUID con VARCHAR 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  const whereClause = isUuid ? 's.id = $1' : 's.tracking_number = $1';
+
   const result = await query(
     `SELECT s.*,
             uc.name AS client_name, uc.email AS client_email, uc.company_name,
@@ -121,7 +125,7 @@ const getShipmentById = async (id) => {
      FROM shipments s
      LEFT JOIN users uc ON uc.id = s.client_id
      LEFT JOIN users ud ON ud.id = s.assigned_driver_id
-     WHERE s.id = $1 OR s.tracking_number = $1`,
+     WHERE ${whereClause}`,
     [id]
   );
 
