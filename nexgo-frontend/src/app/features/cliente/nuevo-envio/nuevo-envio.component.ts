@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Router }       from '@angular/router';
 import { ShipmentService } from '../../../core/services/shipment.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { CreateShipmentRequest } from '../../../core/models/shipment.model';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import JsBarcode from 'jsbarcode';
 
 @Component({
   selector: 'app-nuevo-envio',
@@ -48,7 +51,10 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
                 <button class="nx-btn btn-primary" (click)="goToEnvios()"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Ver mis envíos</button>
               </div>
               <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1rem;">
-                <button class="nx-btn btn-secondary" (click)="imprimirGuia()" style="background:var(--accent);color:black;font-weight:bold;border:none;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">print</span> Imprimir GUÍA</button>
+                <button class="nx-btn btn-secondary" (click)="imprimirGuia()" [disabled]="generatingPdf" style="background:var(--accent);color:black;font-weight:bold;border:none;">
+                  <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">print</span> 
+                  {{ generatingPdf ? 'Generando...' : 'Imprimir GUÍA' }}
+                </button>
                 <button class="nx-btn btn-secondary" (click)="imprimirFormulario()" style="background:var(--accent-2);color:white;font-weight:bold;border:none;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">description</span> Imprimir Formulario</button>
               </div>
             </div>
@@ -170,98 +176,101 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
     <!-- ZONA IMPRESIÓN GUÍA -->
     @if (printMode === 'guia') {
       <div class="print-container">
-        <div style="display: flex; justify-content: center; align-items: flex-start; padding: 5mm; height: 100vh;">
-          <div>
-            <div class="guia-box">
-              
-              <!-- Row 1: Remitente -->
-              <div class="g-row" style="flex:1;">
-                <div class="v-text-dark">Remitente</div>
-                <div style="flex:1; display:flex; justify-content:space-between; align-items:flex-start; padding: 4px 8px;">
-                  <div>
-                    <div style="font-size:16px;"><b>Nombre: </b>{{ form.senderName | slice:0:30 }}</div>
-                    <div style="font-size:14px; margin-top:2px;">Tel. {{ form.senderPhone }}</div>
-                  </div>
-                  <div style="display:flex; align-items:center;">
-                    <div style="font-size:32px; line-height:1; margin-right: 14px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span></div>
-                    <div style="text-align:center; font-size:10px;">
-                      <b style="font-size:14px;letter-spacing:-0.5px;">Nacionales</b><br>
-                      Delivery Services<br>
-                      <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:9px;">
-                        <div>4<br>No. Orden</div>
-                        <div>4<br>No. Ticket</div>
-                      </div>
-                    </div>
-                    <div style="font-size:18px; font-weight:900; margin-left:8px;">GT</div>
-                  </div>
-                </div>
+        <div style="display: flex; justify-content: center; align-items: flex-start; background: white; width: 100mm; height: 100mm;">
+          <div #guiaContainer style="width: 385px; height: 375px; background: white; border: 2px solid black; box-sizing: border-box; display: flex; flex-direction: column; color: black; font-family: Arial, sans-serif;">
+            
+            <!-- Row 1: REMITENTE -->
+            <div style="display:flex; border-bottom: 2px solid black; height: 65px;">
+              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: black; color: white; width: 22px; font-size: 10px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center;">Remitente</div>
+              <div style="flex:1; padding: 4px; display:flex; flex-direction:column; justify-content:center;">
+                <div style="font-size: 16px; font-weight: 800; color: black;">Nombre: {{ form.senderName }}</div>
+                <div style="font-size: 15px; font-weight: 700; color: black;">Tel. {{ form.senderPhone }}</div>
               </div>
-
-              <!-- Row 2: Destinatario -->
-              <div class="g-row" style="flex:1.2;">
-                <div class="v-text-dark">Destinatario</div>
-                <div style="flex:1; display:flex; justify-content:space-between; align-items:center; padding: 4px 8px;">
-                  <div style="font-size: 13px; line-height: 1.1;">
-                    <div style="font-size:15px; margin-bottom:2px;"><b>Nombre: </b>{{ form.recipientName | slice:0:35 }}</div>
-                    Tel: {{ form.recipientPhone }}<br>
-                    Dirección: {{ form.recipientAddress | slice:0:60 }},<br>
-                    {{ form.destinationCity }}, Guatemala Guatemala<br>
-                    Favor Cobrar Q0.00 con envío incluido
+              <div style="width: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #ccc; padding: 2px;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <div style="width:24px; height:24px; background:black; color:white; display:flex; align-items:center; justify-content:center; border-radius:4px; font-size: 14px;">📦</div>
+                  <div style="text-align:left;">
+                    <div style="font-size:12px; font-weight:900; line-height:1; color: black;">Nacionales</div>
+                    <div style="font-size:7px; font-weight:bold; color: #444;">Delivery Services</div>
                   </div>
-                  <div style="border: 2px solid black; font-weight:800; font-size:24px; padding: 6px 10px; margin-left: 8px;">
-                    DOM
-                  </div>
+                  <div style="font-size:14px; font-weight:900; margin-left:4px; color: black;">GT</div>
                 </div>
-              </div>
-
-              <!-- Row 3: Codes -->
-              <div class="g-row" style="flex:2;">
-                <div class="v-text-light">Guía No.<br>{{ trackingNumber || 'ND1000004' }}</div>
-                <div style="flex:1; display:flex; flex-direction:column; justify-content:space-between; padding: 8px; position:relative;">
-                  <div style="display:flex; align-items:flex-start; gap: 10px; margin-top:10px;">
-                    <div style="border:3px solid black; font-size:52px; font-weight:900; padding:4px 12px; letter-spacing:-2px;">GUA</div>
-                    <div style="font-size:14px; font-weight:700; line-height:1.1; margin-top:6px;">
-                      GT-004:<br>paquete<br>pequeño
-                    </div>
-                  </div>
-                  <div style="align-self:flex-end;">
-                    <div style="border:2px solid black; padding: 2px 8px; text-align:center; font-size:10px; font-weight:bold;">
-                      Forma Pago<br><span style="font-size:18px; line-height:1;">COLLECT</span>
-                    </div>
-                  </div>
-                </div>
-                <div style="width:75px; border-left:2px solid black; display:flex; flex-direction:column;">
-                  <div style="flex:1; border-bottom:2px solid black; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; font-weight:bold;">
-                    PIEZA<br><b style="font-size:24px; line-height:1.1;">01</b>DE<br><b style="font-size:20px; line-height:1;">{{ form.quantity | number:'2.0' }}</b>
-                  </div>
-                  <div style="flex:1; border-bottom:2px solid black; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; font-weight:bold;">
-                    PESO lb<br><b style="font-size:24px; line-height:1.1;">{{ form.weightKg }}</b>DE<br><b style="font-size:20px; line-height:1;">999</b>
-                  </div>
-                  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 2px; font-size:10px; font-weight:bold; height:34px;">
-                    Servicio<br><b style="font-size:16px;">COD</b>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 4: Bottom -->
-              <div style="background:black; color:white; display:flex; height: 32px; align-items:center; flex-shrink: 0;">
-                <div style="flex:1; display:flex; flex-direction:column; align-items:flex-start; padding-left: 8px;">
-                  <b style="font-size:20px; line-height:1; letter-spacing:1px;">QTZ</b>
-                  <span style="font-size:7px;">Departamento</span>
-                </div>
-                <div style="flex:2; display:flex; flex-direction:column; align-items:center;">
-                  <b style="font-size:20px; line-height:1;">Xela</b>
-                  <span style="font-size:7px;">Municipio</span>
-                </div>
-                <div style="width:30px; display:flex; flex-direction:column; align-items:center; border-left: 2px solid white; margin-right: 15px;">
-                  <b style="font-size:20px; line-height:1;">3</b>
-                  <span style="font-size:7px;">Zona</span>
+                <div style="display:flex; gap:10px; margin-top:2px;">
+                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">4</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Orden</div></div>
+                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">4</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Ticket</div></div>
                 </div>
               </div>
             </div>
-            <div style="font-size:9px; text-align:center; padding-top: 4px; font-family: sans-serif; color: black; font-weight: 500;">
-              ** Guía sujeta a términos y condiciones **
+
+            <!-- Row 2: DESTINATARIO -->
+            <div style="display:flex; border-bottom: 2px solid black; height: 95px;">
+              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: black; color: white; width: 22px; font-size: 10px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center;">Destinatario</div>
+              <div style="flex:1; padding: 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden;">
+                <div style="font-size: 16px; font-weight: 800; color: black;">Nombre: {{ form.recipientName }}</div>
+                <div style="font-size: 11px; font-weight: 700; color: black;">Tel: {{ form.recipientPhone }}</div>
+                <div style="font-size: 11px; font-weight: 500; line-height: 1.1; color: black;">Dirección: {{ form.recipientAddress }}, {{ form.destinationCity }}</div>
+                <div style="font-size: 11px; font-weight: 700; margin-top:2px; color: black;">Favor Cobrar con envío incluido</div>
+              </div>
+              <div style="width: 80px; border-left: 2px solid black; display: flex; align-items: center; justify-content: center;">
+                <div style="border: 3px solid black; font-size: 24px; font-weight: 900; padding: 6px 4px; color: black;">DOM</div>
+              </div>
             </div>
+
+            <!-- Row 3: MIDDLE SECTION (BARCODE) -->
+            <div style="display:flex; border-bottom: 2px solid black; flex: 1; align-items:stretch;">
+              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: white; color: black; width: 22px; font-size: 9px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; border-right: 2px solid black; font-family: monospace;">Guía No.<br>{{ trackingNumber | slice:0:12 }}</div>
+              <div style="flex:1; display:flex; align-items:center; justify-content:center; padding: 5px;">
+                <svg id="barcodeCanvasSuccess"></svg>
+              </div>
+              <div style="width: 75px; border-left: 2px solid black; display: flex; flex-direction: column;">
+                <div style="flex:1; border-bottom: 2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
+                  PIEZA<br><span style="font-size: 28px; line-height: 1;">01</span>DE<br><span style="font-size: 24px; line-height: 0.8;">{{ form.quantity | number:'2.0' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4: GUA SECTION -->
+            <div style="display:flex; border-bottom: 2px solid black; height: 110px; align-items:stretch;">
+              <div style="flex:1; display:flex; align-items:center; padding: 5px; gap: 10px;">
+                <div style="border: 3px solid black; font-size: 64px; font-weight: 900; padding: 4px 10px; line-height: 1; color: black;">GUA</div>
+                <div style="font-size: 14px; font-weight: 800; line-height: 1.1; color: black;">GT-004:<br>paquete<br>pequeño</div>
+              </div>
+              <div style="width: 140px; display:flex; flex-direction:column;">
+                <div style="flex:1; display:flex; flex-direction:column; border-left:2px solid black;">
+                  <div style="flex:1; border-bottom:2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
+                    PESO lb<br><span style="font-size: 28px; line-height: 1;">{{ form.weightKg }}</span>DE<br><span style="font-size: 24px; line-height: 0.8;">999</span>
+                  </div>
+                  <div style="height: 45px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 4px;">
+                    <div style="border: 2.5px solid black; text-align: center; padding: 2px 5px; color: black;">
+                      <div style="font-size: 8px; font-weight: 900;">Forma Pago</div>
+                      <div style="font-size: 18px; font-weight: 900; line-height: 1;">COLLECT</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="width: 75px; border-left: 2px solid black; display: flex; flex-direction: column;">
+                <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: black;">
+                  Servicio<br><span style="font-size: 20px; line-height: 1;">COD</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 5: FOOTER -->
+            <div style="display:flex; height: 35px; background: black; color: white;">
+              <div style="flex:1; border-right: 1px solid white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="font-size: 18px; font-weight: 900; line-height: 1;">QTZ</div>
+                <div style="font-size: 7px; font-weight: bold;">Departamento</div>
+              </div>
+              <div style="flex:3; border-right: 1px solid white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="font-size: 18px; font-weight: 900; line-height: 1;">Xela</div>
+                <div style="font-size: 7px; font-weight: bold;">Municipio</div>
+              </div>
+              <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="font-size: 20px; font-weight: 900; line-height: 1;">3</div>
+                <div style="font-size: 7px; font-weight: bold;">Zona</div>
+              </div>
+            </div>
+            <div style="font-size: 6px; text-align: center; color: black;">** Guía sujeta a términos y condiciones **</div>
           </div>
         </div>
       </div>
@@ -345,7 +354,11 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
   styles: [`
     /* Ocultar elementos de UI cuando se imprime o se activa el modo print */
     .print-container {
-      display: none;
+      display: block;
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      z-index: -1;
     }
     
     @media print {
@@ -404,6 +417,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
   `]
 })
 export class NuevoEnvioComponent {
+  @ViewChild('guiaContainer') guiaContainer!: ElementRef;
 
   step = 1;
   saving  = false;
@@ -412,6 +426,7 @@ export class NuevoEnvioComponent {
   trackingNumber = '';
   
   printMode: 'guia' | 'formulario' | null = null;
+  generatingPdf = false;
   today = new Date();
 
   steps = [
@@ -471,11 +486,66 @@ export class NuevoEnvioComponent {
   goToEnvios() { this.router.navigate(['/cliente/mis-envios']); }
 
   imprimirGuia() {
+    if (this.generatingPdf) return;
+    this.generatingPdf = true;
     this.printMode = 'guia';
-    setTimeout(() => {
-      window.print();
-      this.printMode = null;
-    }, 300);
+    
+    // Esperar a que Angular renderice el contenedor
+    setTimeout(async () => {
+      try {
+        if (!this.guiaContainer) return;
+        
+        const tracking = this.trackingNumber || 'ND0000000';
+        
+        // Generar Código de Barras
+        JsBarcode("#barcodeCanvasSuccess", tracking, {
+          format: "CODE128",
+          width: 2.2, 
+          height: 55,
+          displayValue: false,
+          margin: 0,
+          background: "#ffffff",
+          lineColor: "#000000"
+        });
+
+        const element = this.guiaContainer.nativeElement;
+        
+        const canvas = await html2canvas(element, {
+          scale: 4, 
+          logging: false,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          onclone: (clonedDoc) => {
+            const el = clonedDoc.querySelector('.print-container') as HTMLElement;
+            if (el) {
+              el.style.left = '0';
+              el.style.top = '0';
+              el.style.position = 'relative';
+              el.style.display = 'block';
+              el.style.visibility = 'visible';
+            }
+          }
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const doc = new jsPDF({
+          orientation: 'p',
+          unit: 'mm',
+          format: [100, 100]
+        });
+        
+        doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
+        doc.autoPrint();
+        const pdfUrl = URL.createObjectURL(doc.output('blob'));
+        window.open(pdfUrl, '_blank');
+        
+      } catch (err) {
+        console.error('Error generating PDF:', err);
+      } finally {
+        this.printMode = null;
+        this.generatingPdf = false;
+      }
+    }, 800);
   }
 
   imprimirFormulario() {
