@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ShipmentService } from '../../../core/services/shipment.service';
@@ -55,7 +55,7 @@ import { Shipment } from '../../../core/models/shipment.model';
               <div class="nx-table-wrap">
                 <table class="nx-table">
                   <thead><tr>
-                    <th>Guía</th><th>Fecha</th><th>Origen → Destino</th><th>Peso</th><th>Costo est.</th><th>Estado</th><th>Acciones</th>
+                    <th>Guía</th><th>Fecha</th><th>Origen → Destino</th><th>Peso</th><th>Costo est.</th><th>Estado</th><th style="min-width: 200px;">Acciones</th>
                   </tr></thead>
                   <tbody>
                     @for (s of shipments; track s.id) {
@@ -69,8 +69,8 @@ import { Shipment } from '../../../core/models/shipment.model';
                         <td>
                           <!-- Dropdown Acciones -->
                           <div class="dropdown-container" style="position:relative; display:inline-block;">
-                            <button class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
-                            <div class="dropdown-menu">
+                            <button (click)="toggleDropdown(s.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
+                            <div class="dropdown-menu" [style.display]="openDropdownId === s.id ? 'block' : 'none'">
                               <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">👁️ Ver Solicitud</a>
                               <a (click)="imprimirGuia(s)" class="dropdown-item">🖨️ Imprimir Guía</a>
                               <a (click)="imprimirFormulario(s)" class="dropdown-item">📄 Formulario</a>
@@ -266,12 +266,10 @@ import { Shipment } from '../../../core/models/shipment.model';
   styles: [`
     /* Dropdown menu */
     .dropdown-container .dropdown-menu {
-      display: none; position: absolute; right: 0; top: calc(100% + 5px); z-index: 99;
+      position: absolute; left: calc(100% + 5px); top: -5px; z-index: 99;
       background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5); min-width: 180px; text-align: left; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5); min-width: 160px; text-align: left; overflow: hidden;
     }
-    .dropdown-container:hover .dropdown-menu,
-    .dropdown-container:focus-within .dropdown-menu { display: block; }
     .dropdown-item {
       display: block; width: 100%; text-align: left; background: none; border: none; 
       padding: 10px 15px; color: var(--text); cursor: pointer; text-decoration: none; font-size: 13px;
@@ -322,6 +320,7 @@ export class MisEnviosComponent implements OnInit {
   printMode: 'guia' | 'formulario' | null = null;
   printShipment: any = null;
   today = new Date();
+  openDropdownId: string | null = null;
 
   constructor(private shipmentService: ShipmentService) { }
 
@@ -338,6 +337,22 @@ export class MisEnviosComponent implements OnInit {
 
   countByStatus(status: string): number {
     return this.shipments.filter((s: any) => s.current_status === status).length;
+  }
+
+  toggleDropdown(id: string, event: Event) {
+    event.stopPropagation();
+    if (this.openDropdownId === id) {
+      this.openDropdownId = null;
+    } else {
+      this.openDropdownId = id;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeDropdown(event: Event) {
+    if (!(event.target as HTMLElement).closest('.dropdown-container')) {
+      this.openDropdownId = null;
+    }
   }
 
   imprimirGuia(shipment: any) {
