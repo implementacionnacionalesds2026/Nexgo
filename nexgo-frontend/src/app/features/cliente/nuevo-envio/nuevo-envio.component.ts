@@ -125,7 +125,7 @@ import JsBarcode from 'jsbarcode';
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Teléfono *</label>
-                          <input class="nx-input" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" />
+                          <input class="nx-input" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
                         </div>
                         <div class="nx-form-group">
                           <label>Ciudad de Origen</label>
@@ -805,6 +805,7 @@ export class NuevoEnvioComponent {
     if (user) {
       // Priorizar nombre de empresa, si no, usar nombre de usuario
       this.form.senderName = user.companyName || user.name;
+      this.form.senderPhone = user.phone || '';
     }
   }
 
