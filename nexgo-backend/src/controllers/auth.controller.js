@@ -7,16 +7,20 @@ const { validationResult } = require('express-validator');
  */
 const login = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ success: false, message: 'Datos inválidos', errors: errors.array() });
+    const { username, email, password } = req.body;
+    const loginId = (username || email || '').trim();
+
+    logger.info(`Intento de login para: ${loginId}`);
+
+    if (!loginId || !password) {
+      return res.status(401).json({ success: false, message: 'Credenciales incompletas' });
     }
 
-    const { email, password } = req.body;
-    const result = await authService.login(email, password);
+    const result = await authService.login(loginId, password);
 
     return successResponse(res, result, 'Login exitoso');
   } catch (err) {
+    logger.error(`Error en login: ${err.message}`);
     next(err);
   }
 };

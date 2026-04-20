@@ -66,7 +66,7 @@ const createShipment = async (data, clientId) => {
   // Registrar estado inicial
   await query(
     `INSERT INTO shipment_status (shipment_id, status, notes, updated_by)
-     VALUES ($1, 'PENDIENTE', 'Envío registrado en el sistema', $2)`,
+     VALUES ($1, 'PENDIENTE', '', $2)`,
     [shipment.id, clientId]
   );
 
@@ -152,7 +152,7 @@ const getShipmentById = async (id) => {
 
   // Historial de estados
   const statusHistory = await query(
-    `SELECT ss.*, u.name AS updated_by_name
+    `SELECT ss.*, u.name AS updated_by_name, u.username AS updated_by_username
      FROM shipment_status ss
      LEFT JOIN users u ON u.id = ss.updated_by
      WHERE ss.shipment_id = $1

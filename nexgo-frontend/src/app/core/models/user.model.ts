@@ -2,6 +2,9 @@
 export interface User {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
   email: string;
   role: 'ADMIN' | 'CLIENTE' | 'REPARTIDOR';
   companyName?: string;
@@ -16,6 +19,6 @@ export interface AuthResponse {
 }
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }

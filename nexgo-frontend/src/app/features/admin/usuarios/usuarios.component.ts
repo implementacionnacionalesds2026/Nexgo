@@ -41,6 +41,7 @@ import { User }                from '../../../core/models/user.model';
                 <table class="nx-table">
                   <thead>
                     <tr>
+                      <th>Usuario</th>
                       <th>Nombre</th>
                       <th>Email</th>
                       <th>Rol</th>
@@ -52,7 +53,12 @@ import { User }                from '../../../core/models/user.model';
                   <tbody>
                     @for (u of users; track u.id) {
                       <tr>
-                        <td>{{ u.name }}</td>
+                        <td>
+                          <span style="color: #6366f1; font-weight:700; font-family:monospace; font-size:0.9rem;">
+                            {{ u.username || (u.name?.toLowerCase().replace(' ', '.')) }}
+                          </span>
+                        </td>
+                        <td style="font-weight: 500;">{{ u.name || (u.first_name + ' ' + u.last_name) }}</td>
                         <td style="color:var(--text-muted);font-size:.85rem;">{{ u.email }}</td>
                         <td><app-status-badge [status]="u.role" /></td>
                         <td style="color:var(--text-muted);font-size:.85rem;">{{ u['company_name'] || '—' }}</td>
@@ -70,7 +76,7 @@ import { User }                from '../../../core/models/user.model';
                       </tr>
                     }
                     @if (users.length === 0) {
-                      <tr><td colspan="6"><div class="nx-empty"><div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">group</span></div><h3>Sin usuarios</h3></div></td></tr>
+                      <tr><td colspan="7"><div class="nx-empty"><div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">group</span></div><h3>Sin usuarios</h3></div></td></tr>
                     }
                   </tbody>
                 </table>
@@ -94,17 +100,23 @@ import { User }                from '../../../core/models/user.model';
 
             <div class="nx-form-row cols-2">
               <div class="nx-form-group">
-                <label>Nombre completo</label>
-                <input class="nx-input" [(ngModel)]="form.name" placeholder="Juan Pérez" />
+                <label>Nombre</label>
+                <input class="nx-input" [(ngModel)]="form.firstName" placeholder="Yeyson" />
               </div>
+              <div class="nx-form-group">
+                <label>Apellido</label>
+                <input class="nx-input" [(ngModel)]="form.lastName" placeholder="Barillas" />
+              </div>
+            </div>
+            <div class="nx-form-row cols-2">
               <div class="nx-form-group">
                 <label>Teléfono</label>
                 <input class="nx-input" [(ngModel)]="form.phone" placeholder="502XXXXXXXX" />
               </div>
-            </div>
-            <div class="nx-form-group">
-              <label>Email</label>
-              <input class="nx-input" type="email" [(ngModel)]="form.email" [disabled]="editMode" placeholder="usuario@empresa.gt" />
+              <div class="nx-form-group">
+                <label>Email</label>
+                <input class="nx-input" type="email" [(ngModel)]="form.email" [disabled]="editMode" placeholder="usuario@empresa.gt" />
+              </div>
             </div>
             @if (!editMode) {
               <div class="nx-form-group">
@@ -150,7 +162,7 @@ export class UsuariosComponent implements OnInit {
   modalError = '';
   selectedUser: any = null;
 
-  form: any = { name: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
+  form: any = { firstName: '', lastName: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
 
   constructor(private adminService: AdminService) {}
 
@@ -170,7 +182,7 @@ export class UsuariosComponent implements OnInit {
 
   openCreate() {
     this.editMode = false;
-    this.form = { name: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
+    this.form = { firstName: '', lastName: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
     this.modalError = '';
     this.showModal = true;
   }
@@ -178,7 +190,14 @@ export class UsuariosComponent implements OnInit {
   openEdit(u: any) {
     this.editMode = true;
     this.selectedUser = u;
-    this.form = { name: u.name, email: u.email, phone: u.phone, companyName: u.company_name, roleId: null };
+    this.form = { 
+      firstName: u.first_name || u.name?.split(' ')[0] || '', 
+      lastName: u.last_name || u.name?.split(' ').slice(1).join(' ') || '', 
+      email: u.email, 
+      phone: u.phone, 
+      companyName: u.company_name, 
+      roleId: null 
+    };
     this.modalError = '';
     this.showModal = true;
   }
@@ -189,12 +208,24 @@ export class UsuariosComponent implements OnInit {
     this.saving = true;
     this.modalError = '';
 
+    const payload = {
+      firstName: this.form.firstName,
+      lastName: this.form.lastName,
+      phone: this.form.phone,
+      email: this.form.email,
+      companyName: this.form.companyName,
+      password: this.form.password,
+      roleId: this.form.roleId
+    };
+
     const obs = this.editMode
       ? this.adminService.updateUser(this.selectedUser.id, {
-          name: this.form.name, phone: this.form.phone,
-          companyName: this.form.companyName,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          phone: payload.phone,
+          companyName: payload.companyName,
         } as any)
-      : this.adminService.createUser(this.form);
+      : this.adminService.createUser(payload);
 
     obs.subscribe({
       next: () => { this.saving = false; this.closeModal(); this.loadUsers(); },

@@ -31,16 +31,16 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
         <!-- Form -->
         <form (ngSubmit)="onLogin()" #loginForm="ngForm">
           <div class="nx-form-group">
-            <label for="email">Correo electrónico</label>
+            <label for="username">Usuario</label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               class="nx-input"
-              placeholder="usuario@empresa.gt"
-              [(ngModel)]="email"
-              name="email"
+              placeholder="juan.perez"
+              [(ngModel)]="username"
+              name="username"
               required
-              autocomplete="email"
+              autocomplete="username"
             />
           </div>
 
@@ -88,7 +88,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
 })
 export class LoginComponent {
 
-  email = '';
+  username = '';
   password = '';
   loading = false;
   error = '';
@@ -97,7 +97,7 @@ export class LoginComponent {
   constructor(private authService: AuthService) { }
 
   onLogin() {
-    if (!this.email || !this.password) {
+    if (!this.username || !this.password) {
       this.error = 'Por favor ingresa tus credenciales';
       return;
     }
@@ -105,7 +105,7 @@ export class LoginComponent {
     this.loading = true;
     this.error = '';
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.authService.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.loading = false;
         const role = res.data.user.role;

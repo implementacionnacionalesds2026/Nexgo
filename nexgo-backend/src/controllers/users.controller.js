@@ -22,7 +22,7 @@ const getUsers = async (req, res, next) => {
     params.push(limit, offset);
 
     const result = await query(
-      `SELECT u.id, u.name, u.email, u.phone, u.company_name, u.is_active, u.created_at, r.name AS role
+      `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at, r.name AS role
        FROM users u JOIN roles r ON r.id = u.role_id
        ${whereClause}
        ORDER BY u.created_at DESC
@@ -53,7 +53,7 @@ const getUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT u.id, u.name, u.email, u.phone, u.company_name, u.is_active, u.created_at, r.name AS role
+      `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at, r.name AS role
        FROM users u JOIN roles r ON r.id = u.role_id
        WHERE u.id = $1`,
       [req.params.id]
@@ -79,19 +79,34 @@ const updateUser = async (req, res, next) => {
       return res.status(422).json({ success: false, message: 'Datos inválidos', errors: errors.array() });
     }
 
-    const { name, phone, companyName, isActive, roleId } = req.body;
+    const { firstName, lastName, phone, companyName, isActive, roleId } = req.body;
+
+    // Fetch current user to compute updates
+    const current = await query('SELECT * FROM users WHERE id = $1', [req.params.id]);
+    if (!current.rows[0]) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+    const user = current.rows[0];
+
+    const newFirstName = firstName || user.first_name;
+    const newLastName = lastName || user.last_name;
+    const newName = `${newFirstName} ${newLastName}`.trim();
+    const newUsername = `${newFirstName.toLowerCase().replace(/\s+/g, '')}.${newLastName.toLowerCase().replace(/\s+/g, '')}`;
 
     const result = await query(
       `UPDATE users
-       SET name = COALESCE($1, name),
-           phone = COALESCE($2, phone),
-           company_name = COALESCE($3, company_name),
-           is_active = COALESCE($4, is_active),
-           role_id = COALESCE($5, role_id),
+       SET name = $1,
+           first_name = $2,
+           last_name = $3,
+           username = $4,
+           phone = COALESCE($5, phone),
+           company_name = COALESCE($6, company_name),
+           is_active = COALESCE($7, is_active),
+           role_id = COALESCE($8, role_id),
            updated_at = NOW()
-       WHERE id = $6
-       RETURNING id, name, email, phone, company_name, is_active`,
-      [name, phone, companyName, isActive, roleId, req.params.id]
+       WHERE id = $9
+       RETURNING id, name, username, email, phone, company_name, is_active`,
+      [newName, newFirstName, newLastName, newUsername, phone, companyName, isActive, roleId, req.params.id]
     );
 
     if (!result.rows[0]) {

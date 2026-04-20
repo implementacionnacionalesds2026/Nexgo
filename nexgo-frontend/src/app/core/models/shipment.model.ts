@@ -12,6 +12,8 @@ export interface ShipmentStatusEntry {
   notes: string;
   location: string;
   updatedByName: string;
+  updated_by_username?: string;
+  updatedByUsername?: string;
   createdAt: string;
 }
 

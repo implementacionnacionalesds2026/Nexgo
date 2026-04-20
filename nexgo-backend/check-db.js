@@ -1,20 +1,16 @@
 const { query } = require('./src/config/database');
 require('dotenv').config();
 
-const checkColumns = async () => {
+async function checkUsers() {
   try {
-    const res = await query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'shipments'
-      ORDER BY ordinal_position;
-    `);
-    console.log(JSON.stringify(res.rows, null, 2));
+    const res = await query('SELECT id, name, username, email FROM users');
+    console.log('Usuarios en BD:');
+    console.table(res.rows);
+    process.exit(0);
   } catch (err) {
-    console.error(err);
-  } finally {
-    process.exit();
+    console.error('Error:', err);
+    process.exit(1);
   }
-};
+}
 
-checkColumns();
+checkUsers();
