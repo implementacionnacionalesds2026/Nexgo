@@ -78,7 +78,7 @@ const createShipment = async (data, clientId) => {
  * Listar envíos con filtros
  */
 const getShipments = async (filters = {}) => {
-  const { clientId, driverId, status, page = 1, limit = 20 } = filters;
+  const { clientId, driverId, status, month, year, page = 1, limit = 20 } = filters;
   const offset = (page - 1) * limit;
   const params = [];
   const conditions = [];
@@ -94,6 +94,14 @@ const getShipments = async (filters = {}) => {
   if (status) {
     params.push(status);
     conditions.push(`s.current_status = $${params.length}`);
+  }
+  if (month) {
+    params.push(month);
+    conditions.push(`EXTRACT(MONTH FROM s.created_at) = $${params.length}`);
+  }
+  if (year) {
+    params.push(year);
+    conditions.push(`EXTRACT(YEAR FROM s.created_at) = $${params.length}`);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

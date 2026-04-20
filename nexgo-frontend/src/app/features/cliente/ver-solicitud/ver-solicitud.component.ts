@@ -52,7 +52,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                 </div>
                 <div class="status-box">
                   <span class="status-label">ESTADO ACTUAL</span>
-                  <div style="display:flex; gap:8px; align-items:center;">
+                  <div class="header-actions">
                     <button class="nx-btn btn-primary btn-sm log-btn" (click)="showHistory = true" title="Ver Bitácora">
                       <span class="material-symbols-outlined">history</span> Bitácora
                     </button>
@@ -287,12 +287,18 @@ import { Shipment } from '../../../core/models/shipment.model';
     .copy-btn:hover { background: rgba(99, 102, 241, 0.15); transform: scale(1.1); }
     .copy-btn.success { color: #10b981; }
 
-    .log-btn { background: #6366f1; color: white; border: none; font-size: 0.7rem; font-weight: 800; }
+    .status-box { display: flex; flex-direction: column; align-items: flex-end; }
+    .status-label { font-size: 0.65rem; color: #9ca3af; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .log-btn { 
+      background: #6366f1; color: white; border: none; font-size: 0.75rem; font-weight: 800;
+      height: 38px; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px;
+    }
     .log-btn:hover { background: #4f46e5; transform: translateY(-1px); }
 
-    .status-label { font-size: 0.65rem; color: #9ca3af; font-weight: 800; margin-bottom: 6px; display: block; text-align: right; }
     .status-indicator {
-      display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;
+      display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;
     }
     .status-indicator .dot { width: 8px; height: 8px; border-radius: 50%; }
     

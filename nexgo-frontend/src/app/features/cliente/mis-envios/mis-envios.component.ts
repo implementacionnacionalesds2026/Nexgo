@@ -36,6 +36,23 @@ import * as XLSX from 'xlsx';
               </div>
               
               <div class="table-tools">
+                <div class="month-selector">
+                  <span class="material-symbols-outlined select-icon">calendar_month</span>
+                  <select [(ngModel)]="selectedMonth" (change)="loadShipments()" class="nx-select filter-select">
+                    @for (m of months; track m.value) {
+                      <option [value]="m.value">{{ m.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="year-selector">
+                  <select [(ngModel)]="selectedYear" (change)="loadShipments()" class="nx-select filter-select year-sel">
+                    @for (y of years; track y) {
+                      <option [value]="y">{{ y }}</option>
+                    }
+                  </select>
+                </div>
+
                 <button class="nx-btn btn-columns" (click)="toggleColumnMenu($event)">
                   <span class="material-symbols-outlined">view_column</span> Columnas
                 </button>
@@ -411,6 +428,16 @@ import * as XLSX from 'xlsx';
       z-index: 2;
     }
     
+    /* Selective Filters */
+    .month-selector, .year-selector { position: relative; display: flex; align-items: center; }
+    .select-icon { position: absolute; left: 10px; font-size: 1.1rem; color: var(--primary); pointer-events: none; z-index: 1; }
+    .filter-select { 
+      padding-left: 36px !important; height: 42px; background: rgba(0,0,0,0.4) !important; 
+      border-radius: 12px !important; border: 1px solid rgba(255,255,255,0.1) !important;
+      color: white !important; font-weight: 700; cursor: pointer; min-width: 130px;
+    }
+    .year-sel { padding-left: 12px !important; min-width: 80px; }
+    
     .filter-btn { 
       background: none; border: none; padding: 0; color: inherit; cursor: pointer; display: inline-flex; align-items: center;
       transition: color 0.2s;
@@ -562,6 +589,17 @@ export class MisEnviosComponent implements OnInit {
   searchText: string = '';
   activeStatusFilter: string | null = null;
   
+  selectedMonth: number = new Date().getMonth() + 1;
+  selectedYear: number = new Date().getFullYear();
+
+  months = [
+    { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' }, { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' }, { value: 5, label: 'Mayo' }, { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' }, { value: 8, label: 'Agosto' }, { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' }, { value: 11, label: 'Noviembre' }, { value: 12, label: 'Diciembre' }
+  ];
+  years: number[] = [2025, 2026, 2027];
+  
   columnConfigs = [
     { key: 'guia', label: 'Guía', visible: true },
     { key: 'fecha', label: 'Fecha', visible: true },
@@ -638,7 +676,16 @@ export class MisEnviosComponent implements OnInit {
   constructor(private shipmentService: ShipmentService) { }
 
   ngOnInit() {
-    this.shipmentService.getShipments({ limit: 50 }).subscribe({
+    this.loadShipments();
+  }
+
+  loadShipments() {
+    this.loading = true;
+    this.shipmentService.getShipments({ 
+      month: this.selectedMonth, 
+      year: this.selectedYear,
+      limit: 100 
+    }).subscribe({
       next: (r) => {
         this.shipments = r.data.data;
         this.total = r.data.total;

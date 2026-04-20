@@ -25,9 +25,11 @@ export class ShipmentService {
 
   constructor(private http: HttpClient) {}
 
-  getShipments(filters?: { status?: string; page?: number; limit?: number }): Observable<ApiResponse<PaginatedResponse<Shipment>>> {
+  getShipments(filters?: { status?: string; month?: number; year?: number; page?: number; limit?: number }): Observable<ApiResponse<PaginatedResponse<Shipment>>> {
     let params = new HttpParams();
     if (filters?.status) params = params.set('status', filters.status);
+    if (filters?.month)  params = params.set('month', filters.month.toString());
+    if (filters?.year)   params = params.set('year', filters.year.toString());
     if (filters?.page)   params = params.set('page', filters.page.toString());
     if (filters?.limit)  params = params.set('limit', filters.limit.toString());
     return this.http.get<ApiResponse<PaginatedResponse<Shipment>>>(this.url, { params });
