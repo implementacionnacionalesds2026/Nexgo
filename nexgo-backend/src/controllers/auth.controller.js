@@ -1,6 +1,7 @@
 const authService   = require('../services/auth.service');
 const { successResponse } = require('../utils/helpers');
 const { validationResult } = require('express-validator');
+const logger = require('../utils/logger');
 
 /**
  * POST /api/auth/login
