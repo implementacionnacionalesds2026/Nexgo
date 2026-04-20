@@ -520,11 +520,21 @@ import * as XLSX from 'xlsx';
     
     .options-dropdown-container { position: relative; }
     .btn-options { 
-      background: #1e293b !important; border: 1px solid rgba(255,255,255,0.1) !important; 
-      color: white !important; font-weight: 700; font-size: 0.85rem; padding: 0 16px; height: 45px;
-      display: flex; align-items: center; gap: 8px; border-radius: 12px !important; transition: all 0.2s;
+      background: #5d1d88ff !important; border: 1px solid rgba(255,255,255,0.2) !important; 
+      color: white !important; font-weight: 800; font-size: 0.85rem; padding: 0 20px; height: 45px;
+      display: flex; align-items: center; gap: 10px; border-radius: 12px !important; 
+      box-shadow: 0 4px 15px rgba(93, 29, 136, 0.3); transition: all 0.3s;
+      cursor: pointer;
     }
-    .btn-options:hover, .btn-options.active { background: rgba(255,255,255,0.05) !important; border-color: var(--primary) !important; }
+    .btn-options:hover { 
+      background: #5d1d88ff !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+    .btn-options.active { 
+      background: #5d1d88ff !important;
+      transform: scale(0.98);
+    }
     
     .options-menu {
       position: absolute; top: calc(100% + 8px); right: 0; z-index: 130;
@@ -782,6 +792,10 @@ export class MisEnviosComponent implements OnInit {
   toggleMonthMenu(event: Event) {
     event.stopPropagation();
     this.isMonthMenuOpen = !this.isMonthMenuOpen;
+    if (this.isMonthMenuOpen) {
+      this.isOptionsMenuOpen = false;
+      this.isColumnMenuOpen = false;
+    }
     this.tempYear = this.selectedYear;
   }
 
@@ -858,6 +872,9 @@ export class MisEnviosComponent implements OnInit {
   toggleOptionsMenu(event: Event) {
     event.stopPropagation();
     this.isOptionsMenuOpen = !this.isOptionsMenuOpen;
+    if (this.isOptionsMenuOpen) {
+      this.isMonthMenuOpen = false;
+    }
   }
 
   toggleDropdown(id: string, event: Event) {
