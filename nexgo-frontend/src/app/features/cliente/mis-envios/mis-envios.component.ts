@@ -29,13 +29,13 @@ import * as XLSX from 'xlsx';
               </div>
             </div>
             <div class="header-actions-row">
-              <a routerLink="/cliente/nuevo-envio" class="nx-btn btn-accent"><span class="material-symbols-outlined">add_box</span> Nuevo envío</a>
               <div class="search-box">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" [(ngModel)]="searchText" placeholder="Buscar por todos los campos de la tabla..." class="nx-input search-input" />
+                <input type="text" [(ngModel)]="searchText" placeholder="Buscar por todos los campos de la tabla (Guía, Origen, Destino, Cliente)..." class="nx-input search-input" />
               </div>
               
               <div class="table-tools">
+                <!-- 1. Boton de Fecha -->
                 <div class="date-picker-container" (click)="$event.stopPropagation()">
                   <button class="nx-btn btn-date-picker" (click)="toggleMonthMenu($event)" [class.active]="isMonthMenuOpen">
                     <span class="material-symbols-outlined">calendar_month</span>
@@ -63,25 +63,43 @@ import * as XLSX from 'xlsx';
                   }
                 </div>
 
-                <button class="nx-btn btn-columns" (click)="toggleColumnMenu($event)">
-                  <span class="material-symbols-outlined">view_column</span> Columnas
-                </button>
-                
-                @if (isColumnMenuOpen) {
-                  <div class="columns-dropdown animate-fade-in" (click)="$event.stopPropagation()">
-                    <div style="font-weight:700; margin-bottom:8px; font-size:0.75rem; color:var(--accent); text-transform:uppercase;">Visibilidad Columnas</div>
-                    @for (col of columnConfigs; track col.key) {
-                      <label class="column-opt">
-                        <input type="checkbox" [(ngModel)]="col.visible" />
-                        <span>{{ col.label }}</span>
-                      </label>
-                    }
-                  </div>
-                }
-                
-                <button class="nx-btn btn-export" (click)="exportToExcel()">
-                  <span class="material-symbols-outlined">download</span> Exportar
-                </button>
+                <!-- 2. Menu de Opciones (Nuevo, Exportar, Columnas) -->
+                <div class="options-dropdown-container">
+                  <button class="nx-btn btn-options" (click)="toggleOptionsMenu($event)" [class.active]="isOptionsMenuOpen">
+                    <span class="material-symbols-outlined">settings</span>
+                    Acciones
+                    <span class="material-symbols-outlined" style="font-size:1.2rem;">{{ isOptionsMenuOpen ? 'expand_less' : 'expand_more' }}</span>
+                  </button>
+
+                  @if (isOptionsMenuOpen) {
+                    <div class="options-menu animate-scale-up" (click)="$event.stopPropagation()">
+                      <a routerLink="/cliente/nuevo-envio" class="options-item">
+                        <span class="material-symbols-outlined" style="color:var(--accent);">add_box</span>
+                        Nuevo envío
+                      </a>
+                      <div class="options-divider"></div>
+                      <button class="options-item" (click)="exportToExcel()">
+                        <span class="material-symbols-outlined" style="color:#059669;">download</span>
+                        Exportar Excel
+                      </button>
+                      <button class="options-item" (click)="isColumnMenuOpen = !isColumnMenuOpen">
+                        <span class="material-symbols-outlined" style="color:#6366F1;">view_column</span>
+                        Gestionar Columnas
+                      </button>
+
+                      @if (isColumnMenuOpen) {
+                        <div class="columns-nested animate-fade-in" style="padding: 8px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-top: 4px;">
+                          @for (col of columnConfigs; track col.key) {
+                            <label class="column-opt" style="display: flex; align-items: center; gap: 10px; padding: 4px 0; color: #94a3b8; font-size: 0.8rem; cursor: pointer;">
+                              <input type="checkbox" [(ngModel)]="col.visible" style="accent-color:var(--primary); cursor:pointer;" />
+                              <span>{{ col.label }}</span>
+                            </label>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
               </div>
             </div>
           </div>
@@ -422,10 +440,10 @@ import * as XLSX from 'xlsx';
     .header-actions-row { display: flex; align-items: center; gap: 1rem; width: 100%; flex-wrap: wrap; }
     
     /* Search box */
-    .search-box { position: relative; display: flex; align-items: center; min-width: 300px; flex: 1; }
+    .search-box { flex: 1; min-width: 400px; display: flex; align-items: center; position: relative; }
     .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
-    .search-input { padding-left: 40px !important; width: 100%; height: 45px; background: rgba(0,0,0,0.3) !important; border-color: rgba(255,255,255,0.1) !important; font-size: 0.95rem; }
-    .search-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important; background: rgba(0,0,0,0.4) !important; }
+    .search-input { padding-left: 40px !important; width: 100%; height: 45px; background: rgba(0,0,0,0.4) !important; border-color: rgba(255,255,255,0.1) !important; font-size: 0.95rem; border-radius: 12px !important; }
+    .search-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important; background: rgba(0,0,0,0.5) !important; }
 
     /* KPI Interactivity */
     .nx-kpi-card { cursor: pointer; transition: all var(--tr); border: 2px solid transparent; }
@@ -498,18 +516,30 @@ import * as XLSX from 'xlsx';
     }
 
     /* Action Utils */
-    .table-tools { display: flex; gap: 10px; margin-left: auto; position: relative; }
-    .btn-columns { background: #6366F1 !important; color: white !important; }
-    .btn-export { background: #059669 !important; color: white !important; }
+    .table-tools { display: flex; align-items: center; gap: 12px; }
     
-    .columns-dropdown {
-      position: absolute; top: calc(100% + 5px); right: 0; z-index: 110;
-      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      padding: 12px; min-width: 200px; backdrop-filter: blur(10px);
+    .options-dropdown-container { position: relative; }
+    .btn-options { 
+      background: #1e293b !important; border: 1px solid rgba(255,255,255,0.1) !important; 
+      color: white !important; font-weight: 700; font-size: 0.85rem; padding: 0 16px; height: 45px;
+      display: flex; align-items: center; gap: 8px; border-radius: 12px !important; transition: all 0.2s;
     }
-    .column-opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; color: white; cursor: pointer; font-size: 0.9rem; }
-    .column-opt input { cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary); }
+    .btn-options:hover, .btn-options.active { background: rgba(255,255,255,0.05) !important; border-color: var(--primary) !important; }
+    
+    .options-menu {
+      position: absolute; top: calc(100% + 8px); right: 0; z-index: 130;
+      background: #111827; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6); padding: 8px; min-width: 240px;
+      backdrop-filter: blur(20px); transform-origin: top right;
+    }
+    .options-item {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px;
+      color: #e2e8f0; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 8px;
+      transition: all 0.2s; text-decoration: none; border: none; background: none; text-align: left;
+    }
+    .options-item:hover { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+    .options-item .material-symbols-outlined { font-size: 20px; }
+    .options-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 6px 0; }
 
     .nx-table-wrap { 
       overflow-x: auto; 
@@ -667,6 +697,7 @@ export class MisEnviosComponent implements OnInit {
   ];
 
   isColumnMenuOpen = false;
+  isOptionsMenuOpen = false;
 
   columnFilters = {
     tracking: '',
@@ -824,6 +855,11 @@ export class MisEnviosComponent implements OnInit {
     XLSX.writeFile(wb, fileName);
   }
 
+  toggleOptionsMenu(event: Event) {
+    event.stopPropagation();
+    this.isOptionsMenuOpen = !this.isOptionsMenuOpen;
+  }
+
   toggleDropdown(id: string, event: Event) {
     event.stopPropagation();
     if (this.openDropdownId === id) {
@@ -842,6 +878,7 @@ export class MisEnviosComponent implements OnInit {
     if (!target.closest('.table-tools')) {
       this.isColumnMenuOpen = false;
       this.isMonthMenuOpen = false;
+      this.isOptionsMenuOpen = false;
     }
   }
 
