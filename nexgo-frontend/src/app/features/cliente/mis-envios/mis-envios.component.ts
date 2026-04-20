@@ -36,21 +36,31 @@ import * as XLSX from 'xlsx';
               </div>
               
               <div class="table-tools">
-                <div class="month-selector">
-                  <span class="material-symbols-outlined select-icon">calendar_month</span>
-                  <select [(ngModel)]="selectedMonth" (change)="loadShipments()" class="nx-select filter-select">
-                    @for (m of months; track m.value) {
-                      <option [value]="m.value">{{ m.label }}</option>
-                    }
-                  </select>
-                </div>
+                <div class="date-picker-container" (click)="$event.stopPropagation()">
+                  <button class="nx-btn btn-date-picker" (click)="toggleMonthMenu($event)" [class.active]="isMonthMenuOpen">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    {{ getSelectedDateLabel() }}
+                    <span class="material-symbols-outlined arrow" [style.transform]="isMonthMenuOpen ? 'rotate(180deg)' : 'none'">expand_more</span>
+                  </button>
 
-                <div class="year-selector">
-                  <select [(ngModel)]="selectedYear" (change)="loadShipments()" class="nx-select filter-select year-sel">
-                    @for (y of years; track y) {
-                      <option [value]="y">{{ y }}</option>
-                    }
-                  </select>
+                  @if (isMonthMenuOpen) {
+                    <div class="month-picker-dropdown animate-scale-up">
+                      <div class="picker-header">
+                        <button class="nav-btn" (click)="changeTempYear(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
+                        <span class="picker-year">{{ tempYear }}</span>
+                        <button class="nav-btn" (click)="changeTempYear(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                      </div>
+                      <div class="month-grid">
+                        @for (m of monthsShort; track m.value) {
+                          <button class="month-item" 
+                                  [class.selected]="selectedMonth === m.value && selectedYear === tempYear"
+                                  (click)="selectMonth(m.value)">
+                            {{ m.label }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
 
                 <button class="nx-btn btn-columns" (click)="toggleColumnMenu($event)">
@@ -205,7 +215,7 @@ import * as XLSX from 'xlsx';
                       </tr>
                     }
                     @if (filteredShipments.length === 0) {
-                      <tr><td colspan="7">
+                      <tr><td [attr.colspan]="columnConfigs.length + 1" style="padding:0;">
                         <div class="nx-empty search-empty animate-fade-in">
                           <div class="robot-confused">
                             <span class="material-symbols-outlined robot-icon">smart_toy</span>
@@ -213,7 +223,7 @@ import * as XLSX from 'xlsx';
                           </div>
                           <h3>no encontré nada :(</h3>
                           <p>Verifica los términos de búsqueda o los filtros activos</p>
-                          <button class="nx-btn btn-ghost" (click)="searchText = ''; activeStatusFilter = null; columnFilters.tracking=''; columnFilters.origen=''; columnFilters.destino=''; columnFilters.status=''" style="margin-top:1rem;">Limpiar filtros</button>
+                          <button class="nx-btn btn-ghost" (click)="clearFilters()" style="margin-top:1rem;">Limpiar filtros</button>
                         </div>
                       </td></tr>
                     }
@@ -408,11 +418,11 @@ import * as XLSX from 'xlsx';
   `,
   styles: [`
     .nx-page-header { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
-    .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-    .header-actions-row { display: flex; align-items: center; gap: 1rem; width: 100%; }
+    .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem; }
+    .header-actions-row { display: flex; align-items: center; gap: 1rem; width: 100%; flex-wrap: wrap; }
     
     /* Search box */
-    .search-box { position: relative; display: flex; align-items: center; flex: 1; }
+    .search-box { position: relative; display: flex; align-items: center; min-width: 300px; flex: 1; }
     .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
     .search-input { padding-left: 40px !important; width: 100%; height: 45px; background: rgba(0,0,0,0.3) !important; border-color: rgba(255,255,255,0.1) !important; font-size: 0.95rem; }
     .search-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important; background: rgba(0,0,0,0.4) !important; }
@@ -427,17 +437,37 @@ import * as XLSX from 'xlsx';
       transform: scale(1.02);
       z-index: 2;
     }
-    
-    /* Selective Filters */
-    .month-selector, .year-selector { position: relative; display: flex; align-items: center; }
-    .select-icon { position: absolute; left: 10px; font-size: 1.1rem; color: var(--primary); pointer-events: none; z-index: 1; }
-    .filter-select { 
-      padding-left: 36px !important; height: 42px; background: rgba(0,0,0,0.4) !important; 
-      border-radius: 12px !important; border: 1px solid rgba(255,255,255,0.1) !important;
-      color: white !important; font-weight: 700; cursor: pointer; min-width: 130px;
+
+    /* Date Picker */
+    .date-picker-container { position: relative; }
+    .btn-date-picker { 
+      background: rgba(0,0,0,0.4) !important; border: 1px solid rgba(255,255,255,0.1) !important; 
+      color: white !important; font-weight: 800; font-size: 0.85rem; padding: 0 16px; height: 45px;
+      display: flex; align-items: center; gap: 10px; border-radius: 12px !important; transition: all 0.2s;
     }
-    .year-sel { padding-left: 12px !important; min-width: 80px; }
+    .btn-date-picker:hover, .btn-date-picker.active { background: rgba(99, 102, 241, 0.15) !important; border-color: var(--primary) !important; }
+    .btn-date-picker .arrow { font-size: 1.2rem; transition: transform 0.3s; color: #9ca3af; }
     
+    .month-picker-dropdown {
+      position: absolute; top: calc(100% + 8px); left: 0; z-index: 120;
+      background: #111827; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6); padding: 16px; min-width: 280px;
+      backdrop-filter: blur(20px); transform-origin: top left;
+    }
+    .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+    .picker-year { font-size: 1.1rem; font-weight: 900; color: white; }
+    .nav-btn { background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 8px; cursor: pointer; padding: 4px; display: flex; transition: all 0.2s; }
+    .nav-btn:hover { background: var(--primary); color: white; }
+    
+    .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .month-item { 
+      background: rgba(255,255,255,0.03); border: 1px solid transparent; color: #9ca3af; 
+      padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700;
+      text-align: center; transition: all 0.2s; text-transform: uppercase;
+    }
+    .month-item:hover { background: rgba(255,255,255,0.08); color: white; }
+    .month-item.selected { background: var(--primary); color: white; border-color: transparent; }
+
     .filter-btn { 
       background: none; border: none; padding: 0; color: inherit; cursor: pointer; display: inline-flex; align-items: center;
       transition: color 0.2s;
@@ -477,8 +507,12 @@ import * as XLSX from 'xlsx';
     }
 
     /* ROBOT CONFUSED EMPTY STATE */
-    .search-empty { padding: 4rem 2rem; color: var(--text-muted); }
-    .robot-confused { position: relative; font-size: 5rem; color: var(--primary); margin-bottom: 1.5rem; display: inline-block; }
+    .search-empty { 
+      padding: 6rem 2rem; color: var(--text-muted); 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 450px; width: 100%; text-align: center;
+    }
+    .robot-confused { position: relative; font-size: 5.5rem; color: var(--primary); margin-bottom: 2rem; display: inline-block; }
     .robot-icon { font-size: inherit; }
     .robot-bubbles { position: absolute; top: 0; right: -20px; font-weight: 800; font-size: 1.5rem; }
     .robot-bubbles span { position: absolute; animation: floatBubble 2s infinite ease-in-out; }
@@ -591,12 +625,20 @@ export class MisEnviosComponent implements OnInit {
   
   selectedMonth: number = new Date().getMonth() + 1;
   selectedYear: number = new Date().getFullYear();
+  tempYear: number = this.selectedYear;
+  isMonthMenuOpen: boolean = false;
 
   months = [
     { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' }, { value: 3, label: 'Marzo' },
     { value: 4, label: 'Abril' }, { value: 5, label: 'Mayo' }, { value: 6, label: 'Junio' },
     { value: 7, label: 'Julio' }, { value: 8, label: 'Agosto' }, { value: 9, label: 'Septiembre' },
     { value: 10, label: 'Octubre' }, { value: 11, label: 'Noviembre' }, { value: 12, label: 'Diciembre' }
+  ];
+  monthsShort = [
+    { value: 1, label: 'Ene' }, { value: 2, label: 'Feb' }, { value: 3, label: 'Mar' },
+    { value: 4, label: 'Abr' }, { value: 5, label: 'May' }, { value: 6, label: 'Jun' },
+    { value: 7, label: 'Jul' }, { value: 8, label: 'Ago' }, { value: 9, label: 'Sep' },
+    { value: 10, label: 'Oct' }, { value: 11, label: 'Nov' }, { value: 12, label: 'Dic' }
   ];
   years: number[] = [2025, 2026, 2027];
   
@@ -695,6 +737,35 @@ export class MisEnviosComponent implements OnInit {
     });
   }
 
+  toggleMonthMenu(event: Event) {
+    event.stopPropagation();
+    this.isMonthMenuOpen = !this.isMonthMenuOpen;
+    this.tempYear = this.selectedYear;
+  }
+
+  changeTempYear(delta: number) {
+    this.tempYear += delta;
+  }
+
+  selectMonth(monthValue: number) {
+    this.selectedMonth = monthValue;
+    this.selectedYear = this.tempYear;
+    this.isMonthMenuOpen = false;
+    this.loadShipments();
+  }
+
+  getSelectedDateLabel(): string {
+    const m = this.months.find(m => m.value === this.selectedMonth);
+    return `${m?.label || ''} ${this.selectedYear}`;
+  }
+
+  clearFilters() {
+    this.searchText = '';
+    this.activeStatusFilter = null;
+    this.columnFilters = { tracking: '', origen: '', destino: '', status: '' };
+    this.loadShipments(); // Recargar con mes actual si se desea, o mantener el mes? El usuario pidió limpiar
+  }
+
   countByStatus(status: string): number {
     return this.shipments.filter((s: any) => s.current_status === status).length;
   }
@@ -759,6 +830,7 @@ export class MisEnviosComponent implements OnInit {
     }
     if (!target.closest('.table-tools')) {
       this.isColumnMenuOpen = false;
+      this.isMonthMenuOpen = false;
     }
   }
 
