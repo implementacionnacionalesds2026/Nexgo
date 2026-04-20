@@ -152,9 +152,10 @@ const getShipmentById = async (id) => {
 
   // Historial de estados
   const statusHistory = await query(
-    `SELECT ss.*, u.name AS updated_by_name, u.username AS updated_by_username
+    `SELECT ss.*, u.name AS updated_by_name, u.username AS updated_by_username, r.name AS updated_by_role
      FROM shipment_status ss
      LEFT JOIN users u ON u.id = ss.updated_by
+     LEFT JOIN roles r ON r.id = u.role_id
      WHERE ss.shipment_id = $1
      ORDER BY ss.created_at DESC`,
     [result.rows[0].id]

@@ -14,6 +14,7 @@ export interface ShipmentStatusEntry {
   updatedByName: string;
   updated_by_username?: string;
   updatedByUsername?: string;
+  updated_by_role?: string;
   createdAt?: string;
   created_at?: string;
 }

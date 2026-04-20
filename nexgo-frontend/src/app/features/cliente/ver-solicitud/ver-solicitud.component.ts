@@ -211,7 +211,12 @@ import { Shipment } from '../../../core/models/shipment.model';
                                     </span>
                                     <div class="text-group">
                                       <span class="mod-by">Actualizado por</span>
-                                      <span class="user-name" style="color: #6366f1;">{{ entry.updated_by_username || entry.updatedByUsername || 'sistema' }}</span>
+                                      <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span class="user-name" style="color: #6366f1;">{{ entry.updated_by_username || entry.updatedByUsername || 'sistema' }}</span>
+                                        @if (entry.updated_by_role) {
+                                          <span style="font-size: 0.6rem; background: rgba(99, 102, 241, 0.15); color: #818cf8; padding: 1px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">{{ entry.updated_by_role }}</span>
+                                        }
+                                      </div>
                                     </div>
                                   </div>
                                   <div class="time-stamp">
