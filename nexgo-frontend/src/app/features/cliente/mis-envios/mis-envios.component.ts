@@ -255,7 +255,7 @@ import * as XLSX from 'xlsx';
 
     <!-- ZONA IMPRESIÓN GUÍA -->
     @if (printMode === 'guia' && printShipment) {
-      <div class="print-container">
+      <div class="print-guia-container">
         <div style="display: flex; justify-content: center; align-items: flex-start; background: white; width: 100mm; height: 100mm;">
           <div #guiaContainer style="width: 385px; height: 375px; background: white; border: 2px solid black; box-sizing: border-box; display: flex; flex-direction: column; color: black; font-family: Arial, sans-serif;">
             
@@ -358,76 +358,98 @@ import * as XLSX from 'xlsx';
       </div>
     }
 
-    <!-- ZONA IMPRESIÓN FORMULARIO -->
+    <!-- ZONA IMPRESIÓN FORMULARIO (MANIFIESTO) -->
     @if (printMode === 'formulario' && printShipment) {
-      <div class="print-container">
-        <div style="padding: 2cm; font-family: 'Helvetica', Arial, sans-serif; max-width: 800px; margin: 0 auto; color: black;">
-          <div style="text-align:center; margin-bottom: 2rem; border-bottom: 2px solid #070b24; padding-bottom: 1rem;">
-            <h1 style="margin:0; font-size: 28px; color: #070b24;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Nacionales Delivery Services</h1>
-            <p style="margin:5px 0 0 0; color: #444; font-size: 16px;">Formulario Detallado de Envío</p>
+      <div class="print-manifest-container" style="background: white !important;">
+        <div #manifestContainer class="manifest-doc">
+          <!-- CABECERA -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; border: 2px solid black; padding: 10px;">
+             <div style="width: 150px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                   <div style="width: 30px; height: 30px; background: black; color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; border-radius: 4px;">NX</div>
+                   <div style="font-size: 14px; font-weight: 900;">NEXGO</div>
+                </div>
+                <div style="font-size: 8px; font-weight: 700; color: #444; margin-top: 5px;">NACIONALES DELIVERY SERVICES</div>
+             </div>
+             <div style="text-align: center; flex: 1;">
+                <div class="m-title" style="margin-top:0;">MANIFIESTO ELECTRÓNICO DE CARGA</div>
+                <div class="m-subtitle" style="text-transform: uppercase;">NIT: 9876543-2 | TEL: 2200-0000</div>
+                <div class="m-subtitle" style="text-transform: uppercase;">ZONA 10, CIUDAD DE GUATEMALA</div>
+             </div>
+             <div style="width: 150px; text-align: right;">
+                <div style="font-size: 9px; font-weight: 800;">Manifiesto: <b>{{ printShipment.tracking_number }}</b></div>
+                <div style="font-size: 9px; font-weight: 800; margin-top:4px;">Autorización: <b style="color:#d946ef;">NDS-{{ (printShipment.id || '').toString().substring(0,6) }}</b></div>
+             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; margin-bottom: 2rem;">
-            <div>
-              <b style="color:#070b24;">Número de Guía:</b> {{ printShipment.tracking_number || printShipment.trackingNumber }}<br>
-              <b style="color:#070b24;">Fecha:</b> {{ today | date:'dd/MM/yyyy' }}
-            </div>
-            <div style="text-align:right;">
-              <b style="color:#070b24;">Estado:</b> {{ printShipment.current_status || printShipment.currentStatus }}<br>
-              <b style="color:#070b24;">Servicio:</b> Envío Nacional Prio
-            </div>
+          <table class="m-table">
+            <tr>
+              <td><span class="m-label">FECHA EXPEDICIÓN</span><span class="m-value">{{ printShipment.created_at | date:'dd/MM/yyyy HH:mm' }}</span></td>
+              <td><span class="m-label">TIPO MANIFIESTO</span><span class="m-value">ELECTRONICO</span></td>
+              <td><span class="m-label">ORIGEN VIAJE</span><span class="m-value" style="text-transform:uppercase;">{{ printShipment.origin_city }}</span></td>
+              <td><span class="m-label">DESTINO VIAJE</span><span class="m-value" style="text-transform:uppercase;">{{ printShipment.destination_city }}</span></td>
+            </tr>
+
+            <tr><td colspan="4" class="m-section-header">INFORMACIÓN DEL VEHÍCULO Y CONDUCTOR</td></tr>
+            <tr>
+              <td colspan="2"><span class="m-label">TITULAR MANIFIESTO</span><span class="m-value">NACIONALES DELIVERY SERVICES</span></td>
+              <td colspan="1"><span class="m-label">IDENTIFICACIÓN</span><span class="m-value">NIT 9876543-2</span></td>
+              <td colspan="1"><span class="m-label">CIUDAD</span><span class="m-value">GUATEMALA</span></td>
+            </tr>
+            <tr>
+               <td><span class="m-label">PLACA</span><span class="m-value">M-{{ getDeptCode(printShipment) }}</span></td>
+               <td><span class="m-label">MARCA</span><span class="m-value">VARIAS</span></td>
+               <td><span class="m-label">CONFIGURACION</span><span class="m-value">URBANO / PANEL</span></td>
+               <td><span class="m-label">PLAZO VENCIMIENTO SOAT</span><span class="m-value">31/12/2026</span></td>
+            </tr>
+            <tr>
+               <td colspan="2"><span class="m-label">CONDUCTOR</span><span class="m-value">{{ printShipment.driverName || 'REPARTIDOR ASIGNADO' }}</span></td>
+               <td><span class="m-label">DOCUMENTO ID</span><span class="m-value">---</span></td>
+               <td><span class="m-label">TELÉFONO</span><span class="m-value">{{ printShipment.driverPhone || '---' }}</span></td>
+            </tr>
+
+            <tr><td colspan="4" class="m-section-header">INFORMACIÓN DE LA MERCANCÍA TRANSPORTADA</td></tr>
+            <tr style="background: #f3f4f6; font-size: 7px; font-weight: 800; text-align: center;">
+              <td># REMESA</td>
+              <td>CANT.</td>
+              <td>DESCRIPCIÓN PRODUCTO / NATURALEZA</td>
+              <td>REMITENTE / DESTINATARIO</td>
+            </tr>
+            <tr style="height: 60px;">
+              <td style="text-align: center;"><span class="m-value">{{ getTrackingPrefix(printShipment) }}</span></td>
+              <td style="text-align: center;"><span class="m-value">{{ printShipment.quantity }}</span></td>
+              <td>
+                <span class="m-value" style="display: block; border-bottom: 1px solid #ccc; padding-bottom: 2px;">{{ printShipment.description || 'SIN DESCRIPCION' }}</span>
+                <span style="font-size: 8px;"><b>Peso:</b> {{ printShipment.weight_kg }} kg | <b>Fragilidad:</b> {{ printShipment.is_fragile ? 'SI' : 'NO' }}</span>
+              </td>
+              <td>
+                <span class="m-label">REMITENTE:</span> <span class="m-value" style="text-transform:uppercase;">{{ printShipment.sender_name }}</span><br>
+                <span class="m-label" style="margin-top:2px;">DESTINATARIO:</span> <span class="m-value" style="text-transform:uppercase;">{{ printShipment.recipient_name }}</span>
+              </td>
+            </tr>
+
+            <tr><td colspan="4" class="m-section-header">VALORES Y OBSERVACIONES</td></tr>
+            <tr>
+              <td colspan="2">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 2px 0;"><span class="m-label">VALOR TOTAL:</span><span class="m-value">Q{{ printShipment.estimated_cost }}</span></div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 2px 0;"><span class="m-label">RETENCION:</span><span class="m-value">Q0.00</span></div>
+                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-weight: 900;"><span class="m-label">TOTAL COBRAR:</span><span class="m-value">Q{{ printShipment.total_payment_amount || '0.00' }}</span></div>
+              </td>
+              <td colspan="2">
+                <span class="m-label">OBSERVACIONES:</span>
+                <span style="font-size: 8px; font-weight: 600;">{{ printShipment.payment_instructions || 'N/A' }}</span><br>
+                <span style="font-size: 8px;">{{ printShipment.comments || '' }}</span>
+              </td>
+            </tr>
+          </table>
+
+          <div style="display: flex; justify-content: space-between; gap: 40px; margin-top: 40px;">
+            <div class="m-sig-box" style="flex: 1;">FIRMA Y HUELLA TITULAR MANIFIESTO</div>
+            <div class="m-sig-box" style="flex: 1;">FIRMA Y HUELLA DEL CONDUCTOR</div>
           </div>
 
-          <div style="display:flex; gap: 2rem; margin-bottom: 2rem;">
-            <div style="flex:1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Datos del Remitente</h3>
-              <p style="margin: 5px 0;"><b>Nombre:</b> {{ printShipment.sender_name || printShipment.senderName }}</p>
-              <p style="margin: 5px 0;"><b>Teléfono:</b> {{ printShipment.sender_phone || printShipment.senderPhone }}</p>
-              <p style="margin: 5px 0;"><b>Dirección:</b> {{ printShipment.sender_address || printShipment.senderAddress }}</p>
-              <p style="margin: 5px 0;"><b>Ciudad:</b> {{ printShipment.origin_city || printShipment.originCity }}</p>
-            </div>
-            <div style="flex:1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;">📫 Datos del Destinatario</h3>
-              <p style="margin: 5px 0;"><b>Nombre:</b> {{ printShipment.recipient_name || printShipment.recipientName }}</p>
-              <p style="margin: 5px 0;"><b>Teléfono:</b> {{ printShipment.recipient_phone || printShipment.recipientPhone }}</p>
-              <p style="margin: 5px 0;"><b>Dirección:</b> {{ printShipment.recipient_address || printShipment.recipientAddress }}</p>
-              <p style="margin: 5px 0;"><b>Ciudad:</b> {{ printShipment.destination_city || printShipment.destinationCity }}</p>
-            </div>
-          </div>
-
-          <div style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-            <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Información del Paquete</h3>
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-              <tr style="border-bottom: 1px solid #eee;">
-                <th style="padding: 8px 0; color:#070b24;">Peso (kg)</th><td style="padding: 8px 0;">{{ printShipment.weight_kg || printShipment.weightKg }} kg</td>
-                <th style="padding: 8px 0; color:#070b24;">Cantidad</th><td style="padding: 8px 0;">{{ printShipment.quantity }}</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #eee;">
-                <th style="padding: 8px 0; color:#070b24;">Dimensiones</th>
-                <td style="padding: 8px 0;">{{ printShipment.length_cm || printShipment.lengthCm || '-' }} x {{ printShipment.width_cm || printShipment.widthCm || '-' }} x {{ printShipment.height_cm || printShipment.heightCm || '-' }} cm</td>
-                <th style="padding: 8px 0; color:#070b24;">Distancia</th><td style="padding: 8px 0;">{{ printShipment.distance_km || printShipment.distanceKm || '-' }} km</td>
-              </tr>
-              <tr>
-                <th style="padding: 8px 0; color:#070b24;">Descripción</th><td colspan="3" style="padding: 8px 0;">{{ printShipment.description || 'Sin descripción' }}</td>
-              </tr>
-              <tr>
-                <th style="padding: 8px 0; color:#070b24;">Manejo Especial</th>
-                <td colspan="3" style="padding: 8px 0;">
-                  <b>
-                    @if (printShipment.is_fragile || printShipment.isFragile) {
-                      <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> Paquete Frágil
-                    } @else {
-                      Normal
-                    }
-                  </b>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="margin-top: 3rem; text-align:center; color: #666; font-size: 12px;">
-            Documento generado automáticamente por el sistema logístico de Nexgo.<br>
-            Para consultas o soporte, comuníquese con nuestras oficinas en Guatemala o visite nuestro sitio web.
+          <div style="margin-top: 20px; font-size: 7px; color: #888; text-align: center;">
+            Este documento es una representación electrónica del manifiesto de carga Nexgo. Generado el {{ today | date:'dd/MM/yyyy HH:mm' }}.
           </div>
         </div>
       </div>
@@ -611,7 +633,7 @@ import * as XLSX from 'xlsx';
     }
 
     /* Print styles */
-    .print-container { 
+    .print-guia-container, .print-manifest-container { 
       display: block; 
       position: fixed; 
       left: -9999px; /* Fuera de la pantalla pero visible para el renderizador */
@@ -625,7 +647,7 @@ import * as XLSX from 'xlsx';
       @page { margin: 0; }
       body { margin: 0; padding: 0; background: white !important; }
 
-      .print-container {
+      .print-guia-container, .print-manifest-container {
         display: block !important;
         position: absolute;
         top: 0; left: 0; width: 100%; height: auto;
@@ -648,11 +670,33 @@ import * as XLSX from 'xlsx';
         writing-mode: vertical-rl; transform: rotate(180deg); background: white; color: black;
         width: 24px; text-align: center; font-size: 11px; font-weight: bold; padding: 4px 0; border-right: 2px solid black; line-height: 1.2;
       }
+
+      /* MANIFESTO STYLES */
+      .manifest-doc {
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        color: black;
+        font-family: 'Arial Narrow', Arial, sans-serif;
+        padding: 10mm;
+        box-sizing: border-box;
+        border: 1px solid #eee;
+      }
+      .m-table { width: 100%; border-collapse: collapse; border: 2px solid black; }
+      .m-table td { border: 1px solid black; padding: 4px; vertical-align: top; font-size: 9px; line-height: 1.1; }
+      .m-header-cell { background: #f3f4f6; font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 2px solid black !important; }
+      .m-title { font-size: 14px; font-weight: 900; text-align: center; margin-bottom: 4px; }
+      .m-subtitle { font-size: 10px; font-weight: 700; text-align: center; color: #444; }
+      .m-label { font-weight: 800; font-size: 8px; color: #333; margin-bottom: 2px; display: block; text-transform: uppercase; }
+      .m-value { font-weight: 600; font-size: 10px; color: black; }
+      .m-section-header { background: #e5e7eb; font-weight: 800; text-align: center; font-size: 9px; border-top: 2px solid black !important; border-bottom: 2px solid black !important; }
+      .m-sig-box { height: 60px; border-top: 1px solid black; margin-top: 20px; text-align: center; font-size: 8px; font-weight: 700; }
     }
   `]
 })
 export class MisEnviosComponent implements OnInit {
   @ViewChild('guiaContainer') guiaContainer!: ElementRef;
+  @ViewChild('manifestContainer') manifestContainer!: ElementRef;
 
   shipments: any[] = [];
   total = 0;
@@ -922,7 +966,7 @@ export class MisEnviosComponent implements OnInit {
           useCORS: true,
           backgroundColor: '#ffffff',
           onclone: (clonedDoc) => {
-            const el = clonedDoc.querySelector('.print-container') as HTMLElement;
+            const el = clonedDoc.querySelector('.print-guia-container') as HTMLElement;
             if (el) {
               el.style.left = '0';
               el.style.top = '0';
@@ -956,13 +1000,57 @@ export class MisEnviosComponent implements OnInit {
   }
 
   imprimirFormulario(shipment: any) {
+    if (this.generatingPdfId) return;
+    this.generatingPdfId = shipment.id;
     this.printShipment = shipment;
     this.printMode = 'formulario';
-    setTimeout(() => {
-      window.print();
-      this.printMode = null;
-      this.printShipment = null;
-    }, 300);
+
+    // Esperar a que Angular renderice el contenedor del manifiesto
+    setTimeout(async () => {
+      try {
+        const element = this.manifestContainer.nativeElement;
+
+        const canvas = await html2canvas(element, {
+          scale: 3,
+          logging: false,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          onclone: (clonedDoc) => {
+            const el = clonedDoc.querySelector('.print-manifest-container') as HTMLElement;
+            if (el) {
+              el.style.left = '0';
+              el.style.top = '0';
+              el.style.position = 'relative';
+              el.style.display = 'block';
+              el.style.visibility = 'visible';
+            }
+          }
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const doc = new jsPDF({
+          orientation: 'p',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const imgProps = doc.getImageProperties(imgData);
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        doc.autoPrint();
+        const pdfUrl = URL.createObjectURL(doc.output('blob'));
+        window.open(pdfUrl, '_blank');
+
+      } catch (err) {
+        console.error('Error generating Manifest:', err);
+      } finally {
+        this.printMode = null;
+        this.printShipment = null;
+        this.generatingPdfId = null;
+      }
+    }, 1000);
   }
 
   getTrackingPrefix(s: any): string {
