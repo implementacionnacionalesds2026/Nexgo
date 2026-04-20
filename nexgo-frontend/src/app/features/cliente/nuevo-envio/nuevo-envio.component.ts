@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ShipmentService } from '../../../core/services/shipment.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { CreateShipmentRequest } from '../../../core/models/shipment.model';
 import jsPDF from 'jspdf';
@@ -119,7 +120,7 @@ import JsBarcode from 'jsbarcode';
                     <div class="card-body">
                       <div class="nx-form-group">
                         <label>Nombre del Remitente *</label>
-                        <input class="nx-input" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" />
+                        <input class="nx-input" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
@@ -228,12 +229,12 @@ import JsBarcode from 'jsbarcode';
                       <hr class="nx-divider">
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
-                          <label>No. Orden (Manual)</label>
-                          <input class="nx-input" [(ngModel)]="form.orderNumber" placeholder="Ej: 4567" />
+                          <label>No. Orden (Automático)</label>
+                          <input class="nx-input" [(ngModel)]="form.orderNumber" placeholder="Se generará automáticamente" readonly style="opacity: 0.6; cursor: not-allowed;" />
                         </div>
                         <div class="nx-form-group">
-                          <label>No. Ticket (Manual)</label>
-                          <input class="nx-input" [(ngModel)]="form.ticketNumber" placeholder="Ej: 1234" />
+                          <label>No. Ticket (Automático)</label>
+                          <input class="nx-input" [(ngModel)]="form.ticketNumber" placeholder="Se generará automáticamente" readonly style="opacity: 0.6; cursor: not-allowed;" />
                         </div>
                       </div>
                       <div class="nx-form-row cols-2">
@@ -382,7 +383,10 @@ import JsBarcode from 'jsbarcode';
               <div style="width: 140px; display:flex; flex-direction:column;">
                 <div style="flex:1; display:flex; flex-direction:column; border-left:2px solid black;">
                   <div style="flex:1; border-bottom:2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
-                    PESO lb<br><span style="font-size: 28px; line-height: 1;">{{ form.weightKg }}</span>DE<br><span style="font-size: 24px; line-height: 0.8;">999</span>
+                    PESO lb<br><span style="font-size: 28px; line-height: 1;">{{ form.weightKg }}</span>
+                    <div style="font-size: 10px; border-top: 1px solid black; width: 80%; text-align: center; margin-top: 2px;">
+                      PIEZA {{ currentPieceCount }} / {{ totalPiecesCount }}
+                    </div>
                   </div>
                   <div style="height: 45px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 4px;">
                     <div style="border: 2.5px solid black; text-align: center; padding: 2px 5px; color: black;">
@@ -786,11 +790,23 @@ export class NuevoEnvioComponent {
     totalPaymentAmount: 0, paymentInstructions: '', comments: ''
   };
 
+  currentPieceCount: number = 1;
+  totalPiecesCount: number = 1;
+
   constructor(
     private shipmentService: ShipmentService, 
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private auth: AuthService
   ) { }
+
+  ngOnInit() {
+    const user = this.auth.currentUser();
+    if (user) {
+      // Priorizar nombre de empresa, si no, usar nombre de usuario
+      this.form.senderName = user.companyName || user.name;
+    }
+  }
 
   nextStep() {
     if (this.currentStep < 4) {
@@ -830,6 +846,7 @@ export class NuevoEnvioComponent {
 
     this.shipmentService.createShipment(this.form).subscribe({
       next: (r) => {
+        console.log('Registro exitoso:', r);
         this.saving = false;
         this.success = true;
         this.trackingNumber = (r.data as any).tracking_number || r.data.trackingNumber;
@@ -837,8 +854,10 @@ export class NuevoEnvioComponent {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (e) => {
+        console.error('Error en registro:', e);
         this.saving = false;
-        this.error = e?.error?.message || 'Error al registrar el envío';
+        this.error = e?.error?.message || 'Error de conexión o datos inválidos. Intente de nuevo.';
+        setTimeout(() => this.error = '', 5000);
       },
     });
   }
@@ -873,41 +892,68 @@ export class NuevoEnvioComponent {
     if (this.generatingPdf) return;
     this.generatingPdf = true;
     this.printMode = 'guia';
+    this.totalPiecesCount = this.form.quantity || 1;
+    this.cdr.detectChanges();
 
-    setTimeout(async () => {
+    console.log(`--- Generando ${this.totalPiecesCount} guías ---`);
+
+    const doc = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: [100, 100]
+    });
+
+    const generateAllPages = async () => {
       try {
         const tracking = this.trackingNumber || 'ND0000000';
+        
+        // Generar el código de barras una vez
+        setTimeout(() => {
+          JsBarcode("#barcodeCanvasSuccess", tracking, {
+            format: "CODE128", width: 2.2, height: 55, displayValue: false, margin: 0,
+            background: "#ffffff", lineColor: "#000000"
+          });
+        }, 100);
 
-        JsBarcode("#barcodeCanvasSuccess", tracking, {
-          format: "CODE128", width: 2.2, height: 55, displayValue: false, margin: 0,
-          background: "#ffffff", lineColor: "#000000"
-        });
+        for (let i = 1; i <= this.totalPiecesCount; i++) {
+          this.currentPieceCount = i;
+          this.cdr.detectChanges();
+          
+          // Esperar renderizado del número de pieza
+          await new Promise(resolve => setTimeout(resolve, 250));
 
-        const element = this.guiaContainer.nativeElement;
-        const canvas = await html2canvas(element, {
-          scale: 4, logging: false, useCORS: true, backgroundColor: '#ffffff',
-          onclone: (clonedDoc) => {
-            const el = clonedDoc.querySelector('.print-guia-container') as HTMLElement;
-            if (el) {
-              el.style.left = '0'; el.style.top = '0'; el.style.position = 'relative';
-              el.style.display = 'block'; el.style.visibility = 'visible';
+          const element = this.guiaContainer.nativeElement;
+          const canvas = await html2canvas(element, {
+            scale: 4,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+              const el = clonedDoc.querySelector('.print-guia-container') as HTMLElement;
+              if (el) {
+                el.style.left = '0'; el.style.top = '0'; el.style.position = 'relative';
+                el.style.display = 'block'; el.style.visibility = 'visible';
+              }
             }
-          }
-        });
+          });
 
-        const imgData = canvas.toDataURL('image/png');
-        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: [100, 100] });
-        doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
-        doc.autoPrint();
+          const imgData = canvas.toDataURL('image/png');
+          if (i > 1) doc.addPage([100, 100], 'p');
+          doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
+          console.log(`Bulto ${i} procesado`);
+        }
+
         const pdfUrl = URL.createObjectURL(doc.output('blob'));
         window.open(pdfUrl, '_blank');
       } catch (err) {
-        console.error('Error generating PDF:', err);
+        console.error('Error generando PDF:', err);
       } finally {
         this.printMode = null;
         this.generatingPdf = false;
+        this.cdr.detectChanges();
       }
-    }, 800);
+    };
+
+    generateAllPages();
   }
 
   imprimirFormulario() {

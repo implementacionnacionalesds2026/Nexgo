@@ -16,6 +16,28 @@ const createShipment = async (data, clientId) => {
     distanceKm, pricingRuleId,
   } = data;
 
+  // Autoincremento de Orden y Ticket por empresa (Manejo robusto de errores de casting)
+  let autoOrderNumber = "1";
+  let autoTicketNumber = "1";
+  
+  try {
+    const lastNumbersResult = await query(
+      `SELECT 
+        MAX(CASE WHEN order_number ~ '^[0-9]+$' THEN CAST(order_number AS INTEGER) ELSE 0 END) as last_order,
+        MAX(CASE WHEN ticket_number ~ '^[0-9]+$' THEN CAST(ticket_number AS INTEGER) ELSE 0 END) as last_ticket
+       FROM shipments WHERE client_id = $1`,
+      [clientId]
+    );
+    
+    const lastOrder = lastNumbersResult.rows[0].last_order || 0;
+    const lastTicket = lastNumbersResult.rows[0].last_ticket || 0;
+    
+    autoOrderNumber = (lastOrder + 1).toString();
+    autoTicketNumber = (lastTicket + 1).toString();
+  } catch (seqError) {
+    logger.error('Error calculando correlativo, usando fallback 1:', seqError);
+  }
+
   // Obtener tarifa y calcular costo
   let estimatedCost = null;
   if (pricingRuleId && distanceKm) {
@@ -55,7 +77,7 @@ const createShipment = async (data, clientId) => {
       recipientName, recipientPhone, recipientAddress, destinationCity, destinationLat, destinationLng,
       recipientMunicipality, recipientDepartment, recipientZone,
       weightKg, lengthCm, widthCm, heightCm, quantity || 1, description, isFragile || false,
-      totalPaymentAmount, paymentInstructions, orderNumber, ticketNumber,
+      totalPaymentAmount, paymentInstructions, autoOrderNumber, autoTicketNumber,
       destinationCode, serviceTag, comments,
       distanceKm, estimatedCost
     ]
