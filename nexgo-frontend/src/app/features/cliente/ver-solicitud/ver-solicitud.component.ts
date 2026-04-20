@@ -206,7 +206,9 @@ import { Shipment } from '../../../core/models/shipment.model';
                               <div class="step-card">
                                 <div class="step-header">
                                   <div class="updater-info">
-                                    <span class="user-avatar" style="background: #6366f1;">{{ (entry.updatedByName || 'U').charAt(0) }}</span>
+                                    <span class="user-avatar" style="background: #6366f1;">
+                                      <span class="material-symbols-outlined" style="font-size: 1.2rem;">person</span>
+                                    </span>
                                     <div class="text-group">
                                       <span class="mod-by">Actualizado por</span>
                                       <span class="user-name" style="color: #6366f1;">{{ entry.updated_by_username || entry.updatedByUsername || 'sistema' }}</span>
@@ -219,7 +221,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                                 </div>
                                 <div class="step-body">
                                   <div class="status-change">
-                                    <span class="label">Estado alcanzado:</span>
+                                    <span class="label">Estado:</span>
                                     <span class="status-val" [attr.data-status]="entry.status">{{ entry.status }}</span>
                                   </div>
                                   @if (entry.notes && entry.notes !== 'Envío registrado en el sistema') {
