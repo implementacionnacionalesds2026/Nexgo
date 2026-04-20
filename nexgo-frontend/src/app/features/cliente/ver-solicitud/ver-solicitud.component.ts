@@ -222,7 +222,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                                     <span class="label">Estado alcanzado:</span>
                                     <span class="status-val" [attr.data-status]="entry.status">{{ entry.status }}</span>
                                   </div>
-                                  @if (entry.notes) {
+                                  @if (entry.notes && entry.notes !== 'Envío registrado en el sistema') {
                                     <p class="step-notes">"{{ entry.notes }}"</p>
                                   }
                                   @if (entry.location) {
