@@ -14,7 +14,8 @@ export interface ShipmentStatusEntry {
   updatedByName: string;
   updated_by_username?: string;
   updatedByUsername?: string;
-  createdAt: string;
+  createdAt?: string;
+  created_at?: string;
 }
 
 export interface Shipment {

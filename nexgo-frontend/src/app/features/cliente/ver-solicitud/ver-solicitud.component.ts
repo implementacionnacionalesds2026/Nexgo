@@ -214,7 +214,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                                   </div>
                                   <div class="time-stamp">
                                     <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; margin-right: 2px;">schedule</span>
-                                    {{ entry.createdAt | date:'dd MMM, yyyy • HH:mm' }}
+                                    {{ (entry.createdAt || entry.created_at) | date:'dd MMM, yyyy • HH:mm' }}
                                   </div>
                                 </div>
                                 <div class="step-body">
