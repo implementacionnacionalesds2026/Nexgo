@@ -68,22 +68,22 @@ import * as XLSX from 'xlsx';
                   <button class="nx-btn btn-options" (click)="toggleOptionsMenu($event)" [class.active]="isOptionsMenuOpen">
                     <span class="material-symbols-outlined">settings</span>
                     Acciones
-                    <span class="material-symbols-outlined" style="font-size:1.2rem;">{{ isOptionsMenuOpen ? 'expand_less' : 'expand_more' }}</span>
+                    <span class="material-symbols-outlined">{{ isOptionsMenuOpen ? 'expand_less' : 'expand_more' }}</span>
                   </button>
 
                   @if (isOptionsMenuOpen) {
                     <div class="options-menu animate-scale-up" (click)="$event.stopPropagation()">
                       <a routerLink="/cliente/nuevo-envio" class="options-item">
-                        <span class="material-symbols-outlined" style="color:var(--accent);">add_box</span>
+                        <span class="material-symbols-outlined">add_box</span>
                         Nuevo envío
                       </a>
                       <div class="options-divider"></div>
                       <button class="options-item" (click)="exportToExcel()">
-                        <span class="material-symbols-outlined" style="color:#059669;">download</span>
+                        <span class="material-symbols-outlined">download</span>
                         Exportar Excel
                       </button>
                       <button class="options-item" (click)="isColumnMenuOpen = !isColumnMenuOpen">
-                        <span class="material-symbols-outlined" style="color:#6366F1;">view_column</span>
+                        <span class="material-symbols-outlined">view_column</span>
                         Gestionar Columnas
                       </button>
 
@@ -237,7 +237,6 @@ import * as XLSX from 'xlsx';
                         <div class="nx-empty search-empty animate-fade-in">
                           <div class="robot-confused">
                             <span class="material-symbols-outlined robot-icon">smart_toy</span>
-                            <div class="robot-bubbles"><span>?</span><span>!</span></div>
                           </div>
                           <h3>no encontré nada :(</h3>
                           <p>Verifica los términos de búsqueda o los filtros activos</p>
@@ -544,11 +543,14 @@ import * as XLSX from 'xlsx';
     }
     .options-item {
       display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px;
-      color: #e2e8f0; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 8px;
+      color: white; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 8px;
       transition: all 0.2s; text-decoration: none; border: none; background: none; text-align: left;
     }
-    .options-item:hover { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
-    .options-item .material-symbols-outlined { font-size: 20px; }
+    .options-item:hover { 
+      background: #6366F1 !important; 
+      color: white !important; 
+    }
+    .options-item .material-symbols-outlined { font-size: 20px; color: white; }
     .options-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 6px 0; }
 
     .nx-table-wrap { 
@@ -565,15 +567,6 @@ import * as XLSX from 'xlsx';
     }
     .robot-confused { position: relative; font-size: 5.5rem; color: var(--primary); margin-bottom: 2rem; display: inline-block; }
     .robot-icon { font-size: inherit; }
-    .robot-bubbles { position: absolute; top: 0; right: -20px; font-weight: 800; font-size: 1.5rem; }
-    .robot-bubbles span { position: absolute; animation: floatBubble 2s infinite ease-in-out; }
-    .robot-bubbles span:nth-child(1) { left: 0; top: -10px; animation-delay: 0s; color: var(--accent); }
-    .robot-bubbles span:nth-child(2) { left: 20px; top: 10px; animation-delay: 0.5s; color: var(--primary); }
-
-    @keyframes floatBubble { 
-      0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
-      50% { transform: translateY(-10px) scale(1.2); opacity: 1; }
-    }
 
     /* Dropdown menu */
     .dropdown-container .dropdown-menu {
