@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule }  from '@angular/forms';
-import { Router }       from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ShipmentService } from '../../../core/services/shipment.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { CreateShipmentRequest } from '../../../core/models/shipment.model';
@@ -59,9 +59,15 @@ import JsBarcode from 'jsbarcode';
                   Tu número de guía ha sido generado con éxito
                 </p>
 
-                <div class="tracking-badge">
+                <div class="tracking-badge" (click)="copyToClipboard()" style="cursor: pointer; position: relative;">
                   <span class="label">GUÍA NO.</span>
-                  <span class="value">{{ trackingNumber }}</span>
+                  <div style="display:flex; align-items:center; gap: 12px; justify-content: center;">
+                    <span class="value">{{ trackingNumber }}</span>
+                    <span class="material-symbols-outlined" style="font-size: 1.5rem; color: var(--primary);">content_copy</span>
+                  </div>
+                  @if (copied) {
+                    <div class="copied-badge">¡Copiado!</div>
+                  }
                 </div>
                 
                 <div class="success-actions-grid">
@@ -598,10 +604,21 @@ import JsBarcode from 'jsbarcode';
     .action-btn .btn-sub { font-size: 0.75rem; color: var(--text-muted); }
     .action-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); border-color: rgba(99,102,241,0.3); }
     
-    .action-btn.primary { border-left: 4px solid var(--primary); }
-    .action-btn.secondary { border-left: 4px solid var(--accent); }
-    .action-btn.accent { border-left: 4px solid var(--status-delivered); }
-    .action-btn.ghost { border-left: 4px solid #64748b; }
+    .action-btn.primary, .action-btn.secondary, .action-btn.accent, .action-btn.ghost { 
+      background: #059668bb; border: none;
+    }
+    
+    .action-btn.primary .icon, .action-btn.secondary .icon, 
+    .action-btn.accent .icon, .action-btn.ghost .icon { color: white !important; }
+    
+    .action-btn .btn-title { color: white !important; }
+    .action-btn .btn-sub { color: rgba(255,255,255,0.8) !important; }
+    
+    .action-btn:hover { 
+      transform: translateY(-5px); 
+      filter: brightness(1.1);
+      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5);
+    }
 
     /* UTILS */
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
@@ -616,6 +633,14 @@ import JsBarcode from 'jsbarcode';
     .print-hide { display: block; }
     .print-container { position: fixed; left: -9999px; top: 0; }
     
+    .copied-badge {
+      position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      animation: bounceIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    @keyframes bounceIn { from { opacity: 0; transform: translate(-50%, 10px) scale(0.5); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+    
     @media print {
       .print-hide { display: none !important; }
       .print-container { position: static !important; left: 0 !important; display: block !important; background: white !important; }
@@ -625,11 +650,12 @@ import JsBarcode from 'jsbarcode';
 export class NuevoEnvioComponent {
   @ViewChild('guiaContainer') guiaContainer!: ElementRef;
 
-  saving  = false;
+  saving = false;
   success = false;
-  error   = '';
+  error = '';
   trackingNumber = '';
   currentStep = 1;
+  copied = false;
 
   steps = [
     { id: 1, title: 'Remitente', icon: 'person', component: 'sender' },
@@ -637,7 +663,7 @@ export class NuevoEnvioComponent {
     { id: 3, title: 'Paquete', icon: 'inventory_2', component: 'package' },
     { id: 4, title: 'Cobro', icon: 'payments', component: 'payment' }
   ];
-  
+
   printMode: 'guia' | 'formulario' | null = null;
   generatingPdf = false;
   today = new Date();
@@ -661,7 +687,7 @@ export class NuevoEnvioComponent {
     totalPaymentAmount: 0, paymentInstructions: '', comments: ''
   };
 
-  constructor(private shipmentService: ShipmentService, private router: Router) {}
+  constructor(private shipmentService: ShipmentService, private router: Router) { }
 
   nextStep() {
     if (this.currentStep < 4) {
@@ -697,7 +723,7 @@ export class NuevoEnvioComponent {
   submit() {
     this.form.destinationCity = this.form.recipientMunicipality || '';
     this.saving = true;
-    this.error  = '';
+    this.error = '';
 
     this.shipmentService.createShipment(this.form).subscribe({
       next: (r) => {
@@ -713,11 +739,11 @@ export class NuevoEnvioComponent {
     });
   }
 
-  resetForm() { 
-    this.success = false; 
-    this.trackingNumber = ''; 
+  resetForm() {
+    this.success = false;
+    this.trackingNumber = '';
     this.currentStep = 1;
-    this.printMode = null; 
+    this.printMode = null;
     this.form = {
       senderName: '', senderPhone: '', senderAddress: '', originCity: 'Guatemala',
       recipientName: '', recipientPhone: '', recipientAddress: '', destinationCity: '',
@@ -730,18 +756,26 @@ export class NuevoEnvioComponent {
 
   goToEnvios() { this.router.navigate(['/cliente/mis-envios']); }
 
+  copyToClipboard() {
+    if (!this.trackingNumber) return;
+    navigator.clipboard.writeText(this.trackingNumber).then(() => {
+      this.copied = true;
+      setTimeout(() => this.copied = false, 2000);
+    });
+  }
+
   imprimirGuia() {
     if (this.generatingPdf) return;
     this.generatingPdf = true;
     this.printMode = 'guia';
-    
+
     setTimeout(async () => {
       try {
         if (!this.guiaContainer) return;
         const tracking = this.trackingNumber || 'ND0000000';
         JsBarcode("#barcodeCanvasSuccess", tracking, {
           format: "CODE128",
-          width: 2.2, 
+          width: 2.2,
           height: 55,
           displayValue: false,
           margin: 0,
@@ -751,24 +785,24 @@ export class NuevoEnvioComponent {
 
         const element = this.guiaContainer.nativeElement;
         const canvas = await html2canvas(element, {
-          scale: 4, 
+          scale: 4,
           logging: false,
           useCORS: true,
           backgroundColor: '#ffffff'
         });
-        
+
         const imgData = canvas.toDataURL('image/png');
         const doc = new jsPDF({
           orientation: 'p',
           unit: 'mm',
           format: [100, 100]
         });
-        
+
         doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
         doc.autoPrint();
         const pdfUrl = URL.createObjectURL(doc.output('blob'));
         window.open(pdfUrl, '_blank');
-        
+
       } catch (err) {
         console.error('Error generating PDF:', err);
       } finally {
