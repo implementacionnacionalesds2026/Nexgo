@@ -441,11 +441,22 @@ import * as XLSX from 'xlsx';
     /* Date Picker */
     .date-picker-container { position: relative; }
     .btn-date-picker { 
-      background: rgba(0,0,0,0.4) !important; border: 1px solid rgba(255,255,255,0.1) !important; 
-      color: white !important; font-weight: 800; font-size: 0.85rem; padding: 0 16px; height: 45px;
-      display: flex; align-items: center; gap: 10px; border-radius: 12px !important; transition: all 0.2s;
+      background: linear-gradient(135deg, #5d1d88ff 0%, #5d1d88ff 100%) !important; 
+      border: 1px solid rgba(255,255,255,0.2) !important; 
+      color: white !important; font-weight: 800; font-size: 0.85rem; padding: 0 20px; height: 45px;
+      display: flex; align-items: center; gap: 10px; border-radius: 12px !important; 
+      box-shadow: 0 4px 15px rgba(26, 22, 92, 0.3); transition: all 0.3s;
+      cursor: pointer;
     }
-    .btn-date-picker:hover, .btn-date-picker.active { background: rgba(99, 102, 241, 0.15) !important; border-color: var(--primary) !important; }
+    .btn-date-picker:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+      filter: brightness(1.1);
+    }
+    .btn-date-picker.active { 
+      background: linear-gradient(135deg, #5d1d88ff 0%, #5d1d88ff 100%) !important;
+      transform: scale(0.98);
+    }
     .btn-date-picker .arrow { font-size: 1.2rem; transition: transform 0.3s; color: #9ca3af; }
     
     .month-picker-dropdown {
@@ -622,7 +633,7 @@ export class MisEnviosComponent implements OnInit {
 
   searchText: string = '';
   activeStatusFilter: string | null = null;
-  
+
   selectedMonth: number = new Date().getMonth() + 1;
   selectedYear: number = new Date().getFullYear();
   tempYear: number = this.selectedYear;
@@ -641,7 +652,7 @@ export class MisEnviosComponent implements OnInit {
     { value: 10, label: 'Oct' }, { value: 11, label: 'Nov' }, { value: 12, label: 'Dic' }
   ];
   years: number[] = [2025, 2026, 2027];
-  
+
   columnConfigs = [
     { key: 'guia', label: 'Guía', visible: true },
     { key: 'fecha', label: 'Fecha', visible: true },
@@ -656,14 +667,14 @@ export class MisEnviosComponent implements OnInit {
   ];
 
   isColumnMenuOpen = false;
-  
+
   columnFilters = {
     tracking: '',
     origen: '',
     destino: '',
     status: ''
   };
-  
+
   showFilters = {
     tracking: false,
     origen: false,
@@ -702,7 +713,7 @@ export class MisEnviosComponent implements OnInit {
     // Global Search Filter
     if (this.searchText) {
       const q = this.searchText.toLowerCase();
-      result = result.filter(s => 
+      result = result.filter(s =>
         (s.tracking_number?.toLowerCase().includes(q)) ||
         (s.origin_city?.toLowerCase().includes(q)) ||
         (s.destination_city?.toLowerCase().includes(q)) ||
@@ -723,10 +734,10 @@ export class MisEnviosComponent implements OnInit {
 
   loadShipments() {
     this.loading = true;
-    this.shipmentService.getShipments({ 
-      month: this.selectedMonth, 
+    this.shipmentService.getShipments({
+      month: this.selectedMonth,
       year: this.selectedYear,
-      limit: 100 
+      limit: 100
     }).subscribe({
       next: (r) => {
         this.shipments = r.data.data;
@@ -839,16 +850,16 @@ export class MisEnviosComponent implements OnInit {
     this.generatingPdfId = shipment.id;
     this.printShipment = shipment;
     this.printMode = 'guia';
-    
+
     // Esperar a que Angular renderice el contenedor
     setTimeout(async () => {
       try {
         const tracking = shipment.tracking_number || 'ND0000000';
-        
+
         // Generar Código de Barras
         JsBarcode("#barcodeCanvas", tracking, {
           format: "CODE128",
-          width: 2.2, 
+          width: 2.2,
           height: 55,
           displayValue: false,
           margin: 0,
@@ -857,9 +868,9 @@ export class MisEnviosComponent implements OnInit {
         });
 
         const element = this.guiaContainer.nativeElement;
-        
+
         const canvas = await html2canvas(element, {
-          scale: 4, 
+          scale: 4,
           logging: false,
           useCORS: true,
           backgroundColor: '#ffffff',
@@ -874,19 +885,19 @@ export class MisEnviosComponent implements OnInit {
             }
           }
         });
-        
+
         const imgData = canvas.toDataURL('image/png');
         const doc = new jsPDF({
           orientation: 'p',
           unit: 'mm',
           format: [100, 100]
         });
-        
+
         doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
         doc.autoPrint();
         const pdfUrl = URL.createObjectURL(doc.output('blob'));
         window.open(pdfUrl, '_blank');
-        
+
       } catch (err) {
         console.error('Error generating PDF:', err);
       } finally {

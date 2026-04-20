@@ -25,8 +25,8 @@ const createShipment = async (req, res, next) => {
  */
 const getShipments = async (req, res, next) => {
   try {
-    const { status, page, limit } = req.query;
-    let filters = { status, page, limit };
+    const { status, month, year, page, limit } = req.query;
+    let filters = { status, month, year, page, limit };
 
     // Cliente solo ve sus propios envíos
     if (req.user.role === 'CLIENTE') {
