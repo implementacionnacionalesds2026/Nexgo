@@ -31,17 +31,17 @@
   --bg: #080C28;
   /* Deep Navy requested */
   --bg-secondary: #0B113B;
-  --bg-card: #E0F2FE;
-  /* Soft Celeste for Forms (Request) */
-  --bg-card-hover: #D1E9FF;
+  --bg-card: #131936;
+  /* Darker navy for cards */
+  --bg-card-hover: #1A1F4D;
   --accent: #3EC6E0;
   --accent-2: #2563EB;
   --accent-3: #7DDFF0;
   --text: #FFFFFF;
   /* Back to White for Dark BG */
   --text-muted: rgba(255, 255, 255, 0.6);
-  --text-dark: #0F1C4D;
-  /* For use INSIDE celeste cards */
+  --text-dark: #FFFFFF;
+  /* Ensure text is white even on cards */
   --border: rgba(255, 255, 255, 0.1);
   --border-hover: rgba(99, 102, 241, 0.4);
   --glow: rgba(99, 102, 241, 0.15);
@@ -474,7 +474,7 @@ body {
     display: block;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #0F2141;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 0.45rem;
@@ -484,10 +484,10 @@ body {
 .nx-input {
   width: 100%;
   padding: 0.8rem 1.1rem;
-  background: white;
+  background: rgba(255, 255, 255, 0.03);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--text-dark);
+  color: var(--text);
   font-size: 0.95rem;
   font-family: 'Inter', sans-serif;
   transition: all var(--tr-fast);

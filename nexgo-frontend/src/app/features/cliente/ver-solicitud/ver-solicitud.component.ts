@@ -227,14 +227,14 @@ import { Shipment } from '../../../core/models/shipment.model';
 
     .detail-row { margin-bottom: 1.25rem; }
     .detail-row:last-child { margin-bottom: 0; }
-    .label { display: block; font-size: 0.72rem; color: #0F2141; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+    .label { display: block; font-size: 0.72rem; color: #091b3bff; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
     .value { display: block; font-size: 1.05rem; color: var(--text-dark); font-weight: 600; }
 
     .status-chip {
       padding: 6px 16px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
     }
     .status-chip[data-status="PENDIENTE"] { background: #fef3c7; color: #92400e; }
-    .status-chip[data-status="EN_TRANSITO"] { background: #dbeafe; color: #1e40af; }
+    .status-chip[data-status="EN_TRANSITO"] { background: #020b18ff; color: #1e40af; }
     .status-chip[data-status="ENTREGADO"] { background: #dcfce7; color: #166534; }
 
     .badge-black { background: var(--text-dark); color: white; padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 900; }

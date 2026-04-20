@@ -61,7 +61,7 @@ import JsBarcode from 'jsbarcode';
                     <th>Guía</th><th>Fecha</th><th>Origen → Destino</th><th>Peso</th><th>Costo est.</th><th>Estado</th><th style="min-width: 200px;">Acciones</th>
                   </tr></thead>
                   <tbody>
-                    @for (s of shipments; track s.id) {
+                    @for (s of shipments; track s.id; let i = $index) {
                       <tr>
                         <td class="font-mono" style="font-size:.78rem;color:var(--accent);">{{ s.tracking_number }}</td>
                         <td style="font-size:.8rem;">{{ s.created_at | date:'dd/MM/yy' }}</td>
@@ -73,13 +73,19 @@ import JsBarcode from 'jsbarcode';
                           <!-- Dropdown Acciones -->
                           <div class="dropdown-container" style="position:relative; display:inline-block;">
                             <button (click)="toggleDropdown(s.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
-                            <div class="dropdown-menu" [style.display]="openDropdownId === s.id ? 'block' : 'none'">
-                               <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item"><span class="material-symbols-outlined" style="font-size:16px; margin-right:6px">visibility</span> Ver Solicitud</a>
+                            <div class="dropdown-menu" 
+                                 [class.dropup]="i >= shipments.length - 2 && shipments.length > 2"
+                                 [style.display]="openDropdownId === s.id ? 'block' : 'none'">
+                               <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">
+                                 <span class="material-symbols-outlined">visibility</span> Ver Solicitud
+                               </a>
                                <a (click)="imprimirGuia(s)" class="dropdown-item" [style.opacity]="generatingPdfId === s.id ? 0.6 : 1">
-                                 <span class="material-symbols-outlined" style="font-size:16px; margin-right:6px">print</span> 
+                                 <span class="material-symbols-outlined">print</span> 
                                  {{ generatingPdfId === s.id ? 'Generando...' : 'Imprimir Guía' }}
                                </a>
-                               <a (click)="imprimirFormulario(s)" class="dropdown-item"><span class="material-symbols-outlined" style="font-size:16px; margin-right:6px">description</span> Formulario</a>
+                               <a (click)="imprimirFormulario(s)" class="dropdown-item">
+                                 <span class="material-symbols-outlined">description</span> Formulario
+                               </a>
                             </div>
                           </div>
                         </td>
@@ -286,17 +292,45 @@ import JsBarcode from 'jsbarcode';
   styles: [`
     /* Dropdown menu */
     .dropdown-container .dropdown-menu {
-      position: absolute; left: calc(100% + 5px); top: -5px; z-index: 99;
-      background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); 
-      box-shadow: var(--shadow-card); min-width: 180px; text-align: left; overflow: hidden;
-      border: 1px solid var(--primary);
+      position: absolute; 
+      left: calc(100% + 10px); 
+      top: -10px; 
+      z-index: 100;
+      background: #1e293b; 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: var(--radius-sm); 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); 
+      min-width: 190px; 
+      text-align: left; 
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+    .dropdown-container .dropdown-menu.dropup {
+      top: auto;
+      bottom: -10px;
     }
     .dropdown-item {
-      display: flex; align-items: center; width: 100%; text-align: left; background: none; border: none; 
-      padding: 12px 16px; color: var(--text); cursor: pointer; text-decoration: none; font-size: 14px;
+      display: flex; 
+      align-items: center; 
+      width: 100%; 
+      text-align: left; 
+      background: none; 
+      border: none; 
+      padding: 12px 16px; 
+      color: rgba(255, 255, 255, 0.8); 
+      cursor: pointer; 
+      text-decoration: none; 
+      font-size: 14px;
       transition: all var(--tr-fast);
+      gap: 10px;
     }
-    .dropdown-item:hover { background: var(--bg-card); color: var(--primary); font-weight: 600; }
+    .dropdown-item:hover { 
+      background: rgba(255, 255, 255, 0.05); 
+      color: var(--primary); 
+    }
+    .dropdown-item .material-symbols-outlined {
+      font-size: 18px;
+    }
 
     /* Print styles */
     .print-container { 

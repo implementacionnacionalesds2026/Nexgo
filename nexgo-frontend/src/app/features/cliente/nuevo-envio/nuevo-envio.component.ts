@@ -19,205 +19,288 @@ import JsBarcode from 'jsbarcode';
       <main class="nx-main">
         <div class="nx-navbar">
           <span class="navbar-title">
-            <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">local_post_office</span> 
+            <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit; margin-right:8px;">local_post_office</span> 
             Registrar Nuevo Envío
           </span>
         </div>
         <div class="nx-content">
-          <div class="nx-page-header">
-            <h1>Nueva Guía de Envío</h1>
-            <p>Completa el formulario para registrar tu envío</p>
+          
+          <!-- STEPPER PROGRESS BAR -->
+          <div class="stepper-wrapper">
+            <div class="stepper-line">
+              <div class="stepper-progress" [style.width.%]="(currentStep - 1) * 33.33"></div>
+            </div>
+            <div class="stepper-steps">
+              @for (step of steps; track step.id) {
+                <div class="step-item" [class.active]="currentStep === step.id" [class.completed]="currentStep > step.id" (click)="goToStep(step.id)">
+                  <div class="step-circle">
+                    @if (currentStep > step.id) {
+                      <span class="material-symbols-outlined">check</span>
+                    } @else {
+                      <span class="material-symbols-outlined">{{ step.icon }}</span>
+                    }
+                  </div>
+                  <span class="step-label">{{ step.title }}</span>
+                </div>
+              }
+            </div>
           </div>
 
           <div class="workflow-container">
             @if (success) {
-              <div class="nx-card success-card" style="text-align:center; padding: 3rem 1rem;">
-                <div class="success-icon" style="font-size: 5rem; color: var(--success); margin-bottom: 2rem;">
-                  <span class="material-symbols-outlined" style="font-size:inherit;">check_circle</span>
+              <div class="nx-card success-card" style="text-align:center; padding: 4rem 2rem; background: linear-gradient(145deg, #131936 0%, #0d122b 100%); border: 1px solid rgba(99, 102, 241, 0.2);">
+                <div class="success-icon-wrapper">
+                  <div class="success-ring"></div>
+                  <span class="material-symbols-outlined success-icon-main">verified</span>
                 </div>
-                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">¡Envío registrado!</h2>
-                <p style="font-size: 1.25rem; color: #666; margin-bottom: 2.5rem;">
-                  Tu número de guía es: <strong style="color:var(--primary); font-size: 1.5rem;">{{ trackingNumber }}</strong>
-                </p>
                 
-                <div style="display:flex; flex-direction:column; gap:1.5rem; max-width: 400px; margin: 0 auto;">
-                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <button class="nx-btn btn-secondary" (click)="imprimirGuia()" [disabled]="generatingPdf" style="padding: 1rem; background:black; color:white;">
-                      <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">print</span> 
-                      {{ generatingPdf ? '...' : 'Imprimir GUÍA' }}
-                    </button>
-                    <button class="nx-btn btn-secondary" (click)="imprimirFormulario()" style="padding: 1rem; background:#444; color:white;">
-                      <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">description</span> Formulario
-                    </button>
-                  </div>
-                  <hr style="border:none; border-top:1px solid #eee; margin: 1rem 0;">
-                  <button class="nx-btn btn-primary" (click)="resetForm()" style="padding: 1.25rem;">
-                    <span class="material-symbols-outlined" style="vertical-align:middle; font-size:inherit;">add</span> Crear otro envío
+                <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">¡Envío registrado!</h2>
+                <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem;">
+                  Tu número de guía ha sido generado con éxito
+                </p>
+
+                <div class="tracking-badge">
+                  <span class="label">GUÍA NO.</span>
+                  <span class="value">{{ trackingNumber }}</span>
+                </div>
+                
+                <div class="success-actions-grid">
+                  <button class="action-btn primary" (click)="imprimirGuia()" [disabled]="generatingPdf">
+                    <span class="material-symbols-outlined icon">receipt_long</span>
+                    <div class="btn-content">
+                      <span class="btn-title">Imprimir GUÍA</span>
+                      <span class="btn-sub">Formato 10x10cm</span>
+                    </div>
                   </button>
-                  <button class="nx-btn btn-ghost" (click)="goToEnvios()">Ver mis envíos →</button>
+                  
+                  <button class="action-btn secondary" (click)="imprimirFormulario()">
+                    <span class="material-symbols-outlined icon">description</span>
+                    <div class="btn-content">
+                      <span class="btn-title">Imprimir Formulario</span>
+                      <span class="btn-sub">Detalle completo</span>
+                    </div>
+                  </button>
+
+                  <button class="action-btn accent" (click)="resetForm()">
+                    <span class="material-symbols-outlined icon">add_box</span>
+                    <div class="btn-content">
+                      <span class="btn-title">Nuevo Envío</span>
+                      <span class="btn-sub">Crear otra guía</span>
+                    </div>
+                  </button>
+
+                  <button class="action-btn ghost" (click)="goToEnvios()">
+                    <span class="material-symbols-outlined icon">list_alt</span>
+                    <div class="btn-content">
+                      <span class="btn-title">Mis Envíos</span>
+                      <span class="btn-sub">Ver historial</span>
+                    </div>
+                  </button>
                 </div>
               </div>
             }
 
             @if (!success) {
-              <div class="form-grid">
+              <div class="step-content-wrapper">
                 
-                <!-- TARJETA 1: REMITENTE -->
-                <div class="nx-card">
-                  <div class="card-header">
-                    <h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">person</span> 1. Información del Remitente</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="nx-form-group">
-                      <label>Nombre del Remitente *</label>
-                      <input class="nx-input" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" />
+                <!-- STEP 1: REMITENTE -->
+                @if (currentStep === 1) {
+                  <div class="nx-card step-card animate-fade-in">
+                    <div class="card-header">
+                      <h3><span class="material-symbols-outlined">person</span> 1. Información del Remitente</h3>
+                      <span class="step-indicator">Paso 1 de 4</span>
                     </div>
-                    <div class="nx-form-row cols-2">
+                    <div class="card-body">
                       <div class="nx-form-group">
-                        <label>Teléfono *</label>
-                        <input class="nx-input" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" />
+                        <label>Nombre del Remitente *</label>
+                        <input class="nx-input" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" />
                       </div>
-                      <div class="nx-form-group">
-                        <label>Ciudad de Origen</label>
-                        <input class="nx-input" [(ngModel)]="form.originCity" placeholder="Ej: Guatemala" />
-                      </div>
-                    </div>
-                    <div class="nx-form-group">
-                      <label>Dirección de Recolección *</label>
-                      <input class="nx-input" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- TARJETA 2: DESTINATARIO -->
-                <div class="nx-card">
-                  <div class="card-header">
-                    <h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> 2. Destino del Paquete</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="nx-form-group">
-                      <label>Nombre del Destinatario *</label>
-                      <input class="nx-input" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
-                    </div>
-                    <div class="nx-form-group">
-                      <label>Teléfono de contacto *</label>
-                      <input class="nx-input" [(ngModel)]="form.recipientPhone" placeholder="502XXXXXXXX" />
-                    </div>
-                    <div class="nx-form-row cols-2">
-                      <div class="nx-form-group">
-                        <label>Departamento *</label>
-                        <select class="nx-input" [(ngModel)]="form.recipientDepartment">
-                          <option value="">Seleccione Departamento</option>
-                          @for (dept of deparments; track dept) {
-                            <option [value]="dept">{{ dept }}</option>
-                          }
-                        </select>
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
+                          <label>Teléfono *</label>
+                          <input class="nx-input" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" />
+                        </div>
+                        <div class="nx-form-group">
+                          <label>Ciudad de Origen</label>
+                          <input class="nx-input" [(ngModel)]="form.originCity" placeholder="Ej: Guatemala" />
+                        </div>
                       </div>
                       <div class="nx-form-group">
-                        <label>Municipio / Ciudad *</label>
-                        <input class="nx-input" [(ngModel)]="form.recipientMunicipality" placeholder="Ej: Mixco, Xela..." />
+                        <label>Dirección de Recolección *</label>
+                        <input class="nx-input" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
                       </div>
                     </div>
-                    <div class="nx-form-row cols-2">
-                      <div class="nx-form-group">
-                        <label>Zona</label>
-                        <input class="nx-input" [(ngModel)]="form.recipientZone" placeholder="Ej: Zona 1" />
-                      </div>
-                      <div class="nx-form-group">
-                        <label>Referencia / Comentarios</label>
-                        <input class="nx-input" [(ngModel)]="form.comments" placeholder="A la par de..." />
-                      </div>
-                    </div>
-                    <div class="nx-form-group">
-                      <label>Dirección exacta de entrega *</label>
-                      <input class="nx-input" [(ngModel)]="form.recipientAddress" placeholder="Avenida, Calle, Casa numeral..." />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- TARJETA 3: PAQUETE Y GUÍA -->
-                <div class="nx-card">
-                  <div class="card-header">
-                    <h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> 3. Información del Paquete</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="nx-form-row cols-3">
-                      <div class="nx-form-group">
-                        <label>Peso (libras) *</label>
-                        <input class="nx-input" type="number" [(ngModel)]="form.weightKg" />
-                      </div>
-                      <div class="nx-form-group">
-                        <label>Cant. Piezas</label>
-                        <input class="nx-input" type="number" [(ngModel)]="form.quantity" />
-                      </div>
-                      <div class="nx-form-group" style="padding-top: 1.8rem;">
-                        <label style="display:flex; align-items:center; gap: 8px; cursor:pointer;">
-                          <input type="checkbox" [(ngModel)]="form.isFragile" /> Frágil
-                        </label>
-                      </div>
-                    </div>
-                    <hr style="background:#eee;border:none;height:1px;margin:1rem 0;">
-                    <div class="nx-form-row cols-2">
-                      <div class="nx-form-group">
-                        <label>No. Orden (Manual)</label>
-                        <input class="nx-input" [(ngModel)]="form.orderNumber" placeholder="Ej: 4567" />
-                      </div>
-                      <div class="nx-form-group">
-                        <label>No. Ticket (Manual)</label>
-                        <input class="nx-input" [(ngModel)]="form.ticketNumber" placeholder="Ej: 1234" />
-                      </div>
-                    </div>
-                    <div class="nx-form-row cols-2">
-                      <div class="nx-form-group">
-                        <label>Código Destino (GUA/QTZ...)</label>
-                        <select class="nx-input" [(ngModel)]="form.destinationCode">
-                          @for (code of destCodes; track code) {
-                            <option [value]="code">{{ code }}</option>
-                          }
-                        </select>
-                      </div>
-                      <div class="nx-form-group">
-                        <label>Servicio (DOM/EXP...)</label>
-                        <select class="nx-input" [(ngModel)]="form.serviceTag">
-                          @for (tag of serviceTags; track tag) {
-                            <option [value]="tag">{{ tag }}</option>
-                          }
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- TARJETA 4: COBRO Y PAGO -->
-                <div class="nx-card">
-                  <div class="card-header">
-                    <h3><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">payments</span> 4. Instrucciones de Cobro</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="nx-form-group">
-                      <label>Monto a Cobrar al Destinatario (Q)</label>
-                      <input class="nx-input" type="number" [(ngModel)]="form.totalPaymentAmount" placeholder="Ej: 150.00" />
-                      <small style="color:#666;">Ingrese 0 si el envío ya está pagado.</small>
-                    </div>
-                    <div class="nx-form-group">
-                      <label>Instrucciones de Pago</label>
-                      <textarea class="nx-input" [(ngModel)]="form.paymentInstructions" rows="3" placeholder="Ej: Favor cobrar con envío incluido..."></textarea>
-                    </div>
-                    
-                    @if (error) { 
-                      <div class="nx-alert alert-error" style="margin-top:1.5rem;">
-                        <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ error }}
-                      </div> 
-                    }
-
-                    <div style="margin-top: 2rem;">
-                      <button class="nx-btn btn-accent" (click)="submit()" [disabled]="saving" style="width:100%; padding: 1.25rem; font-size: 1.1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
-                        @if (saving) { <span class="spinner" style="width:20px;height:20px;border-width:2px;margin-right:8px;"></span> Registrando... }
-                        @else { <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.4rem; margin-right:8px;">rocket_launch</span> REGISTRAR ENVÍO }
+                    <div class="card-footer-actions">
+                      <div></div>
+                      <button class="nx-btn btn-primary btn-lg" (click)="nextStep()">
+                        Siguiente: Destino <span class="material-symbols-outlined" style="margin-left:8px;">arrow_forward</span>
                       </button>
                     </div>
                   </div>
-                </div>
+                }
+
+                <!-- STEP 2: DESTINATARIO -->
+                @if (currentStep === 2) {
+                  <div class="nx-card step-card animate-fade-in">
+                    <div class="card-header">
+                      <h3><span class="material-symbols-outlined">location_on</span> 2. Destino del Paquete</h3>
+                      <span class="step-indicator">Paso 2 de 4</span>
+                    </div>
+                    <div class="card-body">
+                      <div class="nx-form-group">
+                        <label>Nombre del Destinatario *</label>
+                        <input class="nx-input" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
+                      </div>
+                      <div class="nx-form-group">
+                        <label>Teléfono de contacto *</label>
+                        <input class="nx-input" [(ngModel)]="form.recipientPhone" placeholder="502XXXXXXXX" />
+                      </div>
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
+                          <label>Departamento *</label>
+                          <select class="nx-input" [(ngModel)]="form.recipientDepartment">
+                            <option value="">Seleccione Departamento</option>
+                            @for (dept of deparments; track dept) {
+                              <option [value]="dept">{{ dept }}</option>
+                            }
+                          </select>
+                        </div>
+                        <div class="nx-form-group">
+                          <label>Municipio / Ciudad *</label>
+                          <input class="nx-input" [(ngModel)]="form.recipientMunicipality" placeholder="Ej: Mixco, Xela..." />
+                        </div>
+                      </div>
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
+                          <label>Zona</label>
+                          <input class="nx-input" [(ngModel)]="form.recipientZone" placeholder="Ej: Zona 1" />
+                        </div>
+                        <div class="nx-form-group">
+                          <label>Referencia / Comentarios</label>
+                          <input class="nx-input" [(ngModel)]="form.comments" placeholder="A la par de..." />
+                        </div>
+                      </div>
+                      <div class="nx-form-group">
+                        <label>Dirección exacta de entrega *</label>
+                        <input class="nx-input" [(ngModel)]="form.recipientAddress" placeholder="Avenida, Calle, Casa numeral..." />
+                      </div>
+                    </div>
+                    <div class="card-footer-actions">
+                      <button class="nx-btn btn-ghost btn-lg" (click)="prevStep()">
+                        <span class="material-symbols-outlined" style="margin-right:8px;">arrow_back</span> Anterior
+                      </button>
+                      <button class="nx-btn btn-primary btn-lg" (click)="nextStep()">
+                        Siguiente: Paquete <span class="material-symbols-outlined" style="margin-left:8px;">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                <!-- STEP 3: PAQUETE -->
+                @if (currentStep === 3) {
+                  <div class="nx-card step-card animate-fade-in">
+                    <div class="card-header">
+                      <h3><span class="material-symbols-outlined">inventory_2</span> 3. Información del Paquete</h3>
+                      <span class="step-indicator">Paso 3 de 4</span>
+                    </div>
+                    <div class="card-body">
+                      <div class="nx-form-row cols-3">
+                        <div class="nx-form-group">
+                          <label>Peso (libras) *</label>
+                          <input class="nx-input" type="number" [(ngModel)]="form.weightKg" />
+                        </div>
+                        <div class="nx-form-group">
+                          <label>Cant. Piezas</label>
+                          <input class="nx-input" type="number" [(ngModel)]="form.quantity" />
+                        </div>
+                        <div class="nx-form-group" style="padding-top: 1.8rem;">
+                          <label style="display:flex; align-items:center; gap: 8px; cursor:pointer;">
+                            <input type="checkbox" [(ngModel)]="form.isFragile" /> Frágil
+                          </label>
+                        </div>
+                      </div>
+                      <hr class="nx-divider">
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
+                          <label>No. Orden (Manual)</label>
+                          <input class="nx-input" [(ngModel)]="form.orderNumber" placeholder="Ej: 4567" />
+                        </div>
+                        <div class="nx-form-group">
+                          <label>No. Ticket (Manual)</label>
+                          <input class="nx-input" [(ngModel)]="form.ticketNumber" placeholder="Ej: 1234" />
+                        </div>
+                      </div>
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
+                          <label>Código Destino</label>
+                          <select class="nx-input" [(ngModel)]="form.destinationCode">
+                            @for (code of destCodes; track code) {
+                              <option [value]="code">{{ code }}</option>
+                            }
+                          </select>
+                        </div>
+                        <div class="nx-form-group">
+                          <label>Servicio</label>
+                          <select class="nx-input" [(ngModel)]="form.serviceTag">
+                            @for (tag of serviceTags; track tag) {
+                              <option [value]="tag">{{ tag }}</option>
+                            }
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-footer-actions">
+                      <button class="nx-btn btn-ghost btn-lg" (click)="prevStep()">
+                        <span class="material-symbols-outlined" style="margin-right:8px;">arrow_back</span> Anterior
+                      </button>
+                      <button class="nx-btn btn-primary btn-lg" (click)="nextStep()">
+                        Siguiente: Cobro <span class="material-symbols-outlined" style="margin-left:8px;">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                <!-- STEP 4: COBRO -->
+                @if (currentStep === 4) {
+                  <div class="nx-card step-card animate-fade-in">
+                    <div class="card-header">
+                      <h3><span class="material-symbols-outlined">payments</span> 4. Instrucciones de Cobro</h3>
+                      <span class="step-indicator">Paso 4 de 4</span>
+                    </div>
+                    <div class="card-body">
+                      <div class="nx-form-group">
+                        <label>Monto a Cobrar al Destinatario (Q)</label>
+                        <div class="input-with-icon">
+                          <span class="currency-prefix">Q</span>
+                          <input class="nx-input" type="number" [(ngModel)]="form.totalPaymentAmount" placeholder="Ej: 150.00" style="padding-left: 2.5rem;" />
+                        </div>
+                        <small style="color:var(--text-muted); margin-top: 5px; display:block;">Ingrese 0 si el envío ya está pagado.</small>
+                      </div>
+                      <div class="nx-form-group">
+                        <label>Instrucciones de Pago</label>
+                        <textarea class="nx-input" [(ngModel)]="form.paymentInstructions" rows="3" placeholder="Ej: Favor cobrar con envío incluido..."></textarea>
+                      </div>
+                      
+                      @if (error) { 
+                        <div class="nx-alert alert-error">
+                          <span class="material-symbols-outlined">warning</span> {{ error }}
+                        </div> 
+                      }
+                    </div>
+                    <div class="card-footer-actions">
+                      <button class="nx-btn btn-ghost btn-lg" (click)="prevStep()">
+                        <span class="material-symbols-outlined" style="margin-right:8px;">arrow_back</span> Anterior
+                      </button>
+                      <button class="nx-btn btn-accent btn-lg" (click)="submit()" [disabled]="saving">
+                        @if (saving) { 
+                          <span class="spinner"></span> Registrando... 
+                        } @else { 
+                          <span class="material-symbols-outlined" style="margin-right:8px;">rocket_launch</span> REGISTRAR ENVÍO 
+                        }
+                      </button>
+                    </div>
+                  </div>
+                }
 
               </div>
             }
@@ -226,7 +309,7 @@ import JsBarcode from 'jsbarcode';
       </main>
     </div>
 
-    <!-- ZONA IMPRESIÓN GUÍA -->
+    <!-- ZONA IMPRESIÓN GUÍA (Hidden) -->
     @if (printMode === 'guia') {
       <div class="print-container">
         <div style="display: flex; justify-content: center; align-items: flex-start; background: white; width: 100mm; height: 100mm;">
@@ -334,144 +417,208 @@ import JsBarcode from 'jsbarcode';
     <!-- ZONA IMPRESIÓN FORMULARIO -->
     @if (printMode === 'formulario') {
       <div class="print-container">
-        <div style="padding: 2cm; font-family: 'Helvetica', Arial, sans-serif; max-width: 800px; margin: 0 auto; color: black;">
+        <div style="padding: 2cm; font-family: 'Helvetica', Arial, sans-serif; max-width: 800px; margin: 0 auto; color: black; background: white;">
           <div style="text-align:center; margin-bottom: 2rem; border-bottom: 2px solid #070b24; padding-bottom: 1rem;">
-            <h1 style="margin:0; font-size: 28px; color: #070b24;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Nacionales Delivery Services</h1>
+            <h1 style="margin:0; font-size: 28px; color: #070b24;">Nacionales Delivery Services</h1>
             <p style="margin:5px 0 0 0; color: #444; font-size: 16px;">Formulario Detallado de Envío</p>
           </div>
-
           <div style="display:flex; justify-content:space-between; margin-bottom: 2rem;">
-            <div>
-              <b style="color:#070b24;">Número de Guía:</b> {{ trackingNumber }}<br>
-              <b style="color:#070b24;">Fecha:</b> {{ today | date:'dd/MM/yyyy' }}
-            </div>
-            <div style="text-align:right;">
-              <b style="color:#070b24;">Estado:</b> Registrado<br>
-              <b style="color:#070b24;">Servicio:</b> Envío Nacional Prio
-            </div>
+            <div><b>Número de Guía:</b> {{ trackingNumber }}<br><b>Fecha:</b> {{ today | date:'dd/MM/yyyy' }}</div>
           </div>
-
-          <div style="display:flex; gap: 2rem; margin-bottom: 2rem;">
+          <div style="display:flex; gap: 2rem;">
             <div style="flex:1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">location_on</span> Datos del Remitente</h3>
-              <p style="margin: 5px 0;"><b>Nombre:</b> {{ form.senderName }}</p>
-              <p style="margin: 5px 0;"><b>Teléfono:</b> {{ form.senderPhone }}</p>
-              <p style="margin: 5px 0;"><b>Dirección:</b> {{ form.senderAddress }}</p>
-              <p style="margin: 5px 0;"><b>Ciudad:</b> {{ form.originCity }}</p>
+              <h3>Datos del Remitente</h3>
+              <p><b>Nombre:</b> {{ form.senderName }}</p>
+              <p><b>Teléfono:</b> {{ form.senderPhone }}</p>
+              <p><b>Dirección:</b> {{ form.senderAddress }}</p>
             </div>
             <div style="flex:1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-              <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;">📫 Datos del Destinatario</h3>
-              <p style="margin: 5px 0;"><b>Nombre:</b> {{ form.recipientName }}</p>
-              <p style="margin: 5px 0;"><b>Teléfono:</b> {{ form.recipientPhone }}</p>
-              <p style="margin: 5px 0;"><b>Dirección:</b> {{ form.recipientAddress }}</p>
-              <p style="margin: 5px 0;"><b>Ciudad:</b> {{ form.recipientMunicipality }}</p>
+              <h3>Datos del Destinatario</h3>
+              <p><b>Nombre:</b> {{ form.recipientName }}</p>
+              <p><b>Teléfono:</b> {{ form.recipientPhone }}</p>
+              <p><b>Dirección:</b> {{ form.recipientAddress }}</p>
             </div>
-          </div>
-
-          <div style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-            <h3 style="margin-top:0; border-bottom: 1px solid #ccc; padding-bottom: 8px; font-size: 16px;"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">inventory_2</span> Información del Paquete</h3>
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-              <tr style="border-bottom: 1px solid #eee;">
-                <th style="padding: 8px 0; color:#070b24;">Peso (kg)</th><td style="padding: 8px 0;">{{ form.weightKg }} kg</td>
-                <th style="padding: 8px 0; color:#070b24;">Cantidad</th><td style="padding: 8px 0;">{{ form.quantity }}</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #eee;">
-                <th style="padding: 8px 0; color:#070b24;">Dimensiones</th>
-                <td style="padding: 8px 0;">{{ form.lengthCm || '-' }} x {{ form.widthCm || '-' }} x {{ form.heightCm || '-' }} cm</td>
-                <th style="padding: 8px 0; color:#070b24;">Distancia</th><td style="padding: 8px 0;">{{ form.distanceKm || '-' }} km</td>
-              </tr>
-              <tr>
-                <th style="padding: 8px 0; color:#070b24;">Descripción</th><td colspan="3" style="padding: 8px 0;">{{ form.description || 'Sin descripción' }}</td>
-              </tr>
-              <tr>
-                <th style="padding: 8px 0; color:#070b24;">Manejo Especial</th>
-                <td colspan="3" style="padding: 8px 0;">
-                  <b>
-                    @if (form.isFragile) {
-                      <span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> Paquete Frágil
-                    } @else {
-                      Normal
-                    }
-                  </b>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="margin-top: 3rem; text-align:center; color: #666; font-size: 12px;">
-            Documento generado automáticamente por el sistema logístico de Nexgo.<br>
-            Para consultas o soporte, comuníquese con nuestras oficinas en Guatemala o visite nuestro sitio web.
           </div>
         </div>
       </div>
     }
   `,
   styles: [`
-    .nx-container { min-height: 100vh; background: #f8fafc; }
-    .header-content { padding: 2rem 5%; background: var(--primary); color: white; }
-    .header-content h1 { margin: 0; font-size: 2rem; display: flex; align-items: center; gap: 10px; }
-    .header-content p { margin: 5px 0 0; opacity: 0.8; }
-    
-    .nx-main { padding: 2rem 5%; }
-    .workflow-container { max-width: 1200px; margin: 0 auto; }
-    
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-      gap: 2rem;
-    }
+    .nx-main { padding-top: var(--navbar-height); min-height: 100vh; }
+    .nx-content { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
 
-    .nx-card {
-      background: var(--bg-card); /* Soft Celeste */
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      border: 1px solid rgba(79, 70, 229, 0.08);
-      overflow: hidden;
+    /* STEPPER UI */
+    .stepper-wrapper {
+      position: relative;
+      margin-bottom: 3rem;
+      padding: 0 1rem;
+    }
+    .stepper-line {
+      position: absolute;
+      top: 25px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 1;
+    }
+    .stepper-progress {
+      height: 100%;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--glow-primary);
+      transition: width var(--tr);
+    }
+    .stepper-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+    .step-item {
       display: flex;
       flex-direction: column;
-      transition: transform var(--tr);
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      width: 80px;
     }
-    .nx-card:hover { transform: translateY(-4px); }
+    .step-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all var(--tr);
+      font-size: 1.25rem;
+    }
+    .step-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      transition: color var(--tr);
+    }
+    .step-item.active .step-circle {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 0 20px var(--glow-primary);
+      transform: scale(1.1);
+    }
+    .step-item.active .step-label { color: white; }
+    .step-item.completed .step-circle {
+      background: var(--status-delivered);
+      border-color: var(--status-delivered);
+      color: white;
+    }
 
+    /* CARD STYLES */
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      animation: slideUp 0.4s ease-out;
+    }
     .card-header {
-      padding: 1.25rem 1.5rem;
-      background: rgba(79, 70, 229, 0.04);
-      border-bottom: 1px solid rgba(79, 70, 229, 0.08);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .card-header h3 { margin: 0; font-size: 1.1rem; color: #080C28; display: flex; align-items: center; gap: 8px; font-weight: 800; }
-
-    .card-body { padding: 1.75rem; flex: 1; }
-
-    .cols-3 { grid-template-columns: repeat(3, 1fr); }
-
-    .success-icon { animation: bounce 1s infinite alternate; }
-    @keyframes bounce { 
-      from { transform: translateY(0); }
-      to { transform: translateY(-10px); }
+    .card-header h3 { margin: 0; display: flex; align-items: center; gap: 12px; color: white; font-size: 1.2rem; }
+    .card-header h3 .material-symbols-outlined { color: var(--primary); }
+    .step-indicator { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+    
+    .card-body { padding: 2rem; }
+    .card-footer-actions {
+      padding: 1.5rem 2rem;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
-    /* Ocultar elementos de UI cuando se imprime o se activa el modo print */
-    .print-container {
-      display: block;
-      position: fixed;
-      left: -9999px;
-      top: 0;
-      z-index: -1;
+    /* SUCCESS SCREEN */
+    .success-icon-wrapper {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    .success-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid var(--status-delivered);
+      animation: pulse 2s infinite;
+    }
+    .success-icon-main { font-size: 5rem !important; color: var(--status-delivered); z-index: 2; }
+    
+    .tracking-badge {
+      display: inline-flex;
+      flex-direction: column;
+      background: rgba(99,102,241,0.1);
+      padding: 1rem 2rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(99,102,241,0.2);
+      margin-bottom: 3rem;
+    }
+    .tracking-badge .label { font-size: 0.7rem; font-weight: 800; color: var(--primary); letter-spacing: 0.1em; }
+    .tracking-badge .value { font-size: 1.8rem; font-weight: 800; color: white; }
+
+    .success-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      transition: all var(--tr);
+      text-align: left;
+    }
+    .action-btn .icon { font-size: 2.2rem !important; opacity: 0.8; }
+    .action-btn .btn-title { display: block; font-weight: 700; font-size: 1rem; color: white; }
+    .action-btn .btn-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .action-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); border-color: rgba(99,102,241,0.3); }
+    
+    .action-btn.primary { border-left: 4px solid var(--primary); }
+    .action-btn.secondary { border-left: 4px solid var(--accent); }
+    .action-btn.accent { border-left: 4px solid var(--status-delivered); }
+    .action-btn.ghost { border-left: 4px solid #64748b; }
+
+    /* UTILS */
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.4); opacity: 0; } }
+
+    .nx-divider { border: none; height: 1px; background: rgba(255,255,255,0.05); margin: 1.5rem 0; }
+    .input-with-icon { position: relative; display: flex; align-items: center; }
+    .currency-prefix { position: absolute; left: 1rem; font-weight: 700; color: var(--primary); }
+
+    .print-hide { display: block; }
+    .print-container { position: fixed; left: -9999px; top: 0; }
     
     @media print {
-      :host ::ng-deep app-sidebar,
       .print-hide { display: none !important; }
-      @page { margin: 0; }
-      body { margin: 0; padding: 0; background: white !important; }
-
-      .print-container {
-        display: block !important;
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: auto;
-        background: white !important; color: black !important;
-        z-index: 9999;
-      }
+      .print-container { position: static !important; left: 0 !important; display: block !important; background: white !important; }
     }
   `]
 })
@@ -482,6 +629,14 @@ export class NuevoEnvioComponent {
   success = false;
   error   = '';
   trackingNumber = '';
+  currentStep = 1;
+
+  steps = [
+    { id: 1, title: 'Remitente', icon: 'person', component: 'sender' },
+    { id: 2, title: 'Destino', icon: 'location_on', component: 'recipient' },
+    { id: 3, title: 'Paquete', icon: 'inventory_2', component: 'package' },
+    { id: 4, title: 'Cobro', icon: 'payments', component: 'payment' }
+  ];
   
   printMode: 'guia' | 'formulario' | null = null;
   generatingPdf = false;
@@ -508,14 +663,39 @@ export class NuevoEnvioComponent {
 
   constructor(private shipmentService: ShipmentService, private router: Router) {}
 
-  submit() {
-    if (!this.form.senderName || !this.form.recipientName || !this.form.recipientAddress) {
-      this.error = 'Por favor, completa los campos requeridos (*)';
-      return;
+  nextStep() {
+    if (this.currentStep < 4) {
+      if (this.currentStep === 1 && (!this.form.senderName || !this.form.senderPhone || !this.form.senderAddress)) {
+        this.error = 'Complete los campos obligatorios del remitente';
+        setTimeout(() => this.error = '', 3000);
+        return;
+      }
+      if (this.currentStep === 2 && (!this.form.recipientName || !this.form.recipientPhone || !this.form.recipientDepartment || !this.form.recipientAddress)) {
+        this.error = 'Complete los campos obligatorios del destinatario';
+        setTimeout(() => this.error = '', 3000);
+        return;
+      }
+      this.currentStep++;
+      this.error = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
+  }
+
+  prevStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  goToStep(stepId: number) {
+    if (stepId < this.currentStep) {
+      this.currentStep = stepId;
+    }
+  }
+
+  submit() {
     this.form.destinationCity = this.form.recipientMunicipality || '';
-    
     this.saving = true;
     this.error  = '';
 
@@ -524,6 +704,7 @@ export class NuevoEnvioComponent {
         this.saving = false;
         this.success = true;
         this.trackingNumber = (r.data as any).tracking_number || r.data.trackingNumber;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (e) => {
         this.saving = false;
@@ -535,6 +716,7 @@ export class NuevoEnvioComponent {
   resetForm() { 
     this.success = false; 
     this.trackingNumber = ''; 
+    this.currentStep = 1;
     this.printMode = null; 
     this.form = {
       senderName: '', senderPhone: '', senderAddress: '', originCity: 'Guatemala',
@@ -572,17 +754,7 @@ export class NuevoEnvioComponent {
           scale: 4, 
           logging: false,
           useCORS: true,
-          backgroundColor: '#ffffff',
-          onclone: (clonedDoc) => {
-            const el = clonedDoc.querySelector('.print-container') as HTMLElement;
-            if (el) {
-              el.style.left = '0';
-              el.style.top = '0';
-              el.style.position = 'relative';
-              el.style.display = 'block';
-              el.style.visibility = 'visible';
-            }
-          }
+          backgroundColor: '#ffffff'
         });
         
         const imgData = canvas.toDataURL('image/png');
