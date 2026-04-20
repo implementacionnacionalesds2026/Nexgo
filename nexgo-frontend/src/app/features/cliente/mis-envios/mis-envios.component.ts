@@ -223,9 +223,9 @@ import * as XLSX from 'xlsx';
                                    <span class="material-symbols-outlined">print</span> 
                                    {{ generatingPdfId === s.id ? 'Generando...' : 'Imprimir Guía' }}
                                  </a>
-                                 <a (click)="imprimirFormulario(s)" class="dropdown-item">
-                                   <span class="material-symbols-outlined">description</span> Formulario
-                                 </a>
+                                  <a (click)="imprimirFormulario(s)" class="dropdown-item">
+                                    <span class="material-symbols-outlined">description</span> Generar Manifiesto
+                                  </a>
                               </div>
                             </div>
                           </td>
