@@ -58,7 +58,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                     </button>
                     <div class="status-indicator" [attr.data-status]="shipment.currentStatus || $any(shipment).current_status">
                       <span class="dot"></span>
-                      {{ (shipment.currentStatus || $any(shipment).current_status) | uppercase }}
+                      {{ (shipment.currentStatus || $any(shipment).current_status || '').replace('_', ' ') | uppercase }}
                     </div>
                   </div>
                 </div>
@@ -227,7 +227,7 @@ import { Shipment } from '../../../core/models/shipment.model';
                                 <div class="step-body">
                                   <div class="status-change">
                                     <span class="label">Estado:</span>
-                                    <span class="status-val" [attr.data-status]="entry.status">{{ entry.status }}</span>
+                                    <span class="status-val" [attr.data-status]="entry.status">{{ entry.status.replace('_', ' ') }}</span>
                                   </div>
                                   @if (entry.notes && entry.notes !== 'Envío registrado en el sistema') {
                                     <p class="step-notes">"{{ entry.notes }}"</p>
