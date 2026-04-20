@@ -107,16 +107,29 @@ import * as XLSX from 'xlsx';
                     @if (isColumnVisible('fecha')) { <th>Fecha</th> }
                     @if (isColumnVisible('remitente')) { <th>Remitente</th> }
                     @if (isColumnVisible('destinatario')) { <th>Destinatario</th> }
-                    @if (isColumnVisible('ruta')) {
+                    @if (isColumnVisible('origen')) {
                       <th>
                         <div style="display:flex; align-items:center; gap:8px;">
-                          Origen → Destino
-                          <button class="filter-btn" [class.active]="showFilters.route" (click)="toggleColumnFilter('route')">
+                          Origen
+                          <button class="filter-btn" [class.active]="showFilters.origen" (click)="toggleColumnFilter('origen')">
                             <span class="material-symbols-outlined filter-ico">filter_alt</span>
                           </button>
                         </div>
-                        @if (showFilters.route) {
-                          <input [(ngModel)]="columnFilters.route" class="nx-input col-filter-input" placeholder="Filtrar ciudad..." (click)="$event.stopPropagation()" />
+                        @if (showFilters.origen) {
+                          <input [(ngModel)]="columnFilters.origen" class="nx-input col-filter-input" placeholder="Filtrar origen..." (click)="$event.stopPropagation()" />
+                        }
+                      </th>
+                    }
+                    @if (isColumnVisible('destino')) {
+                      <th>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          Destino
+                          <button class="filter-btn" [class.active]="showFilters.destino" (click)="toggleColumnFilter('destino')">
+                            <span class="material-symbols-outlined filter-ico">filter_alt</span>
+                          </button>
+                        </div>
+                        @if (showFilters.destino) {
+                          <input [(ngModel)]="columnFilters.destino" class="nx-input col-filter-input" placeholder="Filtrar destino..." (click)="$event.stopPropagation()" />
                         }
                       </th>
                     }
@@ -144,7 +157,8 @@ import * as XLSX from 'xlsx';
                         @if (isColumnVisible('fecha')) { <td style="font-size:.8rem;">{{ s.created_at | date:'dd/MM/yy' }}</td> }
                         @if (isColumnVisible('remitente')) { <td style="font-size:.83rem;">{{ s.sender_name }}</td> }
                         @if (isColumnVisible('destinatario')) { <td style="font-size:.83rem;">{{ s.recipient_name }}</td> }
-                        @if (isColumnVisible('ruta')) { <td style="font-size:.83rem; white-space: nowrap;">{{ s.origin_city }} → {{ s.destination_city }}</td> }
+                        @if (isColumnVisible('origen')) { <td style="font-size:.83rem;">{{ s.origin_city }}</td> }
+                        @if (isColumnVisible('destino')) { <td style="font-size:.83rem;">{{ s.destination_city }}</td> }
                         @if (isColumnVisible('peso')) { <td style="font-size:.83rem;">{{ s.weight_kg }} kg</td> }
                         @if (isColumnVisible('costo')) { <td style="font-size:.83rem;font-weight:600;color:var(--accent);">Q{{ s.estimated_cost }}</td> }
                         @if (isColumnVisible('estado')) { <td><app-status-badge [status]="s.current_status" /></td> }
@@ -155,7 +169,7 @@ import * as XLSX from 'xlsx';
                             <div class="dropdown-container" style="position:relative; display:inline-block;">
                               <button (click)="toggleDropdown(s.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
                               <div class="dropdown-menu" 
-                                   [class.dropup]="(i >= filteredShipments.length - 2 && filteredShipments.length > 2) || filteredShipments.length < 3"
+                                   [class.dropup]="i === filteredShipments.length - 1 && filteredShipments.length > 2"
                                    [style.display]="openDropdownId === s.id ? 'block' : 'none'">
                                  <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">
                                    <span class="material-symbols-outlined">visibility</span> Ver Solicitud
@@ -182,7 +196,7 @@ import * as XLSX from 'xlsx';
                           </div>
                           <h3>no encontré nada :(</h3>
                           <p>Verifica los términos de búsqueda o los filtros activos</p>
-                          <button class="nx-btn btn-ghost" (click)="searchText = ''; activeStatusFilter = null; columnFilters.tracking=''; columnFilters.route=''; columnFilters.status=''" style="margin-top:1rem;">Limpiar filtros</button>
+                          <button class="nx-btn btn-ghost" (click)="searchText = ''; activeStatusFilter = null; columnFilters.tracking=''; columnFilters.origen=''; columnFilters.destino=''; columnFilters.status=''" style="margin-top:1rem;">Limpiar filtros</button>
                         </div>
                       </td></tr>
                     }
@@ -429,7 +443,11 @@ import * as XLSX from 'xlsx';
     .column-opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; color: white; cursor: pointer; font-size: 0.9rem; }
     .column-opt input { cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary); }
 
-    .nx-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .nx-table-wrap { 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch; 
+      min-height: 250px; /* Space for dropdowns even with 1 row */
+    }
 
     /* ROBOT CONFUSED EMPTY STATE */
     .search-empty { padding: 4rem 2rem; color: var(--text-muted); }
@@ -549,7 +567,8 @@ export class MisEnviosComponent implements OnInit {
     { key: 'fecha', label: 'Fecha', visible: true },
     { key: 'remitente', label: 'Remitente', visible: false },
     { key: 'destinatario', label: 'Destinatario', visible: false },
-    { key: 'ruta', label: 'Origen → Destino', visible: true },
+    { key: 'origen', label: 'Origen', visible: true },
+    { key: 'destino', label: 'Destino', visible: true },
     { key: 'peso', label: 'Peso', visible: true },
     { key: 'costo', label: 'Costo est.', visible: true },
     { key: 'estado', label: 'Estado', visible: true },
@@ -560,13 +579,15 @@ export class MisEnviosComponent implements OnInit {
   
   columnFilters = {
     tracking: '',
-    route: '',
+    origen: '',
+    destino: '',
     status: ''
   };
   
   showFilters = {
     tracking: false,
-    route: false,
+    origen: false,
+    destino: false,
     status: false
   };
 
@@ -585,12 +606,13 @@ export class MisEnviosComponent implements OnInit {
       const q = this.columnFilters.tracking.toLowerCase();
       result = result.filter(s => s.tracking_number?.toLowerCase().includes(q));
     }
-    if (this.columnFilters.route) {
-      const q = this.columnFilters.route.toLowerCase();
-      result = result.filter(s => 
-        s.origin_city?.toLowerCase().includes(q) || 
-        s.destination_city?.toLowerCase().includes(q)
-      );
+    if (this.columnFilters.origen) {
+      const q = this.columnFilters.origen.toLowerCase();
+      result = result.filter(s => s.origin_city?.toLowerCase().includes(q));
+    }
+    if (this.columnFilters.destino) {
+      const q = this.columnFilters.destino.toLowerCase();
+      result = result.filter(s => s.destination_city?.toLowerCase().includes(q));
     }
     if (this.columnFilters.status) {
       const q = this.columnFilters.status.toLowerCase();
@@ -638,7 +660,7 @@ export class MisEnviosComponent implements OnInit {
     }
   }
 
-  toggleColumnFilter(col: 'tracking' | 'route' | 'status') {
+  toggleColumnFilter(col: 'tracking' | 'origen' | 'destino' | 'status') {
     this.showFilters[col] = !this.showFilters[col];
   }
 
