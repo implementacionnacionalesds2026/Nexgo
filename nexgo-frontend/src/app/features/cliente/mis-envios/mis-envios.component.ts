@@ -9,21 +9,53 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import JsBarcode from 'jsbarcode';
 
+import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
+
 @Component({
   selector: 'app-mis-envios',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, StatusBadgeComponent, RouterLink],
+  imports: [CommonModule, SidebarComponent, StatusBadgeComponent, RouterLink, FormsModule],
   template: `
     <div class="nx-layout">
       <app-sidebar />
       <main class="nx-main">
         <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom;">inventory_2</span> Mis Envíos</span></div>
-        <div class="nx-content">
-          <div class="nx-page-header">
-            <h1>Historial de Envíos</h1>
-            <p>Todos tus envíos registrados en Nexgo</p>
-            <div class="header-actions">
+        <div class="nx-content">          <div class="nx-page-header">
+            <div class="header-main-row">
+              <div>
+                <h1>Historial de Envíos</h1>
+                <p>Todos tus envíos registrados en Nexgo</p>
+              </div>
+            </div>
+            <div class="header-actions-row">
               <a routerLink="/cliente/nuevo-envio" class="nx-btn btn-accent"><span class="material-symbols-outlined">add_box</span> Nuevo envío</a>
+              <div class="search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" [(ngModel)]="searchText" placeholder="Buscar por todos los campos de la tabla..." class="nx-input search-input" />
+              </div>
+              
+              <div class="table-tools">
+                <button class="nx-btn btn-columns" (click)="toggleColumnMenu($event)">
+                  <span class="material-symbols-outlined">view_column</span> Columnas
+                </button>
+                
+                @if (isColumnMenuOpen) {
+                  <div class="columns-dropdown animate-fade-in" (click)="$event.stopPropagation()">
+                    <div style="font-weight:700; margin-bottom:8px; font-size:0.75rem; color:var(--accent); text-transform:uppercase;">Visibilidad Columnas</div>
+                    @for (col of columnConfigs; track col.key) {
+                      <label class="column-opt">
+                        <input type="checkbox" [(ngModel)]="col.visible" />
+                        <span>{{ col.label }}</span>
+                      </label>
+                    }
+                  </div>
+                }
+                
+                <button class="nx-btn btn-export" (click)="exportToExcel()">
+                  <span class="material-symbols-outlined">download</span> Exportar
+                </button>
+              </div>
             </div>
           </div>
 
@@ -32,22 +64,23 @@ import JsBarcode from 'jsbarcode';
           @if (!loading) {
             <!-- Stats row -->
             <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
-              <div class="nx-kpi-card">
+              <!-- ... existing KPI code remains same ... -->
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === null" (click)="activeStatusFilter = null">
                 <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">inventory_2</span></div>
                 <div class="kpi-label">Total envíos</div>
                 <div class="kpi-value">{{ total }}</div>
               </div>
-              <div class="nx-kpi-card">
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'PENDIENTE'" (click)="toggleStatusFilter('PENDIENTE')">
                 <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">pending_actions</span></div>
                 <div class="kpi-label">Pendientes</div>
                 <div class="kpi-value" style="color:var(--status-pending);">{{ countByStatus('PENDIENTE') }}</div>
               </div>
-              <div class="nx-kpi-card">
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'EN_TRANSITO'" (click)="toggleStatusFilter('EN_TRANSITO')">
                 <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">local_shipping</span></div>
                 <div class="kpi-label">En tránsito</div>
                 <div class="kpi-value" style="color:#60A5FA;">{{ countByStatus('EN_TRANSITO') }}</div>
               </div>
-              <div class="nx-kpi-card">
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'ENTREGADO'" (click)="toggleStatusFilter('ENTREGADO')">
                 <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">check_circle</span></div>
                 <div class="kpi-label">Entregados</div>
                 <div class="kpi-value" style="color:var(--status-delivered);">{{ countByStatus('ENTREGADO') }}</div>
@@ -58,45 +91,98 @@ import JsBarcode from 'jsbarcode';
               <div class="nx-table-wrap">
                 <table class="nx-table">
                   <thead><tr>
-                    <th>Guía</th><th>Fecha</th><th>Origen → Destino</th><th>Peso</th><th>Costo est.</th><th>Estado</th><th style="min-width: 200px;">Acciones</th>
+                    @if (isColumnVisible('guia')) {
+                      <th>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          Guía 
+                          <button class="filter-btn" [class.active]="showFilters.tracking" (click)="toggleColumnFilter('tracking')">
+                            <span class="material-symbols-outlined filter-ico">filter_alt</span>
+                          </button>
+                        </div>
+                        @if (showFilters.tracking) {
+                          <input [(ngModel)]="columnFilters.tracking" class="nx-input col-filter-input" placeholder="Filtrar guía..." (click)="$event.stopPropagation()" />
+                        }
+                      </th>
+                    }
+                    @if (isColumnVisible('fecha')) { <th>Fecha</th> }
+                    @if (isColumnVisible('remitente')) { <th>Remitente</th> }
+                    @if (isColumnVisible('destinatario')) { <th>Destinatario</th> }
+                    @if (isColumnVisible('ruta')) {
+                      <th>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          Origen → Destino
+                          <button class="filter-btn" [class.active]="showFilters.route" (click)="toggleColumnFilter('route')">
+                            <span class="material-symbols-outlined filter-ico">filter_alt</span>
+                          </button>
+                        </div>
+                        @if (showFilters.route) {
+                          <input [(ngModel)]="columnFilters.route" class="nx-input col-filter-input" placeholder="Filtrar ciudad..." (click)="$event.stopPropagation()" />
+                        }
+                      </th>
+                    }
+                    @if (isColumnVisible('peso')) { <th>Peso</th> }
+                    @if (isColumnVisible('costo')) { <th>Costo est.</th> }
+                    @if (isColumnVisible('estado')) {
+                      <th>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          Estado
+                          <button class="filter-btn" [class.active]="showFilters.status" (click)="toggleColumnFilter('status')">
+                            <span class="material-symbols-outlined filter-ico">filter_alt</span>
+                          </button>
+                        </div>
+                        @if (showFilters.status) {
+                          <input [(ngModel)]="columnFilters.status" class="nx-input col-filter-input" placeholder="Filtrar estado..." (click)="$event.stopPropagation()" />
+                        }
+                      </th>
+                    }
+                    @if (isColumnVisible('acciones')) { <th style="min-width: 200px;">Acciones</th> }
                   </tr></thead>
                   <tbody>
-                    @for (s of shipments; track s.id; let i = $index) {
+                    @for (s of filteredShipments; track s.id; let i = $index) {
                       <tr>
-                        <td class="font-mono" style="font-size:.78rem;color:var(--accent);">{{ s.tracking_number }}</td>
-                        <td style="font-size:.8rem;">{{ s.created_at | date:'dd/MM/yy' }}</td>
-                        <td style="font-size:.83rem;">{{ s.origin_city }} → {{ s.destination_city }}</td>
-                        <td style="font-size:.83rem;">{{ s.weight_kg }} kg</td>
-                        <td style="font-size:.83rem;font-weight:600;color:var(--accent);">Q{{ s.estimated_cost }}</td>
-                        <td><app-status-badge [status]="s.current_status" /></td>
-                        <td>
-                          <!-- Dropdown Acciones -->
-                          <div class="dropdown-container" style="position:relative; display:inline-block;">
-                            <button (click)="toggleDropdown(s.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
-                            <div class="dropdown-menu" 
-                                 [class.dropup]="i >= shipments.length - 2 && shipments.length > 2"
-                                 [style.display]="openDropdownId === s.id ? 'block' : 'none'">
-                               <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">
-                                 <span class="material-symbols-outlined">visibility</span> Ver Solicitud
-                               </a>
-                               <a (click)="imprimirGuia(s)" class="dropdown-item" [style.opacity]="generatingPdfId === s.id ? 0.6 : 1">
-                                 <span class="material-symbols-outlined">print</span> 
-                                 {{ generatingPdfId === s.id ? 'Generando...' : 'Imprimir Guía' }}
-                               </a>
-                               <a (click)="imprimirFormulario(s)" class="dropdown-item">
-                                 <span class="material-symbols-outlined">description</span> Formulario
-                               </a>
+                        @if (isColumnVisible('guia')) { <td class="font-mono" style="font-size:.78rem;color:var(--accent);">{{ s.tracking_number }}</td> }
+                        @if (isColumnVisible('fecha')) { <td style="font-size:.8rem;">{{ s.created_at | date:'dd/MM/yy' }}</td> }
+                        @if (isColumnVisible('remitente')) { <td style="font-size:.83rem;">{{ s.sender_name }}</td> }
+                        @if (isColumnVisible('destinatario')) { <td style="font-size:.83rem;">{{ s.recipient_name }}</td> }
+                        @if (isColumnVisible('ruta')) { <td style="font-size:.83rem; white-space: nowrap;">{{ s.origin_city }} → {{ s.destination_city }}</td> }
+                        @if (isColumnVisible('peso')) { <td style="font-size:.83rem;">{{ s.weight_kg }} kg</td> }
+                        @if (isColumnVisible('costo')) { <td style="font-size:.83rem;font-weight:600;color:var(--accent);">Q{{ s.estimated_cost }}</td> }
+                        @if (isColumnVisible('estado')) { <td><app-status-badge [status]="s.current_status" /></td> }
+                        
+                        @if (isColumnVisible('acciones')) {
+                          <td>
+                            <!-- Dropdown Acciones -->
+                            <div class="dropdown-container" style="position:relative; display:inline-block;">
+                              <button (click)="toggleDropdown(s.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
+                              <div class="dropdown-menu" 
+                                   [class.dropup]="(i >= filteredShipments.length - 2 && filteredShipments.length > 2) || filteredShipments.length < 3"
+                                   [style.display]="openDropdownId === s.id ? 'block' : 'none'">
+                                 <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">
+                                   <span class="material-symbols-outlined">visibility</span> Ver Solicitud
+                                 </a>
+                                 <a (click)="imprimirGuia(s)" class="dropdown-item" [style.opacity]="generatingPdfId === s.id ? 0.6 : 1">
+                                   <span class="material-symbols-outlined">print</span> 
+                                   {{ generatingPdfId === s.id ? 'Generando...' : 'Imprimir Guía' }}
+                                 </a>
+                                 <a (click)="imprimirFormulario(s)" class="dropdown-item">
+                                   <span class="material-symbols-outlined">description</span> Formulario
+                                 </a>
+                              </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
+                        }
                       </tr>
                     }
-                    @if (shipments.length === 0) {
+                    @if (filteredShipments.length === 0) {
                       <tr><td colspan="7">
-                        <div class="nx-empty">
-                          <div class="empty-icon">📭</div>
-                          <h3>Sin envíos aún</h3>
-                          <p><a routerLink="/cliente/nuevo-envio" style="color:var(--accent)">Registra tu primer envío</a></p>
+                        <div class="nx-empty search-empty animate-fade-in">
+                          <div class="robot-confused">
+                            <span class="material-symbols-outlined robot-icon">smart_toy</span>
+                            <div class="robot-bubbles"><span>?</span><span>!</span></div>
+                          </div>
+                          <h3>no encontré nada :(</h3>
+                          <p>Verifica los términos de búsqueda o los filtros activos</p>
+                          <button class="nx-btn btn-ghost" (click)="searchText = ''; activeStatusFilter = null; columnFilters.tracking=''; columnFilters.route=''; columnFilters.status=''" style="margin-top:1rem;">Limpiar filtros</button>
                         </div>
                       </td></tr>
                     }
@@ -290,6 +376,75 @@ import JsBarcode from 'jsbarcode';
     }
   `,
   styles: [`
+    .nx-page-header { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
+    .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .header-actions-row { display: flex; align-items: center; gap: 1rem; width: 100%; }
+    
+    /* Search box */
+    .search-box { position: relative; display: flex; align-items: center; flex: 1; }
+    .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+    .search-input { padding-left: 40px !important; width: 100%; height: 45px; background: rgba(0,0,0,0.3) !important; border-color: rgba(255,255,255,0.1) !important; font-size: 0.95rem; }
+    .search-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important; background: rgba(0,0,0,0.4) !important; }
+
+    /* KPI Interactivity */
+    .nx-kpi-card { cursor: pointer; transition: all var(--tr); border: 2px solid transparent; }
+    .nx-kpi-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.03); }
+    .nx-kpi-card.active { 
+      border-color: var(--primary); 
+      background: rgba(99, 102, 241, 0.15); 
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.25), inset 0 0 10px rgba(99, 102, 241, 0.1);
+      transform: scale(1.02);
+      z-index: 2;
+    }
+    
+    .filter-btn { 
+      background: none; border: none; padding: 0; color: inherit; cursor: pointer; display: inline-flex; align-items: center;
+      transition: color 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active { color: var(--primary); }
+    .filter-ico { font-size: 16px; margin-left: 6px; opacity: 0.7; }
+
+    .col-filter-input { 
+      margin-top: 8px; 
+      height: 30px !important; 
+      font-size: 0.75rem !important; 
+      padding: 0 8px !important; 
+      background: rgba(0,0,0,0.5) !important; 
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      color: white !important;
+      width: 100%;
+    }
+
+    /* Action Utils */
+    .table-tools { display: flex; gap: 10px; margin-left: auto; position: relative; }
+    .btn-columns { background: #6366F1 !important; color: white !important; }
+    .btn-export { background: #059669 !important; color: white !important; }
+    
+    .columns-dropdown {
+      position: absolute; top: calc(100% + 5px); right: 0; z-index: 110;
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      padding: 12px; min-width: 200px; backdrop-filter: blur(10px);
+    }
+    .column-opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; color: white; cursor: pointer; font-size: 0.9rem; }
+    .column-opt input { cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary); }
+
+    .nx-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* ROBOT CONFUSED EMPTY STATE */
+    .search-empty { padding: 4rem 2rem; color: var(--text-muted); }
+    .robot-confused { position: relative; font-size: 5rem; color: var(--primary); margin-bottom: 1.5rem; display: inline-block; }
+    .robot-icon { font-size: inherit; }
+    .robot-bubbles { position: absolute; top: 0; right: -20px; font-weight: 800; font-size: 1.5rem; }
+    .robot-bubbles span { position: absolute; animation: floatBubble 2s infinite ease-in-out; }
+    .robot-bubbles span:nth-child(1) { left: 0; top: -10px; animation-delay: 0s; color: var(--accent); }
+    .robot-bubbles span:nth-child(2) { left: 20px; top: 10px; animation-delay: 0.5s; color: var(--primary); }
+
+    @keyframes floatBubble { 
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+      50% { transform: translateY(-10px) scale(1.2); opacity: 1; }
+    }
+
     /* Dropdown menu */
     .dropdown-container .dropdown-menu {
       position: absolute; 
@@ -386,6 +541,78 @@ export class MisEnviosComponent implements OnInit {
   today = new Date();
   openDropdownId: string | null = null;
 
+  searchText: string = '';
+  activeStatusFilter: string | null = null;
+  
+  columnConfigs = [
+    { key: 'guia', label: 'Guía', visible: true },
+    { key: 'fecha', label: 'Fecha', visible: true },
+    { key: 'remitente', label: 'Remitente', visible: false },
+    { key: 'destinatario', label: 'Destinatario', visible: false },
+    { key: 'ruta', label: 'Origen → Destino', visible: true },
+    { key: 'peso', label: 'Peso', visible: true },
+    { key: 'costo', label: 'Costo est.', visible: true },
+    { key: 'estado', label: 'Estado', visible: true },
+    { key: 'acciones', label: 'Acciones', visible: true }
+  ];
+
+  isColumnMenuOpen = false;
+  
+  columnFilters = {
+    tracking: '',
+    route: '',
+    status: ''
+  };
+  
+  showFilters = {
+    tracking: false,
+    route: false,
+    status: false
+  };
+
+  get filteredShipments(): any[] {
+    if (!this.shipments) return [];
+    let result = [...this.shipments];
+
+    // Status Filter (from KPIs)
+    if (this.activeStatusFilter) {
+      result = result.filter(s => s.current_status === this.activeStatusFilter);
+    }
+    // ... filtering continues in next chunk
+
+    // Column Filters (Excel style)
+    if (this.columnFilters.tracking) {
+      const q = this.columnFilters.tracking.toLowerCase();
+      result = result.filter(s => s.tracking_number?.toLowerCase().includes(q));
+    }
+    if (this.columnFilters.route) {
+      const q = this.columnFilters.route.toLowerCase();
+      result = result.filter(s => 
+        s.origin_city?.toLowerCase().includes(q) || 
+        s.destination_city?.toLowerCase().includes(q)
+      );
+    }
+    if (this.columnFilters.status) {
+      const q = this.columnFilters.status.toLowerCase();
+      result = result.filter(s => s.current_status?.toLowerCase().includes(q));
+    }
+
+    // Global Search Filter
+    if (this.searchText) {
+      const q = this.searchText.toLowerCase();
+      result = result.filter(s => 
+        (s.tracking_number?.toLowerCase().includes(q)) ||
+        (s.origin_city?.toLowerCase().includes(q)) ||
+        (s.destination_city?.toLowerCase().includes(q)) ||
+        (s.sender_name?.toLowerCase().includes(q)) ||
+        (s.recipient_name?.toLowerCase().includes(q)) ||
+        (s.current_status?.toLowerCase().includes(q))
+      );
+    }
+
+    return result;
+  }
+
   constructor(private shipmentService: ShipmentService) { }
 
   ngOnInit() {
@@ -403,6 +630,49 @@ export class MisEnviosComponent implements OnInit {
     return this.shipments.filter((s: any) => s.current_status === status).length;
   }
 
+  toggleStatusFilter(status: string) {
+    if (this.activeStatusFilter === status) {
+      this.activeStatusFilter = null;
+    } else {
+      this.activeStatusFilter = status;
+    }
+  }
+
+  toggleColumnFilter(col: 'tracking' | 'route' | 'status') {
+    this.showFilters[col] = !this.showFilters[col];
+  }
+
+  toggleColumnMenu(event: Event) {
+    event.stopPropagation();
+    this.isColumnMenuOpen = !this.isColumnMenuOpen;
+  }
+
+  isColumnVisible(key: string): boolean {
+    return this.columnConfigs.find(c => c.key === key)?.visible || false;
+  }
+
+  exportToExcel() {
+    const dataToExport = this.filteredShipments.map(s => ({
+      'Guía': s.tracking_number,
+      'Fecha': new Date(s.created_at).toLocaleDateString(),
+      'Remitente': s.sender_name || '-',
+      'Destinatario': s.recipient_name || '-',
+      'Origen': s.origin_city,
+      'Destino': s.destination_city,
+      'Peso (kg)': s.weight_kg,
+      'Costo (Q)': s.estimated_cost,
+      'Estado': s.current_status,
+      'Descripción': s.description || ''
+    }));
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Envíos');
+
+    const fileName = `Nexgo_Envios_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  }
+
   toggleDropdown(id: string, event: Event) {
     event.stopPropagation();
     if (this.openDropdownId === id) {
@@ -414,8 +684,12 @@ export class MisEnviosComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   closeDropdown(event: Event) {
-    if (!(event.target as HTMLElement).closest('.dropdown-container')) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.dropdown-container')) {
       this.openDropdownId = null;
+    }
+    if (!target.closest('.table-tools')) {
+      this.isColumnMenuOpen = false;
     }
   }
 
