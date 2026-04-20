@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -74,15 +74,15 @@ import JsBarcode from 'jsbarcode';
                   <button class="action-btn primary" (click)="imprimirGuia()" [disabled]="generatingPdf">
                     <span class="material-symbols-outlined icon">receipt_long</span>
                     <div class="btn-content">
-                      <span class="btn-title">Imprimir GUÍA</span>
+                      <span class="btn-title">{{ generatingPdf && printMode === 'guia' ? 'Generando...' : 'Imprimir GUÍA' }}</span>
                       <span class="btn-sub">Formato 10x10cm</span>
                     </div>
                   </button>
                   
-                  <button class="action-btn secondary" (click)="imprimirFormulario()">
+                  <button class="action-btn secondary" (click)="imprimirFormulario()" [disabled]="generatingPdf">
                     <span class="material-symbols-outlined icon">description</span>
                     <div class="btn-content">
-                      <span class="btn-title">Imprimir Formulario</span>
+                      <span class="btn-title">{{ generatingPdf && printMode === 'formulario' ? 'Generando...' : 'Imprimir Formulario' }}</span>
                       <span class="btn-sub">Detalle completo</span>
                     </div>
                   </button>
@@ -317,7 +317,7 @@ import JsBarcode from 'jsbarcode';
 
     <!-- ZONA IMPRESIÓN GUÍA (Hidden) -->
     @if (printMode === 'guia') {
-      <div class="print-container">
+      <div class="print-guia-container">
         <div style="display: flex; justify-content: center; align-items: flex-start; background: white; width: 100mm; height: 100mm;">
           <div #guiaContainer style="width: 385px; height: 375px; background: white; border: 2px solid black; box-sizing: border-box; display: flex; flex-direction: column; color: black; font-family: Arial, sans-serif;">
             
@@ -439,8 +439,7 @@ import JsBarcode from 'jsbarcode';
                 <div class="m-subtitle" style="text-transform: uppercase;">ZONA 10, CIUDAD DE GUATEMALA</div>
              </div>
              <div style="width: 150px; text-align: right;">
-                <div style="font-size: 9px; font-weight: 800;">Manifiesto: <b>{{ trackingNumber }}</b></div>
-                <div style="font-size: 9px; font-weight: 800; margin-top:4px;">Autorización: <b style="color:#d946ef;">NDS-{{ (trackingNumber || '').toString().substring(0,6) }}</b></div>
+                <div style="font-size: 9px; font-weight: 800;">No. Guia: <b>{{ trackingNumber }}</b></div>
              </div>
           </div>
 
@@ -505,10 +504,6 @@ import JsBarcode from 'jsbarcode';
             </tr>
           </table>
 
-          <div style="display: flex; justify-content: space-between; gap: 40px; margin-top: 40px;">
-            <div class="m-sig-box" style="flex:1;">FIRMA Y HUELLA TITULAR MANIFIESTO</div>
-            <div class="m-sig-box" style="flex:1;">FIRMA Y HUELLA DEL CONDUCTOR</div>
-          </div>
 
           <div style="margin-top: 20px; font-size: 7px; color: #888; text-align: center;">
             Este documento es una representación electrónica del manifiesto de carga Nexgo. Generado el {{ today | date:'dd/MM/yyyy HH:mm' }}.
@@ -718,29 +713,28 @@ import JsBarcode from 'jsbarcode';
         background: white !important; color: black !important;
         z-index: 9999;
       }
-      .nx-layout { display: none !important; }
     }
 
-    /* MANIFESTO STYLES */
+    /* MANIFESTO STYLES (Fuera de media print para que html2canvas los capture) */
     .manifest-doc {
       width: 210mm;
       min-height: 297mm;
       background: white;
-      color: black;
+      color: black !important;
       font-family: 'Arial Narrow', Arial, sans-serif;
       padding: 10mm;
       box-sizing: border-box;
       border: 1px solid #eee;
       margin: 0 auto;
     }
-    .m-table { width: 100%; border-collapse: collapse; border: 2px solid black; }
-    .m-table td { border: 1px solid black; padding: 4px; vertical-align: top; font-size: 9px; line-height: 1.1; }
-    .m-title { font-size: 14px; font-weight: 900; text-align: center; margin-bottom: 4px; }
-    .m-subtitle { font-size: 10px; font-weight: 700; text-align: center; color: #444; }
-    .m-label { font-weight: 800; font-size: 8px; color: #333; margin-bottom: 2px; display: block; text-transform: uppercase; }
-    .m-value { font-weight: 600; font-size: 10px; color: black; }
-    .m-section-header { background: #e5e7eb; font-weight: 800; text-align: center; font-size: 9px; border-top: 2px solid black !important; border-bottom: 2px solid black !important; }
-    .m-sig-box { height: 60px; border-top: 1px solid black; margin-top: 20px; text-align: center; font-size: 8px; font-weight: 700; flex: 1; padding-top: 40px; }
+    .m-table { width: 100%; border-collapse: collapse; border: 2px solid black !important; color: black !important; }
+    .m-table td { border: 1px solid black !important; padding: 4px; vertical-align: top; font-size: 9px; line-height: 1.1; color: black !important; }
+    .m-title { font-size: 14px; font-weight: 900; text-align: center; margin-bottom: 4px; color: black !important; }
+    .m-subtitle { font-size: 10px; font-weight: 700; text-align: center; color: #444 !important; }
+    .m-label { font-weight: 800; font-size: 8px; color: #333 !important; margin-bottom: 2px; display: block; text-transform: uppercase; }
+    .m-value { font-weight: 600; font-size: 10px; color: black !important; }
+    .m-section-header { background: #e5e7eb !important; font-weight: 800; text-align: center; font-size: 9px; border-top: 2px solid black !important; border-bottom: 2px solid black !important; color: black !important; }
+    .m-sig-box { height: 60px; border-top: 1px solid black !important; margin-top: 20px; text-align: center; font-size: 8px; font-weight: 700; color: black !important; padding-top: 40px; flex: 1; }
 
     .copied-badge {
       position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
@@ -792,7 +786,11 @@ export class NuevoEnvioComponent {
     totalPaymentAmount: 0, paymentInstructions: '', comments: ''
   };
 
-  constructor(private shipmentService: ShipmentService, private router: Router) { }
+  constructor(
+    private shipmentService: ShipmentService, 
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   nextStep() {
     if (this.currentStep < 4) {
@@ -880,7 +878,7 @@ export class NuevoEnvioComponent {
       try {
         const tracking = this.trackingNumber || 'ND0000000';
 
-        JsBarcode("#barcodeCanvas", tracking, {
+        JsBarcode("#barcodeCanvasSuccess", tracking, {
           format: "CODE128", width: 2.2, height: 55, displayValue: false, margin: 0,
           background: "#ffffff", lineColor: "#000000"
         });
@@ -917,11 +915,15 @@ export class NuevoEnvioComponent {
     this.generatingPdf = true;
     this.printMode = 'formulario';
 
+    console.log('--- Generando Manifiesto Success ---');
+    this.cdr.detectChanges();
+
     setTimeout(async () => {
       try {
+        console.log('Capturando:', this.manifestContainer.nativeElement);
         const element = this.manifestContainer.nativeElement;
         const canvas = await html2canvas(element, {
-          scale: 3, logging: false, useCORS: true, backgroundColor: '#ffffff',
+          scale: 3, logging: true, useCORS: true, backgroundColor: '#ffffff',
           onclone: (clonedDoc) => {
             const el = clonedDoc.querySelector('.print-manifest-container') as HTMLElement;
             if (el) {

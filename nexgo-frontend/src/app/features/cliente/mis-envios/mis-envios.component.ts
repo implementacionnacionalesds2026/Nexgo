@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ShipmentService } from '../../../core/services/shipment.service';
@@ -219,12 +219,13 @@ import * as XLSX from 'xlsx';
                                  <a [routerLink]="['/cliente/ver-solicitud', s.id]" class="dropdown-item">
                                    <span class="material-symbols-outlined">visibility</span> Ver Solicitud
                                  </a>
-                                 <a (click)="imprimirGuia(s)" class="dropdown-item" [style.opacity]="generatingPdfId === s.id ? 0.6 : 1">
+                                 <a (click)="imprimirGuia(s)" class="dropdown-item" [style.opacity]="generatingPdfId === s.id && printMode === 'guia' ? 0.6 : 1">
                                    <span class="material-symbols-outlined">print</span> 
-                                   {{ generatingPdfId === s.id ? 'Generando...' : 'Imprimir Guía' }}
+                                   {{ (generatingPdfId === s.id && printMode === 'guia') ? 'Generando...' : 'Imprimir Guía' }}
                                  </a>
-                                  <a (click)="imprimirFormulario(s)" class="dropdown-item">
-                                    <span class="material-symbols-outlined">description</span> Generar Manifiesto
+                                  <a (click)="imprimirFormulario(s)" class="dropdown-item" [style.opacity]="generatingPdfId === s.id && printMode === 'formulario' ? 0.6 : 1">
+                                    <span class="material-symbols-outlined">description</span> 
+                                    {{ (generatingPdfId === s.id && printMode === 'formulario') ? 'Generando...' : 'Generar Manifiesto' }}
                                   </a>
                               </div>
                             </div>
@@ -377,8 +378,7 @@ import * as XLSX from 'xlsx';
                 <div class="m-subtitle" style="text-transform: uppercase;">ZONA 10, CIUDAD DE GUATEMALA</div>
              </div>
              <div style="width: 150px; text-align: right;">
-                <div style="font-size: 9px; font-weight: 800;">Manifiesto: <b>{{ printShipment.tracking_number }}</b></div>
-                <div style="font-size: 9px; font-weight: 800; margin-top:4px;">Autorización: <b style="color:#d946ef;">NDS-{{ (printShipment.id || '').toString().substring(0,6) }}</b></div>
+                <div style="font-size: 9px; font-weight: 800;">No. Guia: <b>{{ printShipment.tracking_number }}</b></div>
              </div>
           </div>
 
@@ -443,10 +443,6 @@ import * as XLSX from 'xlsx';
             </tr>
           </table>
 
-          <div style="display: flex; justify-content: space-between; gap: 40px; margin-top: 40px;">
-            <div class="m-sig-box" style="flex: 1;">FIRMA Y HUELLA TITULAR MANIFIESTO</div>
-            <div class="m-sig-box" style="flex: 1;">FIRMA Y HUELLA DEL CONDUCTOR</div>
-          </div>
 
           <div style="margin-top: 20px; font-size: 7px; color: #888; text-align: center;">
             Este documento es una representación electrónica del manifiesto de carga Nexgo. Generado el {{ today | date:'dd/MM/yyyy HH:mm' }}.
@@ -638,8 +634,29 @@ import * as XLSX from 'xlsx';
       position: fixed; 
       left: -9999px; /* Fuera de la pantalla pero visible para el renderizador */
       top: 0;
-      z-index: -1;
     }
+
+    /* MANIFESTO STYLES (Fuera de media print para que html2canvas los capture) */
+    .manifest-doc {
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
+      color: black !important;
+      font-family: 'Arial Narrow', Arial, sans-serif;
+      padding: 10mm;
+      box-sizing: border-box;
+      border: 1px solid #eee;
+      margin: 0 auto;
+    }
+    .m-table { width: 100%; border-collapse: collapse; border: 2px solid black !important; color: black !important; }
+    .m-table td { border: 1px solid black !important; padding: 4px; vertical-align: top; font-size: 9px; line-height: 1.1; color: black !important; }
+    .m-header-cell { background: #f3f4f6 !important; font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 2px solid black !important; }
+    .m-title { font-size: 14px; font-weight: 900; text-align: center; margin-bottom: 4px; color: black !important; }
+    .m-subtitle { font-size: 10px; font-weight: 700; text-align: center; color: #444 !important; }
+    .m-label { font-weight: 800; font-size: 8px; color: #333 !important; margin-bottom: 2px; display: block; text-transform: uppercase; }
+    .m-value { font-weight: 600; font-size: 10px; color: black !important; }
+    .m-section-header { background: #e5e7eb !important; font-weight: 800; text-align: center; font-size: 9px; border-top: 2px solid black !important; border-bottom: 2px solid black !important; color: black !important; }
+    .m-sig-box { height: 60px; border-top: 1px solid black !important; margin-top: 20px; text-align: center; font-size: 8px; font-weight: 700; color: black !important; padding-top: 40px; }
     
     @media print {
       :host ::ng-deep app-sidebar,
@@ -670,27 +687,6 @@ import * as XLSX from 'xlsx';
         writing-mode: vertical-rl; transform: rotate(180deg); background: white; color: black;
         width: 24px; text-align: center; font-size: 11px; font-weight: bold; padding: 4px 0; border-right: 2px solid black; line-height: 1.2;
       }
-
-      /* MANIFESTO STYLES */
-      .manifest-doc {
-        width: 210mm;
-        min-height: 297mm;
-        background: white;
-        color: black;
-        font-family: 'Arial Narrow', Arial, sans-serif;
-        padding: 10mm;
-        box-sizing: border-box;
-        border: 1px solid #eee;
-      }
-      .m-table { width: 100%; border-collapse: collapse; border: 2px solid black; }
-      .m-table td { border: 1px solid black; padding: 4px; vertical-align: top; font-size: 9px; line-height: 1.1; }
-      .m-header-cell { background: #f3f4f6; font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 2px solid black !important; }
-      .m-title { font-size: 14px; font-weight: 900; text-align: center; margin-bottom: 4px; }
-      .m-subtitle { font-size: 10px; font-weight: 700; text-align: center; color: #444; }
-      .m-label { font-weight: 800; font-size: 8px; color: #333; margin-bottom: 2px; display: block; text-transform: uppercase; }
-      .m-value { font-weight: 600; font-size: 10px; color: black; }
-      .m-section-header { background: #e5e7eb; font-weight: 800; text-align: center; font-size: 9px; border-top: 2px solid black !important; border-bottom: 2px solid black !important; }
-      .m-sig-box { height: 60px; border-top: 1px solid black; margin-top: 20px; text-align: center; font-size: 8px; font-weight: 700; }
     }
   `]
 })
@@ -804,7 +800,11 @@ export class MisEnviosComponent implements OnInit {
     return result;
   }
 
-  constructor(private shipmentService: ShipmentService) { }
+  constructor(
+    private shipmentService: ShipmentService, 
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadShipments();
@@ -1005,14 +1005,18 @@ export class MisEnviosComponent implements OnInit {
     this.printShipment = shipment;
     this.printMode = 'formulario';
 
+    console.log('--- Generando Manifiesto A4 ---');
+    this.cdr.detectChanges(); // Forzar renderizado de Angular
+
     // Esperar a que Angular renderice el contenedor del manifiesto
     setTimeout(async () => {
       try {
+        console.log('Capturando contenedor:', this.manifestContainer.nativeElement);
         const element = this.manifestContainer.nativeElement;
 
         const canvas = await html2canvas(element, {
           scale: 3,
-          logging: false,
+          logging: true,
           useCORS: true,
           backgroundColor: '#ffffff',
           onclone: (clonedDoc) => {
@@ -1023,9 +1027,12 @@ export class MisEnviosComponent implements OnInit {
               el.style.position = 'relative';
               el.style.display = 'block';
               el.style.visibility = 'visible';
+              console.log('Clon del manifiesto preparado para captura');
             }
           }
         });
+
+        console.log('Captura completada, generando PDF...');
 
         const imgData = canvas.toDataURL('image/png');
         const doc = new jsPDF({
