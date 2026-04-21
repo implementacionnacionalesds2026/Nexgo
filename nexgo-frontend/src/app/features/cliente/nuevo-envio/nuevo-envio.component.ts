@@ -9,6 +9,7 @@ import { CreateShipmentRequest } from '../../../core/models/shipment.model';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import JsBarcode from 'jsbarcode';
+import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
 
 @Component({
   selector: 'app-nuevo-envio',
@@ -165,16 +166,21 @@ import JsBarcode from 'jsbarcode';
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Departamento *</label>
-                          <select class="nx-input" [(ngModel)]="form.recipientDepartment">
+                          <select class="nx-input" [(ngModel)]="form.recipientDepartment" (change)="onDepartmentChange()">
                             <option value="">Seleccione Departamento</option>
-                            @for (dept of deparments; track dept) {
+                            @for (dept of departments; track dept) {
                               <option [value]="dept">{{ dept }}</option>
                             }
                           </select>
                         </div>
                         <div class="nx-form-group">
                           <label>Municipio / Ciudad *</label>
-                          <input class="nx-input" [(ngModel)]="form.recipientMunicipality" placeholder="Ej: Mixco, Xela..." />
+                          <select class="nx-input" [(ngModel)]="form.recipientMunicipality" [disabled]="!form.recipientDepartment">
+                            <option value="">Seleccione Municipio</option>
+                            @for (muni of filteredMunicipalities; track muni) {
+                              <option [value]="muni">{{ muni }}</option>
+                            }
+                          </select>
                         </div>
                       </div>
                       <div class="nx-form-row cols-2">
@@ -771,12 +777,6 @@ export class NuevoEnvioComponent {
   printMode: 'guia' | 'formulario' | null = null;
   today = new Date();
 
-  deparments = [
-    'Alta Verapaz', 'Baja Verapaz', 'Chimaltenango', 'Chiquimula', 'El Progreso',
-    'Escuintla', 'Guatemala', 'Huehuetenango', 'Izabal', 'Jalapa', 'Jutiapa',
-    'Petén', 'Quetzaltenango', 'Quiché', 'Retalhuleu', 'Sacatepéquez',
-    'San Marcos', 'Santa Rosa', 'Sololá', 'Suchitepéquez', 'Totonicapán', 'Zacapa'
-  ];
 
   destCodes = ['GUA', 'QTZ', 'HUE', 'XELA', 'PET', 'ESC', 'SAC'];
   serviceTags = ['DOM', 'EXP', 'COL', 'COD'];
@@ -793,6 +793,9 @@ export class NuevoEnvioComponent {
   currentPieceCount: number = 1;
   totalPiecesCount: number = 1;
 
+  departments = Object.keys(GUATEMALA_DATA);
+  filteredMunicipalities: string[] = [];
+
   constructor(
     private shipmentService: ShipmentService, 
     private router: Router,
@@ -806,6 +809,24 @@ export class NuevoEnvioComponent {
       this.form.senderName = user.companyName || user.name;
       this.form.senderPhone = user.phone || '';
       this.form.originCity = 'Guatemala';
+    }
+
+    if (this.form.recipientDepartment) {
+      this.onDepartmentChange();
+    }
+  }
+
+  onDepartmentChange() {
+    const dept = this.form.recipientDepartment;
+    if (dept && GUATEMALA_DATA[dept]) {
+      this.filteredMunicipalities = GUATEMALA_DATA[dept];
+      // Si el municipio actual no está en la nueva lista, limpiarlo
+      if (!this.filteredMunicipalities.includes(this.form.recipientMunicipality || '')) {
+        this.form.recipientMunicipality = '';
+      }
+    } else {
+      this.filteredMunicipalities = [];
+      this.form.recipientMunicipality = '';
     }
   }
 
