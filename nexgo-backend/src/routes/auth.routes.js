@@ -13,7 +13,8 @@ router.post('/login', [
 
 // POST /api/auth/register (Solo ADMIN)
 router.post('/register', authenticate, authorize('ADMIN'), [
-  body('name').notEmpty().withMessage('Nombre requerido'),
+  body('firstName').notEmpty().withMessage('Nombre requerido'),
+  body('lastName').notEmpty().withMessage('Apellido requerido'),
   body('email').isEmail().withMessage('Email inválido'),
   body('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
   body('roleId').isInt().withMessage('Rol requerido'),
