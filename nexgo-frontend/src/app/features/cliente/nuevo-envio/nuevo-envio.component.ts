@@ -121,12 +121,12 @@ import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
                     <div class="card-body">
                       <div class="nx-form-group">
                         <label>Nombre del Remitente *</label>
-                        <input class="nx-input" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
+                        <input class="nx-input" [class.error]="attemptedNext && !form.senderName" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Teléfono *</label>
-                          <input class="nx-input" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
+                          <input class="nx-input" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
                         </div>
                         <div class="nx-form-group">
                           <label>Ciudad de Origen</label>
@@ -135,7 +135,7 @@ import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
                       </div>
                       <div class="nx-form-group">
                         <label>Dirección de Recolección *</label>
-                        <input class="nx-input" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
+                          <input class="nx-input" [class.error]="attemptedNext && !form.senderAddress" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
                       </div>
                     </div>
                     <div class="card-footer-actions">
@@ -157,16 +157,16 @@ import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
                     <div class="card-body">
                       <div class="nx-form-group">
                         <label>Nombre del Destinatario *</label>
-                        <input class="nx-input" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
+                        <input class="nx-input" [class.error]="attemptedNext && !form.recipientName" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
                       </div>
                       <div class="nx-form-group">
                         <label>Teléfono de contacto *</label>
-                        <input class="nx-input" [(ngModel)]="form.recipientPhone" placeholder="502XXXXXXXX" />
+                        <input class="nx-input" [class.error]="attemptedNext && !form.recipientPhone" [(ngModel)]="form.recipientPhone" placeholder="502XXXXXXXX" />
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Departamento *</label>
-                          <select class="nx-input" [(ngModel)]="form.recipientDepartment" (change)="onDepartmentChange()">
+                          <select class="nx-input" [class.error]="attemptedNext && !form.recipientDepartment" [(ngModel)]="form.recipientDepartment" (change)="onDepartmentChange()">
                             <option value="">Seleccione Departamento</option>
                             @for (dept of departments; track dept) {
                               <option [value]="dept">{{ dept }}</option>
@@ -175,7 +175,7 @@ import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
                         </div>
                         <div class="nx-form-group">
                           <label>Municipio / Ciudad *</label>
-                          <select class="nx-input" [(ngModel)]="form.recipientMunicipality" [disabled]="!form.recipientDepartment">
+                          <select class="nx-input" [class.error]="attemptedNext && !form.recipientMunicipality" [(ngModel)]="form.recipientMunicipality" [disabled]="!form.recipientDepartment">
                             <option value="">Seleccione Municipio</option>
                             @for (muni of filteredMunicipalities; track muni) {
                               <option [value]="muni">{{ muni }}</option>
@@ -185,17 +185,17 @@ import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
-                          <label>Zona</label>
+                          <label>Zona (Opcional)</label>
                           <input class="nx-input" [(ngModel)]="form.recipientZone" placeholder="Ej: Zona 1" />
                         </div>
                         <div class="nx-form-group">
-                          <label>Referencia / Comentarios</label>
+                          <label>Referencia / Comentarios (Opcional)</label>
                           <input class="nx-input" [(ngModel)]="form.comments" placeholder="A la par de..." />
                         </div>
                       </div>
                       <div class="nx-form-group">
                         <label>Dirección exacta de entrega *</label>
-                        <input class="nx-input" [(ngModel)]="form.recipientAddress" placeholder="Avenida, Calle, Casa numeral..." />
+                        <input class="nx-input" [class.error]="attemptedNext && !form.recipientAddress" [(ngModel)]="form.recipientAddress" placeholder="Avenida, Calle, Casa numeral..." />
                       </div>
                     </div>
                     <div class="card-footer-actions">
@@ -523,6 +523,11 @@ import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
     }
   `,
   styles: [`
+    .nx-input.error {
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.05) !important;
+      box-shadow: 0 0 4px rgba(239, 68, 68, 0.4) !important;
+    }
     .nx-main { padding-top: var(--navbar-height); min-height: 100vh; }
     .nx-content { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
 
@@ -792,6 +797,7 @@ export class NuevoEnvioComponent {
 
   currentPieceCount: number = 1;
   totalPiecesCount: number = 1;
+  attemptedNext: boolean = false;
 
   departments = Object.keys(GUATEMALA_DATA);
   filteredMunicipalities: string[] = [];
@@ -834,15 +840,19 @@ export class NuevoEnvioComponent {
   nextStep() {
     if (this.currentStep < 4) {
       if (this.currentStep === 1 && (!this.form.senderName || !this.form.senderPhone || !this.form.senderAddress)) {
+        this.attemptedNext = true;
         this.error = 'Complete los campos obligatorios del remitente';
         setTimeout(() => this.error = '', 3000);
         return;
       }
-      if (this.currentStep === 2 && (!this.form.recipientName || !this.form.recipientPhone || !this.form.recipientDepartment || !this.form.recipientAddress)) {
-        this.error = 'Complete los campos obligatorios del destinatario';
-        setTimeout(() => this.error = '', 3000);
+      if (this.currentStep === 2 && (!this.form.recipientName || !this.form.recipientPhone || !this.form.recipientDepartment || !this.form.recipientMunicipality || !this.form.recipientAddress)) {
+        this.attemptedNext = true;
+        this.error = 'Complete los campos obligatorios del destinatario (Nombre, Teléfono, Depto, Municipio y Dirección)';
+        setTimeout(() => this.error = '', 4000);
         return;
       }
+      
+      this.attemptedNext = false;
       this.currentStep++;
       this.error = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
