@@ -335,6 +335,7 @@ body {
 /* KPI Cards */
 .nx-kpi-card {
   @extend .nx-card;
+  padding: 1.25rem 1rem;
   position: relative;
   overflow: hidden;
 
@@ -693,7 +694,7 @@ select.nx-input option {
   gap: 1.25rem;
 
   &.kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 
   &.cols-2 {

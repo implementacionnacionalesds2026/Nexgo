@@ -1,4 +1,5 @@
 import { Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -129,7 +130,16 @@ import JsBarcode from 'jsbarcode';
                         </div>
                         <div class="nx-form-group">
                           <label>Ciudad de Origen</label>
-                          <input class="nx-input" [(ngModel)]="form.originCity" placeholder="Ej: Guatemala" />
+                          <div class="input-with-action">
+                            <input class="nx-input" [(ngModel)]="form.originCity" 
+                                   [readonly]="!isOriginEditable"
+                                   [class.readonly-mode]="!isOriginEditable"
+                                   placeholder="Ej: Guatemala" />
+                            <button class="action-btn" (click)="isOriginEditable = !isOriginEditable" 
+                                    [class.active]="isOriginEditable" title="Editar ciudad">
+                              <span class="material-symbols-outlined">{{ isOriginEditable ? 'check' : 'edit' }}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                       <div class="nx-form-group">
@@ -517,6 +527,50 @@ import JsBarcode from 'jsbarcode';
     }
   `,
   styles: [`
+    .nx-page-header { margin-bottom: 2rem; }
+    .input-with-action {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-with-action .nx-input {
+      padding-right: 45px;
+    }
+    .input-with-action .action-btn.loading {
+      animation: spin 1s linear infinite;
+      opacity: 0.7;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .input-with-action .action-btn {
+      position: absolute;
+      right: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #6366f1;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .input-with-action .action-btn:hover {
+      background: #6366f1;
+      color: white;
+    }
+    .input-with-action .action-btn.active {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    .readonly-mode {
+      opacity: 0.8 !important;
+      background: rgba(255, 255, 255, 0.04) !important;
+      cursor: not-allowed !important;
+    }
+
     .nx-main { padding-top: var(--navbar-height); min-height: 100vh; }
     .nx-content { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
 
@@ -792,21 +846,79 @@ export class NuevoEnvioComponent {
 
   currentPieceCount: number = 1;
   totalPiecesCount: number = 1;
+  isOriginEditable: boolean = false;
+  isDetectingLocation: boolean = false;
 
   constructor(
     private shipmentService: ShipmentService, 
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private auth: AuthService
+    private auth: AuthService,
+    private http: HttpClient
   ) { }
 
   ngOnInit() {
     const user = this.auth.currentUser();
     if (user) {
-      // Priorizar nombre de empresa, si no, usar nombre de usuario
       this.form.senderName = user.companyName || user.name;
       this.form.senderPhone = user.phone || '';
+      this.form.originCity = (user as any).city || 'Guatemala';
+      this.form.senderAddress = (user as any).address || '';
     }
+    
+    // Iniciar detección automática
+    this.detectLocation();
+  }
+
+  detectLocation() {
+    if (!navigator.geolocation) {
+      console.warn('Geolocalización no soportada');
+      return;
+    }
+
+    this.isDetectingLocation = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        this.reverseGeocode(latitude, longitude);
+      },
+      (err) => {
+        console.error('Error GPS:', err);
+        this.isDetectingLocation = false;
+        this.cdr.detectChanges();
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  private reverseGeocode(lat: number, lon: number) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
+    
+    this.http.get<any>(url).subscribe({
+      next: (res) => {
+        if (res && res.address) {
+          const addr = res.address;
+          const city = addr.city || addr.town || addr.village || addr.municipality || 'Guatemala';
+          const dept = addr.state || '';
+          
+          this.form.originCity = dept ? `${city}, ${dept}` : city;
+          
+          // También podemos intentar llenar la dirección si es muy precisa
+          if (!this.form.senderAddress && addr.road) {
+            const street = addr.road || '';
+            const house = addr.house_number || '';
+            this.form.senderAddress = `${street} ${house}`.trim();
+          }
+        }
+        this.isDetectingLocation = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error Geocoding:', err);
+        this.isDetectingLocation = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   nextStep() {
