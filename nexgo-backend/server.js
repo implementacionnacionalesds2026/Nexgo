@@ -16,7 +16,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
-      if (!origin || origin.endsWith('.up.railway.app') || origin === 'http://localhost:4200' || origin === 'https://nexgo.vercel.app') {
+      if (!origin || origin.endsWith('.up.railway.app') || origin === 'http://localhost:4200' || origin === 'https://nexgo.vercel.app' || origin === 'https://nexgo.delivery') {
         callback(null, true);
       } else {
         callback(new Error('CORS blocked'));
