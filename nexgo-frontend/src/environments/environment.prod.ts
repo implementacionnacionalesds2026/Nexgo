@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://nexgob-production.up.railway.app/api',
-  socketUrl: 'https://nexgob-production.up.railway.app',
+  apiUrl: 'https://api.nexgo.delivery/api',
+  socketUrl: 'https://api.nexgo.delivery',
   googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
 };

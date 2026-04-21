@@ -32,7 +32,7 @@ app.use(helmet({
 // CORS
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || origin.endsWith('.up.railway.app') || origin === 'http://localhost:4200' || origin === 'https://nexgo.vercel.app') {
+    if (!origin || origin.endsWith('.up.railway.app') || origin === 'http://localhost:4200' || origin === 'https://nexgo.vercel.app' || origin === 'https://nexgo.delivery') {
       callback(null, true);
     } else {
       callback(new Error('CORS blocked'));
