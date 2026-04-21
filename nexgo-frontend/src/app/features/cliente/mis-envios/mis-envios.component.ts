@@ -307,7 +307,7 @@ import * as XLSX from 'xlsx';
               </div>
               <div style="width: 75px; border-left: 2px solid black; display: flex; flex-direction: column;">
                 <div style="flex:1; border-bottom: 2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
-                  PIEZA<br><span style="font-size: 28px; line-height: 1;">01</span>DE<br><span style="font-size: 24px; line-height: 0.8;">{{ (printShipment.quantity || 1) | number:'2.0' }}</span>
+                  PIEZA<br><span style="font-size: 28px; line-height: 1;">{{ currentPieceCount | number:'2.0' }}</span>DE<br><span style="font-size: 24px; line-height: 0.8;">{{ totalPiecesCount | number:'2.0' }}</span>
                 </div>
               </div>
             </div>
@@ -701,6 +701,8 @@ export class MisEnviosComponent implements OnInit {
   printMode: 'guia' | 'formulario' | null = null;
   printShipment: any = null;
   generatingPdfId: string | null = null;
+  currentPieceCount: number = 1;
+  totalPiecesCount: number = 1;
   today = new Date();
   openDropdownId: string | null = null;
 
@@ -936,67 +938,85 @@ export class MisEnviosComponent implements OnInit {
     }
   }
 
-  imprimirGuia(shipment: any) {
-    if (this.generatingPdfId) return;
-    this.generatingPdfId = shipment.id;
-    this.printShipment = shipment;
+  imprimirGuia(s: any) {
+    if (this.generatingPdfId === s.id) return;
+    this.generatingPdfId = s.id;
     this.printMode = 'guia';
+    this.printShipment = s;
+    this.totalPiecesCount = s.quantity || 1;
+    this.cdr.detectChanges();
 
-    // Esperar a que Angular renderice el contenedor
-    setTimeout(async () => {
+    console.log(`--- Generando ${this.totalPiecesCount} guías para ${s.tracking_number} ---`);
+
+    const doc = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: [100, 100]
+    });
+
+    const generateAllPages = async () => {
       try {
-        const tracking = shipment.tracking_number || 'ND0000000';
+        const tracking = s.tracking_number || s.trackingNumber || 'ND0000000';
+        
+        // Esperar renderizado inicial del contenedor
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Generar Código de Barras
-        JsBarcode("#barcodeCanvas", tracking, {
-          format: "CODE128",
-          width: 2.2,
-          height: 55,
-          displayValue: false,
-          margin: 0,
-          background: "#ffffff",
-          lineColor: "#000000"
-        });
+        // Generar el código de barras una vez (asegurando que el elemento esté en el DOM)
+        try {
+          JsBarcode("#barcodeCanvas", tracking, {
+            format: "CODE128", width: 2.2, height: 55, displayValue: false, margin: 0,
+            background: "#ffffff", lineColor: "#000000"
+          });
+        } catch (bErr) {
+          console.error('Error generando código de barras:', bErr);
+        }
 
-        const element = this.guiaContainer.nativeElement;
+        for (let i = 1; i <= this.totalPiecesCount; i++) {
+          this.currentPieceCount = i;
+          this.cdr.detectChanges();
+          
+          // Esperar renderizado del número de pieza
+          await new Promise(resolve => setTimeout(resolve, 300));
 
-        const canvas = await html2canvas(element, {
-          scale: 4,
-          logging: false,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          onclone: (clonedDoc) => {
-            const el = clonedDoc.querySelector('.print-guia-container') as HTMLElement;
-            if (el) {
-              el.style.left = '0';
-              el.style.top = '0';
-              el.style.position = 'relative';
-              el.style.display = 'block';
-              el.style.visibility = 'visible';
+          const element = this.guiaContainer.nativeElement;
+          const canvas = await html2canvas(element, {
+            scale: 3.5,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            onclone: (clonedDoc) => {
+              const el = clonedDoc.querySelector('.print-guia-container') as HTMLElement;
+              if (el) {
+                el.style.left = '0'; el.style.top = '0'; el.style.position = 'relative';
+                el.style.display = 'block'; el.style.visibility = 'visible';
+              }
             }
-          }
-        });
+          });
 
-        const imgData = canvas.toDataURL('image/png');
-        const doc = new jsPDF({
-          orientation: 'p',
-          unit: 'mm',
-          format: [100, 100]
-        });
+          const imgData = canvas.toDataURL('image/png');
+          if (i > 1) doc.addPage([100, 100], 'p');
+          doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
+          console.log(`Bulto ${i} de ${this.totalPiecesCount} procesado`);
+        }
 
-        doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
-        doc.autoPrint();
-        const pdfUrl = URL.createObjectURL(doc.output('blob'));
-        window.open(pdfUrl, '_blank');
-
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        const win = window.open(pdfUrl, '_blank');
+        if (!win) {
+          doc.save(`Guia_${tracking}.pdf`);
+          alert('La pestaña emergente fue bloqueada, se ha descargado el PDF automáticamente.');
+        }
       } catch (err) {
-        console.error('Error generating PDF:', err);
+        console.error('Error generando PDF:', err);
+        alert('Ocurrió un error al generar la guía. Por favor intenta de nuevo.');
       } finally {
         this.printMode = null;
-        this.printShipment = null;
         this.generatingPdfId = null;
+        this.cdr.detectChanges();
       }
-    }, 800);
+    };
+
+    generateAllPages();
   }
 
   imprimirFormulario(shipment: any) {
