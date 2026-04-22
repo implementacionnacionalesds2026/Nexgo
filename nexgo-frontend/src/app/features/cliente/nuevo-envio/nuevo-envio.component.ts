@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ShipmentService } from '../../../core/services/shipment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { AdminService } from '../../../core/services/admin.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { CreateShipmentRequest } from '../../../core/models/shipment.model';
 import jsPDF from 'jspdf';
@@ -282,6 +283,37 @@ import Swal from 'sweetalert2';
                       <span class="step-indicator">Paso 4 de 4</span>
                     </div>
                     <div class="card-body">
+                      <!-- Resumen de Tarifa Nexgo -->
+                      @if (userRule) {
+                        <div class="nx-card" style="background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); margin-bottom: 2rem; padding: 1.25rem;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">RESUMEN DE COBRO NEXGO:</span>
+                            <span style="font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 800; background: var(--primary); color: white;">
+                              {{ userRule.user_id ? 'TARIFA PERSONALIZADA' : 'TARIFA NIVEL' }}
+                            </span>
+                          </div>
+                          <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-size: 0.9rem; color: #fff;">
+                              Costo de Envío:
+                            </div>
+                            <div style="font-size: 1.75rem; font-weight: 900; color: var(--primary);">
+                              Q{{ currentEstimatedNexgoCost | number:'1.2-2' }}
+                            </div>
+                          </div>
+                          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 15px;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">
+                              <b>Base:</b> Q{{ userRule.base_price }} ({{ userRule.base_weight }}LB)
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">
+                              <b>Extra:</b> Q{{ userRule.extra_weight_price }} x LB
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">
+                              <b>Peso actual:</b> {{ form.weightKg }}LB
+                            </div>
+                          </div>
+                        </div>
+                      }
+
                       <div class="nx-form-group">
                         <label>Monto a Cobrar al Destinatario (Q)</label>
                         <div class="input-with-icon">
@@ -807,8 +839,11 @@ export class NuevoEnvioComponent {
     private shipmentService: ShipmentService, 
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private auth: AuthService
+    private auth: AuthService,
+    private admin: AdminService
   ) { }
+
+  userRule: any = null;
 
   ngOnInit() {
     const user = this.auth.currentUser();
@@ -816,11 +851,35 @@ export class NuevoEnvioComponent {
       this.form.senderName = user.companyName || user.name;
       this.form.senderPhone = user.phone || '';
       this.form.originCity = 'Guatemala';
+
+      // Cargar tarifa para mostrar costos estimados
+      this.admin.getPricingRules().subscribe((res: any) => {
+        if (res.success) {
+          const rules = res.data as any[];
+          // Prioridad personalizada -> Fallback Nivel
+          let rule = rules.find(r => r.user_id === user.id && r.is_active);
+          if (!rule) {
+            rule = rules.find(r => r.role_id == user.role_id && !r.user_id && r.is_active);
+          }
+          this.userRule = rule;
+        }
+      });
     }
 
     if (this.form.recipientDepartment) {
       this.onDepartmentChange();
     }
+  }
+
+  get currentEstimatedNexgoCost(): number {
+    if (!this.userRule) return 0;
+    const base = Number(this.userRule.base_price) || 0;
+    const extra = Number(this.userRule.extra_weight_price) || 0;
+    const weight = Number(this.form.weightKg) || 0;
+    const baseWeight = Number(this.userRule.base_weight) || 1;
+    
+    if (weight <= baseWeight) return base;
+    return base + (weight - baseWeight) * extra;
   }
 
   onDepartmentChange() {

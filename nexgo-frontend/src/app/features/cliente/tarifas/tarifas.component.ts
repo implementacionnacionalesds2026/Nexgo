@@ -24,70 +24,81 @@ import { AdminService } from '../../../core/services/admin.service';
             <p>Detalles de tu plan actual y beneficios en Nexgo</p>
           </div>
 
-          <div class="tarifas-view">
+          <div class="tarifas-container animate-fade-in">
             @if (userRule) {
-              <div class="premium-card" [style.border-top-color]="getTierColor()">
+              <div class="stats-card-premium" [style.--glow-color]="getTierColor()">
                 <div class="card-glow"></div>
-                <div class="card-content">
-                  <div class="tier-badge" [style.background]="getTierColor() + '20'" [style.color]="getTierColor()">
-                    <span class="material-symbols-outlined">{{ getTierIcon() }}</span>
-                    {{ getTierName() }}
+                <span class="material-symbols-outlined watermark">{{ getTierIcon() }}</span>
+                
+                <div class="card-body">
+                  <div class="header-row">
+                    <div class="tier-label">
+                      {{ getTierName() }}
+                    </div>
+                    @if (userRule.user_id) {
+                      <div class="verified-tag">
+                        <span class="material-symbols-outlined">verified</span>
+                        PERSONALIZADA
+                      </div>
+                    }
                   </div>
 
-                  <div class="price-hero">
+                  <div class="price-display">
                     <span class="currency">Q</span>
-                    <span class="amount">{{ userRule.base_price }}</span>
-                    <span class="per">/ guía</span>
+                    <span class="value">{{ userRule.base_price }}</span>
+                    <span class="label">/ ENVÍO BASE</span>
                   </div>
 
-                  <div class="features-list">
-                    <div class="feature-item">
-                      <span class="material-symbols-outlined check">check_circle</span>
-                      <div class="feature-text">
-                        <strong>Peso Incluido:</strong>
-                        <span>Hasta {{ userRule.base_weight }} {{ userRule.weight_unit }} por paquete.</span>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="info-label">PESO INCLUIDO</div>
+                      <div class="info-value">
+                        {{ userRule.base_weight }} <span class="unit">{{ userRule.weight_unit || 'LB' }}</span>
                       </div>
                     </div>
-                    <div class="feature-item">
-                      <span class="material-symbols-outlined check">info</span>
-                      <div class="feature-text">
-                        <strong>Costo Adicional:</strong>
-                        <span>Q{{ userRule.extra_weight_price }} por cada {{ userRule.weight_unit }} adicional.</span>
-                      </div>
-                    </div>
-                    <div class="feature-item">
-                      <span class="material-symbols-outlined check">verified</span>
-                      <div class="feature-text">
-                        <strong>Seguro Incluido:</strong>
-                        <span>Protección estándar para todos tus envíos.</span>
+                    <div class="info-item">
+                      <div class="info-label">LIBRA EXTRA</div>
+                      <div class="info-value">
+                        Q{{ userRule.extra_weight_price }} <span class="unit">/ LB</span>
                       </div>
                     </div>
                   </div>
 
-                  <div class="card-footer">
-                    <p>Tu tarifa se aplica automáticamente al crear nuevos envíos.</p>
+                  <div class="footer-note">
+                    <span class="material-symbols-outlined">info</span>
+                    Tu tarifa se aplica automáticamente a cada nueva guía.
                   </div>
                 </div>
               </div>
 
-              <!-- Info Card -->
-              <div class="nx-card info-card animate-fade-in" style="margin-top: 2rem; max-width: 500px;">
-                <div style="display:flex; gap: 1rem; align-items:flex-start;">
-                  <span class="material-symbols-outlined" style="color:var(--primary);">lightbulb</span>
-                  <div>
-                    <h4 style="margin:0 0 .5rem 0;">¿Cómo se calcula el total?</h4>
-                    <p style="margin:0; font-size:.85rem; color:var(--text-muted); line-height: 1.5;">
-                      El costo se basa en tu tarifa base de <strong>Q{{ userRule.base_price }}</strong>. 
-                      Si el paquete excede las <strong>{{ userRule.base_weight }} {{ userRule.weight_unit }}</strong>, 
-                      se sumarán <strong>Q{{ userRule.extra_weight_price }}</strong> por cada unidad extra detectada al momento de la recolección.
-                    </p>
-                  </div>
+              <!-- Supplementary info -->
+              <div class="calculation-guide">
+                <div class="guide-header">
+                  <span class="material-symbols-outlined">calculate</span>
+                  ¿Cómo se calcula el total?
                 </div>
+                <p>
+                  El costo base de <strong>Q{{ userRule.base_price }}</strong> cubre hasta <strong>{{ userRule.base_weight }}{{ userRule.weight_unit || 'LB' }}</strong>. 
+                  Si tu paquete pesa más, se sumarán <strong>Q{{ userRule.extra_weight_price }}</strong> por cada unidad adicional detectada.
+                </p>
+              </div>
+
+            } @else if (loading) {
+              <div class="loading-state">
+                <div class="spinner"></div>
+                <span>Consultando tu tarifa...</span>
               </div>
             } @else {
-              <div class="nx-loader">
-                <div class="spinner"></div>
-                <span>Cargando tu información de tarifa...</span>
+              <div class="error-state">
+                <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+                <h3>Sin tarifa activa</h3>
+                <p>No pudimos localizar una tarifa para tu perfil. Contacta a soporte.</p>
+                <div class="debug-info">
+                   ID: {{ user()?.id?.substring(0,8) }}... | Rol: {{ user()?.role }}
+                </div>
+                <button class="nx-btn btn-primary" (click)="ngOnInit()">
+                  <span class="material-symbols-outlined">refresh</span> REINTENTAR
+                </button>
               </div>
             }
           </div>
@@ -96,117 +107,282 @@ import { AdminService } from '../../../core/services/admin.service';
     </div>
   `,
   styles: [`
-    .tarifas-view {
+    .tarifas-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 0;
+      gap: 2rem;
+      padding: 1rem;
     }
-    .premium-card {
+
+    /* Stats Card Premium Style */
+    .stats-card-premium {
       position: relative;
       width: 100%;
-      max-width: 500px;
-      background: #1e293b;
+      max-width: 480px;
+      background: #111827;
       border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.05);
-      border-top: 6px solid var(--primary);
       overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
+
+    .stats-card-premium::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--glow-color), transparent);
+    }
+
     .card-glow {
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at center, var(--primary) 0%, transparent 70%);
-      opacity: 0.05;
+      top: 0; right: 0;
+      width: 150px; height: 150px;
+      background: radial-gradient(circle at top right, var(--glow-color), transparent 70%);
+      opacity: 0.1;
       pointer-events: none;
     }
-    .card-content {
+
+    .watermark {
+      position: absolute;
+      bottom: -10px;
+      right: 10px;
+      font-size: 10rem;
+      color: white;
+      opacity: 0.03;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .card-body {
       position: relative;
-      padding: 2.5rem;
+      padding: 2rem;
       z-index: 1;
     }
-    .tier-badge {
-      display: inline-flex;
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+
+    .tier-label {
       font-size: 0.75rem;
       font-weight: 800;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+    }
+
+    .verified-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 4px 10px;
+      border-radius: 100px;
+    }
+
+    .price-display {
       margin-bottom: 2rem;
     }
-    .price-hero {
-      margin-bottom: 2.5rem;
-      display: flex;
-      align-items: baseline;
-      gap: 0.25rem;
-    }
-    .price-hero .currency { font-size: 2rem; font-weight: 300; color: var(--text-muted); }
-    .price-hero .amount { font-size: 5rem; font-weight: 800; color: #fff; line-height: 1; }
-    .price-hero .per { font-size: 1.25rem; color: var(--text-muted); font-weight: 500; }
 
-    .features-list {
+    .price-display .currency {
+      font-size: 1.5rem;
+      color: var(--glow-color);
+      font-weight: 400;
+      margin-right: 4px;
+    }
+
+    .price-display .value {
+      font-size: 4rem;
+      font-weight: 900;
+      color: white;
+      line-height: 1;
+    }
+
+    .price-display .label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      background: rgba(255,255,255,0.02);
+      padding: 1.25rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .info-item {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
+      gap: 4px;
     }
-    .feature-item {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-    .feature-item .check { color: var(--primary); font-size: 1.5rem; }
-    .feature-text { display: flex; flex-direction: column; gap: 0.25rem; }
-    .feature-text strong { font-size: 0.9rem; color: #f8fafc; }
-    .feature-text span { font-size: 0.85rem; color: var(--text-muted); }
 
-    .card-footer {
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
+    .info-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .info-value .unit {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .footer-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.2);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .footer-note .material-symbols-outlined { font-size: 1rem; }
+
+    /* Guide Box */
+    .calculation-guide {
+      width: 100%;
+      max-width: 480px;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+    }
+
+    .guide-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .calculation-guide p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .loading-state, .error-state {
+      padding: 4rem;
       text-align: center;
     }
-    .card-footer p { margin: 0; font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
 
-    .info-card { background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1); }
+    .debug-info {
+      font-family: monospace;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin: 1rem 0;
+      background: rgba(0,0,0,0.2);
+      padding: 8px;
+      border-radius: 6px;
+    }
   `]
 })
 export class ClientTarifasComponent implements OnInit {
   private auth = inject(AuthService);
   private admin = inject(AdminService);
   
-  user = this.auth.currentUser();
+  user = this.auth.currentUser; // Es la señal misma
   userRule: any = null;
+  loading: boolean = true;
+  rulesCount: number = 0;
 
   ngOnInit() {
-    if (this.user) {
-      this.admin.getPricingRules().subscribe(res => {
-        if (res.success) {
-          // Filtrar por el rol actual del usuario
-          this.userRule = (res.data as any[]).find((r: any) => r.role_id === (this.user as any)?.role_id);
+    this.loading = true;
+    const currentUser = this.user();
+    if (currentUser) {
+      console.log('CLIENTE DEBUG - Usuario actual:', currentUser);
+      this.admin.getPricingRules().subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            const rules = res.data as any[];
+            this.rulesCount = rules.length;
+            console.log('CLIENTE DEBUG - Todas las reglas:', rules);
+            
+            // 1. Prioridad: Tarifa personalizada para este usuario específico
+            let rule = rules.find(r => {
+              const r_uid = r.user_id || r.userId;
+              const match = r_uid && r_uid == currentUser.id && r.is_active;
+              if (match) console.log('CLIENTE DEBUG - ¡Match Personalizado!', r.name);
+              return match;
+            });
+            
+            // 2. Fallback: Tarifa de su nivel (Bronce, Plata, Oro)
+            if (!rule) {
+              let roleId = (currentUser as any)?.role_id;
+              if (!roleId) {
+                const roleMapping: any = { 'SMALL_CUSTOMER': 2, 'AVERAGE_CUSTOMER': 3, 'FULL_CUSTOMER': 4 };
+                roleId = roleMapping[currentUser.role || ''];
+              }
+              console.log('CLIENTE DEBUG - Buscando fallback por RoleID:', roleId);
+
+              rule = rules.find(r => {
+                const r_rid = r.role_id || r.roleId;
+                const r_uid = r.user_id || r.userId;
+                return r_rid == roleId && !r_uid && r.is_active;
+              });
+              if (rule) console.log('CLIENTE DEBUG - ¡Match por Nivel!', rule.name);
+            }
+            
+            this.userRule = rule;
+            if (!rule) console.warn('CLIENTE DEBUG - No se encontró regla para:', this.user()?.id);
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('CLIENTE DEBUG - Error API:', err);
+          this.loading = false;
         }
       });
+    } else {
+      this.loading = false;
     }
   }
 
   getTierName() {
-    if (!this.user) return 'Cliente';
+    const user = this.user();
+    if (!user) return 'Cliente';
     const names: any = { 'SMALL_CUSTOMER': 'Plan Bronce', 'AVERAGE_CUSTOMER': 'Plan Plata', 'FULL_CUSTOMER': 'Plan Oro' };
-    return names[this.user.role] || 'Cliente Estándar';
+    return names[user.role] || 'Cliente Estándar';
   }
 
   getTierColor() {
+    const user = this.user();
     const colors: any = { 'SMALL_CUSTOMER': '#cd7f32', 'AVERAGE_CUSTOMER': '#94a3b8', 'FULL_CUSTOMER': '#f59e0b' };
-    return colors[this.user?.role || ''] || '#6366f1';
+    return colors[user?.role || ''] || '#6366f1';
   }
 
   getTierIcon() {
+    const user = this.user();
     const icons: any = { 'SMALL_CUSTOMER': 'workspace_premium', 'AVERAGE_CUSTOMER': 'stars', 'FULL_CUSTOMER': 'military_tech' };
-    return icons[this.user?.role || ''] || 'person';
+    return icons[user?.role || ''] || 'person';
   }
 }

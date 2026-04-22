@@ -12,7 +12,7 @@ const login = async (loginId, password) => {
   const result = await query(
     `SELECT u.id, u.name, u.email, u.password_hash, u.is_active,
             u.first_name, u.last_name, u.username,
-            r.name AS role, u.company_name, u.phone
+            r.name AS role, u.role_id, u.company_name, u.phone
      FROM users u
      JOIN roles r ON r.id = u.role_id
      WHERE LOWER(u.username) = $1 OR LOWER(u.email) = $1`,
@@ -56,6 +56,7 @@ const login = async (loginId, password) => {
       username:    user.username,
       email:       user.email,
       role:        user.role,
+      role_id:     user.role_id,
       companyName: user.company_name,
       phone:       user.phone,
     },
@@ -96,7 +97,7 @@ const register = async ({ firstName, lastName, email, password, roleId, phone, c
 const getProfile = async (userId) => {
   const result = await query(
     `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at,
-            r.name AS role
+            r.name AS role, u.role_id
      FROM users u
      JOIN roles r ON r.id = u.role_id
      WHERE u.id = $1`,

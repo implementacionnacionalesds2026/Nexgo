@@ -5,9 +5,13 @@ const { authorize }    = require('../middleware/role.middleware');
 
 const router = express.Router();
 
-router.use(authenticate, authorize('ADMIN'));
+router.use(authenticate);
 
-router.get('/',         pricingCtrl.getPricingRules);
+// Public/Client view: Solo lectura
+router.get('/', pricingCtrl.getPricingRules);
+
+// Solo Admin: Gestión
+router.use(authorize('ADMIN'));
 router.post('/',        pricingCtrl.createPricingRule);
 router.get('/:id/history', pricingCtrl.getPricingHistory);
 router.put('/:id',      pricingCtrl.updatePricingRule);
