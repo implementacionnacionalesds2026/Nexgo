@@ -77,9 +77,10 @@ export class SidebarComponent implements OnInit {
     { label: 'Reportes',      icon: 'monitoring', route: '/admin/reportes',       roles: ['ADMIN'] },
 
     // CLIENTE
-    { label: 'Cotizador',     icon: 'calculate', route: '/cliente/cotizador',    roles: ['CLIENTE'] },
-    { label: 'Nuevo Envío',   icon: 'add_box', route: '/cliente/nuevo-envio',  roles: ['CLIENTE'] },
-    { label: 'Mis Envíos',    icon: 'inventory_2', route: '/cliente/mis-envios',   roles: ['CLIENTE'] },
+    { label: 'Cotizador',     icon: 'calculate', route: '/cliente/cotizador',    roles: ['AVERAGE_CUSTOMER'] },
+    { label: 'Tarifas',       icon: 'payments', route: '/cliente/tarifas',      roles: ['FULL_CUSTOMER', 'AVERAGE_CUSTOMER'] },
+    { label: 'Nuevo Envío',   icon: 'add_box', route: '/cliente/nuevo-envio',  roles: ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'] },
+    { label: 'Mis Envíos',    icon: 'inventory_2', route: '/cliente/mis-envios',   roles: ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'] },
 
     // REPARTIDOR
     { label: 'Mis Guías',     icon: 'assignment', route: '/repartidor/guias',     roles: ['REPARTIDOR'] },

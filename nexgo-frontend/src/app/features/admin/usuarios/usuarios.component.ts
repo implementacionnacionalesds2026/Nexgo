@@ -21,7 +21,7 @@ import { User }                from '../../../core/models/user.model';
         <div class="nx-content">
           <div class="nx-page-header">
             <h1>Usuarios del Sistema</h1>
-            <p>CRUD completo de administradores, clientes y repartidores</p>
+            <p>Gestión de administradores, repartidores y clientes (Full, Average, Small)</p>
             <div class="header-actions">
               <select class="nx-input" style="width:160px;" [(ngModel)]="roleFilter" (change)="loadUsers()">
                 <option value="">Todos los roles</option>

@@ -21,8 +21,10 @@ export class StatusBadgeComponent {
     EN_DESTINO:  'En destino',
     ENTREGADO:   'Entregado',
     CANCELADO:   'Cancelado',
-    ADMIN:       'Admin',
-    CLIENTE:     'Cliente',
-    REPARTIDOR:  'Repartidor',
+    ADMIN:            'Admin',
+    SMALL_CUSTOMER:   'Cliente Small',
+    AVERAGE_CUSTOMER: 'Cliente Average',
+    FULL_CUSTOMER:    'Cliente Full',
+    REPARTIDOR:       'Repartidor',
   };
 }

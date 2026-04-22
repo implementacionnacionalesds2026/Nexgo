@@ -56,13 +56,20 @@ export const routes: Routes = [
   // ── CLIENTE ────────────────────────────────────────────────
   {
     path: 'cliente',
-    canActivate: [authGuard, roleGuard('CLIENTE', 'ADMIN')],
+    canActivate: [authGuard, roleGuard('SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN')],
     children: [
-      { path: '', redirectTo: 'cotizador', pathMatch: 'full' },
+      { path: '', redirectTo: 'mis-envios', pathMatch: 'full' },
       {
         path: 'cotizador',
+        canActivate: [roleGuard('AVERAGE_CUSTOMER', 'ADMIN')],
         loadComponent: () =>
           import('./features/cliente/cotizador/cotizador.component').then((m) => m.CotizadorComponent),
+      },
+      {
+        path: 'tarifas',
+        canActivate: [roleGuard('AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN')],
+        loadComponent: () =>
+          import('./features/cliente/tarifas/tarifas.component').then((m) => m.TarifasClienteComponent),
       },
       {
         path: 'nuevo-envio',
