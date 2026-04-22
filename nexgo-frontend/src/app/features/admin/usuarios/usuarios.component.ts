@@ -112,13 +112,13 @@ import * as XLSX from 'xlsx';
                 <table class="nx-table">
                   <thead>
                     <tr>
-                      @if (isColumnVisible('usuario')) { <th>Usuario</th> }
-                      @if (isColumnVisible('nombre')) { <th>Nombre <span class="material-symbols-outlined" style="font-size:12px;">filter_alt</span></th> }
-                      @if (isColumnVisible('email')) { <th>Email</th> }
-                      @if (isColumnVisible('rol')) { <th>Rol <span class="material-symbols-outlined" style="font-size:12px;">filter_alt</span></th> }
-                      @if (isColumnVisible('empresa')) { <th>Empresa <span class="material-symbols-outlined" style="font-size:12px;">filter_alt</span></th> }
-                      @if (isColumnVisible('fecha')) { <th>Creado</th> }
-                      <th>Acciones</th>
+                      @if (isColumnVisible('usuario')) { <th>USUARIO <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('nombre')) { <th>NOMBRE <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('email')) { <th>EMAIL <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('rol')) { <th>ROL <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('empresa')) { <th>EMPRESA <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('fecha')) { <th>CREADO <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      <th class="actions-column">ACCIONES</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -145,7 +145,7 @@ import * as XLSX from 'xlsx';
                           </td> 
                         }
                         @if (isColumnVisible('fecha')) { <td class="text-muted" style="font-size:0.75rem;">{{ u.created_at | date:'dd/MM/yy' }}</td> }
-                        <td>
+                        <td class="actions-column">
                           <div class="dropdown-container" style="position:relative; display:inline-block;">
                             <button (click)="toggleDropdown(u.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
                             <div class="dropdown-menu" 
@@ -307,10 +307,12 @@ import * as XLSX from 'xlsx';
     .options-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 6px 0; }
 
     .dropdown-container .dropdown-menu {
-      position: absolute; left: calc(100% + 10px); top: -10px; z-index: 100;
+      position: absolute; left: calc(100% + 10px); top: -10px; z-index: 500;
       background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;
       box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); min-width: 180px; backdrop-filter: blur(8px);
     }
+
+    .nx-table-wrap { overflow-x: auto; min-height: 150px; }
     .dropdown-container .dropdown-menu.dropup { top: auto; bottom: -10px; }
     .dropdown-item {
       display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px;
@@ -334,7 +336,21 @@ import * as XLSX from 'xlsx';
     .modal-footer { padding: 1.25rem 1.5rem; background: rgba(0,0,0,0.2); display: flex; justify-content: flex-end; gap: 1rem; }
     .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
 
-    .search-empty { padding: 4rem 2rem; text-align: center; color: var(--text-muted); }
+    .header-filter { font-size: 14px; margin-left: 4px; vertical-align: middle; opacity: 0.5; cursor: pointer; }
+    .header-filter:hover { opacity: 1; color: var(--primary); }
+
+    .actions-column { 
+      text-align: left !important; 
+      padding-left: 20px !important;
+      width: 250px;
+      border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .nx-table td:last-child {
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+      padding-left: 20px;
+    }
     .robot-confused { font-size: 4rem; color: var(--primary); margin-bottom: 1rem; opacity: 0.5; }
 
     .animate-scale-up { animation: scaleUp 0.2s ease-out; }
@@ -354,7 +370,7 @@ export class UsuariosComponent implements OnInit {
   openDropdownId: string | null = null;
 
   searchText = '';
-  viewActive = true; 
+  viewActive = true;
   activeRoleFilter: string | null = null;
 
   isOptionsMenuOpen = false;
@@ -371,12 +387,12 @@ export class UsuariosComponent implements OnInit {
 
   form: any = { firstName: '', lastName: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
 
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService) { }
 
   ngOnInit() {
     this.adminService.getRoles().subscribe((r) => this.roles = r.data);
     this.loadUsers();
-    
+
     document.addEventListener('click', () => {
       this.openDropdownId = null;
       this.isOptionsMenuOpen = false;
@@ -386,9 +402,9 @@ export class UsuariosComponent implements OnInit {
   loadUsers() {
     this.loading = true;
     this.adminService.getUsers({}).subscribe({
-      next: (r) => { 
-        this.users = r.data.data; 
-        this.loading = false; 
+      next: (r) => {
+        this.users = r.data.data;
+        this.loading = false;
       },
       error: () => { this.loading = false; },
     });
@@ -401,9 +417,9 @@ export class UsuariosComponent implements OnInit {
 
     if (this.searchText) {
       const q = this.searchText.toLowerCase();
-      result = result.filter(u => 
-        u.name?.toLowerCase().includes(q) || 
-        u.email?.toLowerCase().includes(q) || 
+      result = result.filter(u =>
+        u.name?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
         u.username?.toLowerCase().includes(q) ||
         u.company_name?.toLowerCase().includes(q)
       );
@@ -459,13 +475,13 @@ export class UsuariosComponent implements OnInit {
   openEdit(u: any) {
     this.editMode = true;
     this.selectedUser = u;
-    this.form = { 
-      firstName: u.first_name || u.name?.split(' ')[0] || '', 
-      lastName: u.last_name || u.name?.split(' ').slice(1).join(' ') || '', 
-      email: u.email, 
-      phone: u.phone, 
-      companyName: u.company_name, 
-      roleId: u.role_id 
+    this.form = {
+      firstName: u.first_name || u.name?.split(' ')[0] || '',
+      lastName: u.last_name || u.name?.split(' ').slice(1).join(' ') || '',
+      email: u.email,
+      phone: u.phone,
+      companyName: u.company_name,
+      roleId: u.role_id
     };
     this.modalError = '';
     this.showModal = true;
@@ -504,9 +520,9 @@ export class UsuariosComponent implements OnInit {
   toggleUserStatus(u: any) {
     const action = u.is_active ? 'desactivar' : 'activar';
     if (!confirm(`¿Estás seguro de que deseas ${action} al usuario ${u.name}?`)) return;
-    
-    const obs: any = u.is_active 
-      ? this.adminService.deleteUser(u.id) 
+
+    const obs: any = u.is_active
+      ? this.adminService.deleteUser(u.id)
       : this.adminService.updateUser(u.id, { isActive: true } as any);
 
     obs.subscribe(() => this.loadUsers());
