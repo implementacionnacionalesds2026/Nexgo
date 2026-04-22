@@ -139,7 +139,11 @@ import * as XLSX from 'xlsx';
                         }
                         @if (isColumnVisible('email')) { <td class="text-muted">{{ u.email }}</td> }
                         @if (isColumnVisible('rol')) { <td><app-status-badge [status]="u.role" /></td> }
-                        @if (isColumnVisible('empresa')) { <td class="text-muted">{{ u.company_name || '—' }}</td> }
+                        @if (isColumnVisible('empresa')) { 
+                          <td class="text-muted">
+                            {{ (u.role === 'ADMIN' || u.role === 'REPARTIDOR') ? 'Nacionales Delivery Services' : (u.company_name || '—') }}
+                          </td> 
+                        }
                         @if (isColumnVisible('fecha')) { <td class="text-muted" style="font-size:0.75rem;">{{ u.created_at | date:'dd/MM/yy' }}</td> }
                         <td>
                           <div class="dropdown-container" style="position:relative; display:inline-block;">
@@ -224,7 +228,7 @@ import * as XLSX from 'xlsx';
             <div class="nx-form-row cols-2">
               <div class="nx-form-group">
                 <label>Rol</label>
-                <select class="nx-input" [(ngModel)]="form.roleId">
+                <select class="nx-input" [(ngModel)]="form.roleId" (change)="onRoleChange()">
                   @for (r of roles; track r.id) {
                     <option [value]="r.id">{{ r.description || r.name }}</option>
                   }
@@ -232,7 +236,12 @@ import * as XLSX from 'xlsx';
               </div>
               <div class="nx-form-group">
                 <label>Empresa (Solo clientes)</label>
-                <input class="nx-input" [(ngModel)]="form.companyName" placeholder="Nombre de empresa" />
+                <input 
+                  class="nx-input" 
+                  [(ngModel)]="form.companyName" 
+                  [disabled]="isInternalRole()" 
+                  [placeholder]="isInternalRole() ? 'Nacionales Delivery Services' : 'Nombre de empresa'" 
+                />
               </div>
             </div>
           </div>
@@ -477,6 +486,19 @@ export class UsuariosComponent implements OnInit {
       next: () => { this.saving = false; this.closeModal(); this.loadUsers(); },
       error: (e) => { this.saving = false; this.modalError = e?.error?.message || 'Error al guardar'; },
     });
+  }
+
+  onRoleChange() {
+    if (this.isInternalRole()) {
+      this.form.companyName = 'Nacionales Delivery Services';
+    } else if (this.form.companyName === 'Nacionales Delivery Services') {
+      this.form.companyName = '';
+    }
+  }
+
+  isInternalRole() {
+    // 1: Admin, 5: Repartidor
+    return this.form.roleId == 1 || this.form.roleId == 5;
   }
 
   toggleUserStatus(u: any) {
