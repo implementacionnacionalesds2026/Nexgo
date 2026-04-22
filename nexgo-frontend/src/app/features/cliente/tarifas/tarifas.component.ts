@@ -121,10 +121,19 @@ import { AdminService } from '../../../core/services/admin.service';
       width: 100%;
       max-width: 480px;
       background: #111827;
-      border-radius: 24px;
+      border-radius: 28px;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.05);
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: default;
+      animation: cardEntrance 0.8s ease-out;
+    }
+
+    .stats-card-premium:hover {
+      transform: translateY(-10px) scale(1.02) rotateX(2deg);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 20px var(--glow-color)20;
+      border-color: var(--glow-color)40;
     }
 
     .stats-card-premium::before {
@@ -133,144 +142,147 @@ import { AdminService } from '../../../core/services/admin.service';
       top: 0; left: 0; right: 0;
       height: 4px;
       background: linear-gradient(90deg, transparent, var(--glow-color), transparent);
+      z-index: 10;
+      animation: borderPulse 3s infinite;
     }
 
     .card-glow {
       position: absolute;
       top: 0; right: 0;
-      width: 150px; height: 150px;
+      width: 250px; height: 250px;
       background: radial-gradient(circle at top right, var(--glow-color), transparent 70%);
-      opacity: 0.1;
+      opacity: 0.15;
       pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .stats-card-premium:hover .card-glow {
+      opacity: 0.25;
     }
 
     .watermark {
       position: absolute;
-      bottom: -10px;
-      right: 10px;
-      font-size: 10rem;
+      bottom: -20px;
+      right: -10px;
+      font-size: 12rem;
       color: white;
       opacity: 0.03;
       pointer-events: none;
       user-select: none;
+      transition: all 0.8s ease;
+      animation: floating 6s ease-in-out infinite;
+    }
+
+    .stats-card-premium:hover .watermark {
+      transform: scale(1.1) rotate(-5deg);
+      opacity: 0.05;
     }
 
     .card-body {
       position: relative;
-      padding: 2rem;
+      padding: 3rem 2.5rem;
       z-index: 1;
     }
 
+    /* ... Rest of styles remain similar but with better spacing ... */
     .header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .tier-label {
-      font-size: 0.75rem;
-      font-weight: 800;
+      font-size: 0.8rem;
+      font-weight: 900;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
     }
 
     .verified-tag {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       font-size: 0.65rem;
       font-weight: 900;
       color: #10b981;
       background: rgba(16, 185, 129, 0.1);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 100px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     .price-display {
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
 
     .price-display .currency {
-      font-size: 1.5rem;
+      font-size: 2rem;
       color: var(--glow-color);
-      font-weight: 400;
-      margin-right: 4px;
+      font-weight: 300;
+      margin-right: 6px;
     }
 
     .price-display .value {
-      font-size: 4rem;
+      font-size: 5rem;
       font-weight: 900;
       color: white;
-      line-height: 1;
+      line-height: 0.8;
+      letter-spacing: -2px;
     }
 
-    .price-display .label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-left: 8px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+    /* Keyframes */
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: translateY(40px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    @keyframes floating {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes borderPulse {
+      0%, 100% { opacity: 0.5; filter: brightness(1); }
+      50% { opacity: 1; filter: brightness(1.5) blur(1px); }
+    }
+
+    /* Reusing existing logic for grid and guide */
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      background: rgba(255,255,255,0.02);
-      padding: 1.25rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.03);
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      background: rgba(255,255,255,0.03);
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
     }
 
-    .info-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .info-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-
-    .info-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: white;
-    }
-
-    .info-value .unit {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
+    .info-item .info-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
+    .info-item .info-value { font-size: 1.5rem; font-weight: 800; color: white; }
+    .info-value .unit { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; }
 
     .footer-note {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.7rem;
+      gap: 10px;
+      font-size: 0.75rem;
       color: var(--text-muted);
-      background: rgba(0,0,0,0.2);
-      padding: 8px 12px;
-      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      padding: 10px 16px;
+      border-radius: 12px;
     }
 
-    .footer-note .material-symbols-outlined { font-size: 1rem; }
-
-    /* Guide Box */
     .calculation-guide {
       width: 100%;
       max-width: 480px;
       padding: 1.5rem;
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 16px;
+      border-radius: 20px;
+      animation: cardEntrance 1s ease-out 0.2s backwards;
     }
 
     .guide-header {

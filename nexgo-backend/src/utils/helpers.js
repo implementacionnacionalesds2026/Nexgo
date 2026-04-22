@@ -46,8 +46,8 @@ const calculateShipmentCost = (rule, { weightKg, distanceKm, quantity, lengthCm,
     cost += extraWeight * extraPrice;
   }
 
-  // 3. Multiplicar por cantidad si aplica (opcional, usualmente el costo es por guía)
-  // cost = cost * (quantity || 1);
+  // 3. Multiplicar por cantidad (en Nexgo se cobra por bulto/guía si son múltiples piezas)
+  cost = cost * (parseFloat(quantity) || 1);
 
   return Math.round(cost * 100) / 100; // Redondear a 2 decimales
 };

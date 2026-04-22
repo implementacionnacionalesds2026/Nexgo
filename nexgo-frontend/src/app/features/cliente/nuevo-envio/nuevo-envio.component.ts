@@ -300,31 +300,27 @@ import Swal from 'sweetalert2';
                               Q{{ currentEstimatedNexgoCost | number:'1.2-2' }}
                             </div>
                           </div>
-                          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 15px;">
+                          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                             <div style="font-size: 0.7rem; color: var(--text-muted);">
-                              <b>Base:</b> Q{{ userRule.base_price }} ({{ userRule.base_weight }}LB)
+                              <b>Tarifa Base:</b> Q{{ userRule.base_price }} ({{ userRule.base_weight }}LB incl.)
                             </div>
                             <div style="font-size: 0.7rem; color: var(--text-muted);">
-                              <b>Extra:</b> Q{{ userRule.extra_weight_price }} x LB
+                              <b>Libra Extra:</b> Q{{ userRule.extra_weight_price }} / LB
                             </div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted);">
-                              <b>Peso actual:</b> {{ form.weightKg }}LB
+                            <div style="font-size: 0.7rem; color: #a5b4fc; font-weight: 700;">
+                              <b>Piezas:</b> {{ form.quantity }} x {{ form.weightKg }} LB
+                            </div>
+                            <div style="font-size: 0.7rem; color: #a5b4fc; font-weight: 700; text-align: right;">
+                              <b>Total Peso:</b> {{ (form.quantity || 1) * (form.weightKg || 0) }} LB
                             </div>
                           </div>
                         </div>
                       }
 
+                      <!-- El monto a cobrar ahora es automático basado en la tarifa -->
                       <div class="nx-form-group">
-                        <label>Monto a Cobrar al Destinatario (Q)</label>
-                        <div class="input-with-icon">
-                          <span class="currency-prefix">Q</span>
-                          <input class="nx-input" type="number" [(ngModel)]="form.totalPaymentAmount" placeholder="Ej: 150.00" style="padding-left: 2.5rem;" />
-                        </div>
-                        <small style="color:var(--text-muted); margin-top: 5px; display:block;">Ingrese 0 si el envío ya está pagado.</small>
-                      </div>
-                      <div class="nx-form-group">
-                        <label>Instrucciones de Pago</label>
-                        <textarea class="nx-input" [(ngModel)]="form.paymentInstructions" rows="3" placeholder="Ej: Favor cobrar con envío incluido..."></textarea>
+                        <label>Instrucciones de Pago y Comentarios</label>
+                        <textarea class="nx-input" [(ngModel)]="form.paymentInstructions" rows="4" placeholder="Ej: Favor cobrar con envío incluido, dejar en recepción..."></textarea>
                       </div>
                       
                       @if (error) { 
@@ -875,11 +871,16 @@ export class NuevoEnvioComponent {
     if (!this.userRule) return 0;
     const base = Number(this.userRule.base_price) || 0;
     const extra = Number(this.userRule.extra_weight_price) || 0;
-    const weight = Number(this.form.weightKg) || 0;
+    const weightPerPiece = Number(this.form.weightKg) || 0;
+    const quantity = Number(this.form.quantity) || 1;
     const baseWeight = Number(this.userRule.base_weight) || 1;
     
-    if (weight <= baseWeight) return base;
-    return base + (weight - baseWeight) * extra;
+    let costPerPiece = base;
+    if (weightPerPiece > baseWeight) {
+      costPerPiece += (weightPerPiece - baseWeight) * extra;
+    }
+
+    return costPerPiece * quantity;
   }
 
   onDepartmentChange() {
@@ -946,6 +947,10 @@ export class NuevoEnvioComponent {
 
   submit() {
     this.form.destinationCity = this.form.recipientMunicipality || '';
+    
+    // Asignar automáticamente el monto calculado como el monto a cobrar
+    this.form.totalPaymentAmount = this.currentEstimatedNexgoCost;
+
     this.saving = true;
     this.error = '';
 
