@@ -22,7 +22,7 @@ const getUsers = async (req, res, next) => {
     params.push(limit, offset);
 
     const result = await query(
-      `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at, r.name AS role
+      `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at, u.role_id, r.name AS role
        FROM users u JOIN roles r ON r.id = u.role_id
        ${whereClause}
        ORDER BY u.created_at DESC
@@ -53,7 +53,7 @@ const getUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at, r.name AS role
+      `SELECT u.id, u.name, u.first_name, u.last_name, u.username, u.email, u.phone, u.company_name, u.is_active, u.created_at, u.role_id, r.name AS role
        FROM users u JOIN roles r ON r.id = u.role_id
        WHERE u.id = $1`,
       [req.params.id]

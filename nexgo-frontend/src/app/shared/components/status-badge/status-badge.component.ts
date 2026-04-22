@@ -22,9 +22,9 @@ export class StatusBadgeComponent {
     ENTREGADO:   'Entregado',
     CANCELADO:   'Cancelado',
     ADMIN:            'Admin',
-    SMALL_CUSTOMER:   'Cliente Small',
-    AVERAGE_CUSTOMER: 'Cliente Average',
-    FULL_CUSTOMER:    'Cliente Full',
+    SMALL_CUSTOMER:   'Cliente Bronce',
+    AVERAGE_CUSTOMER: 'Cliente Plata',
+    FULL_CUSTOMER:    'Cliente Oro',
     REPARTIDOR:       'Repartidor',
   };
 }

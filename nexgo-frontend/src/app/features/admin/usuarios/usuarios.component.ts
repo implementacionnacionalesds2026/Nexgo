@@ -26,7 +26,7 @@ import { User }                from '../../../core/models/user.model';
               <select class="nx-input" style="width:160px;" [(ngModel)]="roleFilter" (change)="loadUsers()">
                 <option value="">Todos los roles</option>
                 @for (r of roles; track r.id) {
-                  <option [value]="r.name">{{ r.name }}</option>
+                  <option [value]="r.name">{{ r.description || r.name }}</option>
                 }
               </select>
               <button class="nx-btn btn-accent" (click)="openCreate()">➕ Nuevo Usuario</button>
@@ -129,7 +129,7 @@ import { User }                from '../../../core/models/user.model';
                 <label>Rol</label>
                 <select class="nx-input" [(ngModel)]="form.roleId">
                   @for (r of roles; track r.id) {
-                    <option [value]="r.id">{{ r.name }}</option>
+                    <option [value]="r.id">{{ r.description || r.name }}</option>
                   }
                 </select>
               </div>
@@ -196,7 +196,7 @@ export class UsuariosComponent implements OnInit {
       email: u.email, 
       phone: u.phone, 
       companyName: u.company_name, 
-      roleId: null 
+      roleId: u.role_id 
     };
     this.modalError = '';
     this.showModal = true;
@@ -224,6 +224,7 @@ export class UsuariosComponent implements OnInit {
           lastName: payload.lastName,
           phone: payload.phone,
           companyName: payload.companyName,
+          roleId: payload.roleId
         } as any)
       : this.adminService.createUser(payload);
 
