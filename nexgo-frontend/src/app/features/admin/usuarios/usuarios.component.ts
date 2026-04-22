@@ -270,10 +270,20 @@ import * as XLSX from 'xlsx';
       border-radius: 12px !important; display: flex; align-items: center; gap: 10px; font-weight: 700;
     }
 
-    .btn-active-toggle { background: rgba(248, 113, 113, 0.1) !important; color: #F87171 !important; border: 1px solid rgba(248, 113, 113, 0.2) !important; font-weight:700; border-radius: 12px !important; height: 45px; padding: 0 15px; }
-    .btn-inactive-toggle { background: rgba(52, 211, 153, 0.1) !important; color: #34D399 !important; border: 1px solid rgba(52, 211, 153, 0.2) !important; font-weight:700; border-radius: 12px !important; height: 45px; padding: 0 15px; }
-    .btn-active-toggle:hover { background: rgba(248, 113, 113, 0.2) !important; }
-    .btn-inactive-toggle:hover { background: rgba(52, 211, 153, 0.2) !important; }
+    .btn-active-toggle { 
+      background: #f43f5e !important; 
+      color: white !important; 
+      border: none !important; 
+      font-weight:700; border-radius: 12px !important; height: 45px; padding: 0 15px; 
+    }
+    .btn-inactive-toggle { 
+      background: #10b981 !important; 
+      color: white !important; 
+      border: none !important; 
+      font-weight:700; border-radius: 12px !important; height: 45px; padding: 0 15px; 
+    }
+    .btn-active-toggle:hover { background: #e11d48 !important; opacity: 0.9; }
+    .btn-inactive-toggle:hover { background: #059669 !important; opacity: 0.9; }
 
     .nx-kpi-card { cursor: pointer; transition: all 0.3s; }
     .nx-kpi-card:hover { transform: translateY(-5px); }
