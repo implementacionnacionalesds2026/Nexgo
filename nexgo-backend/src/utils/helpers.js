@@ -32,30 +32,22 @@ const errorResponse = (res, message, statusCode = 400, errors = null) => {
   });
 };
 
-/**
- * Calcula el costo de un envío basado en las tarifas
- */
 const calculateShipmentCost = (rule, { weightKg, distanceKm, quantity, lengthCm, widthCm, heightCm }) => {
-  let cost = rule.base_price;
+  // 1. Costo base
+  let cost = parseFloat(rule.base_price) || 0;
 
-  // Cargo por peso
-  cost += weightKg * rule.price_per_kg;
+  // 2. Costo por excedente de peso
+  const baseWeight = parseFloat(rule.base_weight) || 0;
+  const currentWeight = parseFloat(weightKg) || 0;
+  const extraPrice = parseFloat(rule.extra_weight_price) || 0;
 
-  // Cargo por distancia
-  cost += distanceKm * rule.price_per_km;
-
-  // Cargo por paquetes adicionales
-  if (quantity > 1) {
-    cost += (quantity - 1) * rule.price_per_extra_pkg;
+  if (currentWeight > baseWeight) {
+    const extraWeight = currentWeight - baseWeight;
+    cost += extraWeight * extraPrice;
   }
 
-  // Recargo por dimensiones grandes (si el volumen supera 100L)
-  if (lengthCm && widthCm && heightCm) {
-    const volumeLiters = (lengthCm * widthCm * heightCm) / 1000;
-    if (volumeLiters > 100) {
-      cost += rule.dimension_surcharge;
-    }
-  }
+  // 3. Multiplicar por cantidad si aplica (opcional, usualmente el costo es por guía)
+  // cost = cost * (quantity || 1);
 
   return Math.round(cost * 100) / 100; // Redondear a 2 decimales
 };

@@ -43,7 +43,7 @@ export const routes: Routes = [
       {
         path: 'tarifas',
         loadComponent: () =>
-          import('./features/admin/tarifas/tarifas.component').then((m) => m.TarifasComponent),
+          import('./features/admin/tarifas/tarifas.component').then((m) => m.AdminTarifasComponent),
       },
       {
         path: 'reportes',
@@ -67,9 +67,9 @@ export const routes: Routes = [
       },
       {
         path: 'tarifas',
-        canActivate: [roleGuard('AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN')],
+        canActivate: [roleGuard('SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN')],
         loadComponent: () =>
-          import('./features/cliente/tarifas/tarifas.component').then((m) => m.TarifasClienteComponent),
+          import('./features/cliente/tarifas/tarifas.component').then((m) => m.ClientTarifasComponent),
       },
       {
         path: 'nuevo-envio',

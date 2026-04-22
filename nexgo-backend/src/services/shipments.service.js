@@ -39,14 +39,45 @@ const createShipment = async (data, clientId) => {
   }
 
   // Obtener tarifa y calcular costo
-  let estimatedCost = null;
-  if (pricingRuleId && distanceKm) {
-    const ruleResult = await query('SELECT * FROM pricing_rules WHERE id = $1 AND is_active = TRUE', [pricingRuleId]);
-    if (ruleResult.rows[0]) {
-      estimatedCost = calculateShipmentCost(ruleResult.rows[0], {
-        weightKg, distanceKm, quantity, lengthCm, widthCm, heightCm,
-      });
+  let estimatedCost = 0;
+  let finalPricingRuleId = pricingRuleId;
+
+  try {
+    // Si no viene pricingRuleId, lo buscamos con prioridad: User Specific -> Role Default
+    if (!finalPricingRuleId) {
+      // 1. Intentar buscar regla específica para el usuario
+      const specificRule = await query(
+        'SELECT id FROM pricing_rules WHERE user_id = $1 AND is_active = TRUE LIMIT 1',
+        [clientId]
+      );
+      
+      if (specificRule.rows[0]) {
+        finalPricingRuleId = specificRule.rows[0].id;
+      } else {
+        // 2. Fallback: Buscar regla por el rol del cliente
+        const userResult = await query('SELECT role_id FROM users WHERE id = $1', [clientId]);
+        if (userResult.rows[0]) {
+          const roleRule = await query(
+            'SELECT id FROM pricing_rules WHERE role_id = $1 AND user_id IS NULL AND is_active = TRUE LIMIT 1', 
+            [userResult.rows[0].role_id]
+          );
+          if (roleRule.rows[0]) {
+            finalPricingRuleId = roleRule.rows[0].id;
+          }
+        }
+      }
     }
+
+    if (finalPricingRuleId) {
+      const ruleResult = await query('SELECT * FROM pricing_rules WHERE id = $1 AND is_active = TRUE', [finalPricingRuleId]);
+      if (ruleResult.rows[0]) {
+        estimatedCost = calculateShipmentCost(ruleResult.rows[0], {
+          weightKg, distanceKm, quantity, lengthCm, widthCm, heightCm,
+        });
+      }
+    }
+  } catch (priceError) {
+    logger.error('Error calculando costo:', priceError);
   }
 
   const trackingNumber = generateTrackingNumber();
@@ -72,7 +103,7 @@ const createShipment = async (data, clientId) => {
       $33,$34,$34,'PENDIENTE'
     ) RETURNING *`,
     [
-      trackingNumber, clientId, pricingRuleId,
+      trackingNumber, clientId, finalPricingRuleId,
       senderName, senderPhone, senderAddress, originCity, originLat, originLng,
       recipientName, recipientPhone, recipientAddress, destinationCity, destinationLat, destinationLng,
       recipientMunicipality, recipientDepartment, recipientZone,

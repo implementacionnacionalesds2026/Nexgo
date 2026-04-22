@@ -146,10 +146,16 @@ export interface PricingRule {
   id: number;
   name: string;
   basePrice: number;
+  base_price?: number;
   pricePerKg: number;
   pricePerKm: number;
   pricePerExtraPkg: number;
   dimensionSurcharge: number;
   maxWeightKg: number;
+  base_weight?: number;
+  weight_unit?: string;
+  extra_weight_price?: number;
+  role_id?: number;
+  user_id?: string;
   isActive: boolean;
 }

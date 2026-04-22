@@ -59,6 +59,10 @@ export class AdminService {
     return this.http.post<ApiResponse<PricingRule>>(`${environment.apiUrl}/pricing`, data);
   }
 
+  getPricingHistory(id: number): Observable<ApiResponse<any[]>> {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/history`);
+  }
+
   // ── Tracking ───────────────────────────────────────────────
   getActiveDriverLocations(): Observable<ApiResponse<any[]>> {
     return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/tracking/repartidores`);
