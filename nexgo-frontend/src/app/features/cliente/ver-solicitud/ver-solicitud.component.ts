@@ -58,13 +58,12 @@ import JsBarcode from 'jsbarcode';
                 <div class="status-box">
                   <span class="status-label">ESTADO ACTUAL</span>
                   <div class="header-actions">
-                    <button class="nx-btn btn-primary btn-sm log-btn" (click)="showHistory = true" title="Ver Bitácora">
-                      <span class="material-symbols-outlined">history</span> Bitácora
-                    </button>
-                    <div class="status-indicator" [attr.data-status]="shipment.currentStatus || $any(shipment).current_status">
-                      <span class="dot"></span>
+                    <button class="nx-btn status-btn-action" 
+                            [style.backgroundColor]="getStatusColor(shipment.currentStatus || $any(shipment).current_status)"
+                            [style.boxShadow]="'0 4px 12px ' + getStatusColor(shipment.currentStatus || $any(shipment).current_status) + '44'"
+                            (click)="showHistory = true">
                       {{ (shipment.currentStatus || $any(shipment).current_status || '').replace('_', ' ') | uppercase }}
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -493,25 +492,20 @@ import JsBarcode from 'jsbarcode';
     .status-label { font-size: 0.65rem; color: #9ca3af; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
     .header-actions { display: flex; align-items: center; gap: 10px; }
 
-    .log-btn { 
-      background: #6366f1; color: white; border: none; font-size: 0.75rem; font-weight: 800;
-      height: 38px; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px;
+    .status-btn-action {
+      height: 38px; padding: 0 20px; border-radius: 10px; font-size: 0.8rem; font-weight: 800;
+      border: none; cursor: pointer; transition: all 0.2s; color: white;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    .log-btn:hover { background: #4f46e5; transform: translateY(-1px); }
+    .status-btn-action:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .status-btn-action:active { transform: translateY(0); }
 
-    .status-indicator {
-      display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;
-    }
-    .status-indicator .dot { width: 8px; height: 8px; border-radius: 50%; }
-    
-    .status-indicator[data-status="PENDIENTE"] { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .status-indicator[data-status="PENDIENTE"] .dot { background: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
-    
-    .status-indicator[data-status="EN_TRANSITO"] { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-    .status-indicator[data-status="EN_TRANSITO"] .dot { background: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
-    
-    .status-indicator[data-status="ENTREGADO"] { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .status-indicator[data-status="ENTREGADO"] .dot { background: #34d399; box-shadow: 0 0 10px #34d399; }
+    .status-btn-action[data-status="PENDIENTE"] { background: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+    .status-btn-action[data-status="RECOGIDO"] { background: #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+    .status-btn-action[data-status="EN_TRANSITO"] { background: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+    .status-btn-action[data-status="ENTREGADO"] { background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    .status-btn-action[data-status="CANCELADO"] { background: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
 
     /* GRID */
     .manifest-grid {
@@ -726,6 +720,16 @@ export class VerSolicitudComponent implements OnInit {
     if (dept.includes('Huehuetenango')) return 'HUE';
     if (dept.includes('Quetzaltenango')) return 'XELA';
     return 'GUA';
+  }
+
+  getStatusColor(status: string): string {
+    const s = (status || '').toUpperCase();
+    if (s.includes('PENDIENTE')) return '#f59e0b';
+    if (s.includes('RECOGIDO')) return '#8b5cf6';
+    if (s.includes('TRANSITO') || s.includes('TRANSIT')) return '#3b82f6';
+    if (s.includes('ENTREGADO') || s.includes('DELIVERED')) return '#10b981';
+    if (s.includes('CANCELADO') || s.includes('CANCEL')) return '#ef4444';
+    return '#6366f1';
   }
 
   imprimirGuia() {
