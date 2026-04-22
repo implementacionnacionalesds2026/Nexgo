@@ -45,20 +45,47 @@ import * as XLSX from 'xlsx';
 
                   @if (isMonthMenuOpen) {
                     <div class="month-picker-dropdown animate-scale-up">
-                      <div class="picker-header">
-                        <button class="nav-btn" (click)="changeTempYear(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
-                        <span class="picker-year">{{ tempYear }}</span>
-                        <button class="nav-btn" (click)="changeTempYear(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                      <div class="picker-header" style="flex-direction: column; gap: 12px; border-bottom: none; margin-bottom: 8px;">
+                        <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                           <div style="display: flex; align-items: center; gap: 8px;">
+                              @if (!isDayView || dateSelectionMode === 'MONTH') {
+                                <button class="nav-btn" (click)="changeTempYear(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
+                                <span class="picker-year">{{ tempYear }}</span>
+                                <button class="nav-btn" (click)="changeTempYear(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                              } @else {
+                                <button class="nav-btn" (click)="changeTempMonth(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
+                                <span class="picker-year" style="font-size: 0.9rem; min-width: 80px; text-align: center;">{{ getMonthName(tempMonth) }} {{ tempYear }}</span>
+                                <button class="nav-btn" (click)="changeTempMonth(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                              }
+                           </div>
+                           <div class="picker-mode-toggle">
+                              <button [class.active]="dateSelectionMode === 'MONTH'" (click)="setPickerMode('MONTH')">Mes</button>
+                              <button [class.active]="dateSelectionMode === 'DAY'" (click)="setPickerMode('DAY')">Día</button>
+                           </div>
+                        </div>
                       </div>
-                      <div class="month-grid">
-                        @for (m of monthsShort; track m.value) {
-                          <button class="month-item" 
-                                  [class.selected]="selectedMonth === m.value && selectedYear === tempYear"
-                                  (click)="selectMonth(m.value)">
-                            {{ m.label }}
-                          </button>
-                        }
-                      </div>
+
+                      @if (!isDayView || dateSelectionMode === 'MONTH') {
+                        <div class="month-grid">
+                          @for (m of monthsShort; track m.value) {
+                            <button class="month-item" 
+                                    [class.selected]="selectedMonth === m.value && selectedYear === tempYear && dateSelectionMode === 'MONTH'"
+                                    (click)="handleMonthClick(m.value)">
+                              {{ m.label }}
+                            </button>
+                          }
+                        </div>
+                      } @else {
+                        <div class="day-grid">
+                          @for (d of getDaysInMonth(tempMonth, tempYear); track d) {
+                            <button class="day-item" 
+                                    [class.selected]="selectedDay === d && selectedMonth === tempMonth && selectedYear === tempYear"
+                                    (click)="selectDay(d)">
+                              {{ d }}
+                            </button>
+                          }
+                        </div>
+                      }
                     </div>
                   }
                 </div>
@@ -531,13 +558,27 @@ import * as XLSX from 'xlsx';
     .nav-btn:hover { background: var(--primary); color: white; }
     
     .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .month-item { 
+    .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    
+    .picker-mode-toggle {
+      display: flex; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px;
+    }
+    .picker-mode-toggle button {
+      background: none; border: none; color: #94a3b8; padding: 4px 12px; font-size: 0.75rem;
+      font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+    }
+    .picker-mode-toggle button.active { background: var(--primary); color: white; }
+
+    .month-item, .day-item {
       background: rgba(255,255,255,0.03); border: 1px solid transparent; color: #9ca3af; 
       padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700;
       text-align: center; transition: all 0.2s; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center;
     }
-    .month-item:hover { background: rgba(255,255,255,0.08); color: white; }
-    .month-item.selected { background: var(--primary); color: white; border-color: transparent; }
+    .day-item { padding: 8px 0; font-size: 0.8rem; aspect-ratio: 1; min-width: 32px; }
+    
+    .month-item:hover, .day-item:hover { background: rgba(99, 102, 241, 0.15); color: var(--primary); border-color: rgba(99, 102, 241, 0.3); }
+    .month-item.selected, .day-item.selected { background: var(--primary); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
     .filter-btn { 
       background: none; border: none; padding: 0; color: inherit; cursor: pointer; display: inline-flex; align-items: center;
@@ -765,8 +806,12 @@ export class MisEnviosComponent implements OnInit {
 
   selectedMonth: number = new Date().getMonth() + 1;
   selectedYear: number = new Date().getFullYear();
+  selectedDay: number | null = null;
   tempYear: number = this.selectedYear;
+  tempMonth: number = this.selectedMonth;
   isMonthMenuOpen: boolean = false;
+  isDayView: boolean = false;
+  dateSelectionMode: 'MONTH' | 'DAY' = 'MONTH';
 
   months = [
     { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' }, { value: 3, label: 'Marzo' },
@@ -815,6 +860,14 @@ export class MisEnviosComponent implements OnInit {
   get filteredShipments(): any[] {
     if (!this.shipments) return [];
     let result = [...this.shipments];
+
+    // Date Filter (Day level if selected)
+    if (this.selectedDay) {
+      result = result.filter(s => {
+        const d = new Date(s.created_at);
+        return d.getDate() === this.selectedDay;
+      });
+    }
 
     // Status Filter (from KPIs)
     if (this.activeStatusFilter) {
@@ -888,23 +941,86 @@ export class MisEnviosComponent implements OnInit {
     if (this.isMonthMenuOpen) {
       this.isOptionsMenuOpen = false;
       this.isColumnMenuOpen = false;
+      // No reset isDayView to keep "memory"
+      this.tempYear = this.selectedYear;
+      this.tempMonth = this.selectedMonth;
     }
+  }
+
+  setPickerMode(mode: 'MONTH' | 'DAY') {
+    this.dateSelectionMode = mode;
+    this.isDayView = (mode === 'DAY'); // If Day mode, show days immediately
+    this.tempMonth = this.selectedMonth;
     this.tempYear = this.selectedYear;
+  }
+
+  changeTempMonth(delta: number) {
+    let nextMonth = this.tempMonth + delta;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      this.tempYear++;
+    } else if (nextMonth < 1) {
+      nextMonth = 12;
+      this.tempYear--;
+    }
+    this.tempMonth = nextMonth;
+  }
+
+  handleMonthClick(monthValue: number) {
+    if (this.dateSelectionMode === 'MONTH') {
+      this.selectMonth(monthValue);
+    } else {
+      this.goToDayView(monthValue);
+    }
   }
 
   changeTempYear(delta: number) {
     this.tempYear += delta;
   }
 
+  goToDayView(monthValue: number) {
+    this.tempMonth = monthValue;
+    this.isDayView = true;
+  }
+
+  selectFullMonth() {
+    this.selectedMonth = this.tempMonth;
+    this.selectedYear = this.tempYear;
+    this.selectedDay = null;
+    this.isMonthMenuOpen = false;
+    this.loadShipments();
+  }
+
+  selectDay(day: number) {
+    this.selectedDay = day;
+    this.selectedMonth = this.tempMonth;
+    this.selectedYear = this.tempYear;
+    this.isMonthMenuOpen = false;
+    this.loadShipments();
+  }
+
+  getDaysInMonth(month: number, year: number): number[] {
+    const days = new Date(year, month, 0).getDate();
+    return Array.from({ length: days }, (_, i) => i + 1);
+  }
+
+  getMonthName(month: number): string {
+    return this.months.find(m => m.value === month)?.label || '';
+  }
+
   selectMonth(monthValue: number) {
     this.selectedMonth = monthValue;
     this.selectedYear = this.tempYear;
+    this.selectedDay = null;
     this.isMonthMenuOpen = false;
     this.loadShipments();
   }
 
   getSelectedDateLabel(): string {
     const m = this.months.find(m => m.value === this.selectedMonth);
+    if (this.selectedDay) {
+      return `${this.selectedDay} ${m?.label || ''} ${this.selectedYear}`;
+    }
     return `${m?.label || ''} ${this.selectedYear}`;
   }
 
@@ -916,7 +1032,29 @@ export class MisEnviosComponent implements OnInit {
   }
 
   countByStatus(status: string): number {
-    return this.shipments.filter((s: any) => s.current_status === status).length;
+    let list = [...this.shipments];
+    
+    // Filter by Selected Day if present
+    if (this.selectedDay) {
+      list = list.filter(s => {
+        const d = new Date(s.created_at);
+        return d.getDate() === this.selectedDay;
+      });
+    }
+
+    // Filter by Search Text if present
+    if (this.searchText) {
+      const q = this.searchText.toLowerCase();
+      list = list.filter(s => 
+        (s.tracking_number?.toLowerCase().includes(q)) ||
+        (s.origin_city?.toLowerCase().includes(q)) ||
+        (s.destination_city?.toLowerCase().includes(q)) ||
+        (s.sender_name?.toLowerCase().includes(q)) ||
+        (s.recipient_name?.toLowerCase().includes(q))
+      );
+    }
+
+    return list.filter((s: any) => s.current_status === status).length;
   }
 
   toggleStatusFilter(status: string) {
