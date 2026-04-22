@@ -146,8 +146,8 @@ import * as XLSX from 'xlsx';
                 <table class="nx-table">
                   <thead><tr>
                     @if (isColumnVisible('guia')) {
-                      <th>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                      <th style="text-align: center;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                           Guía 
                           <button class="filter-btn" [class.active]="showFilters.tracking" (click)="toggleColumnFilter('tracking')">
                             <span class="material-symbols-outlined filter-ico">filter_alt</span>
@@ -158,12 +158,12 @@ import * as XLSX from 'xlsx';
                         }
                       </th>
                     }
-                    @if (isColumnVisible('fecha')) { <th>Fecha</th> }
-                    @if (isColumnVisible('remitente')) { <th>Remitente</th> }
-                    @if (isColumnVisible('destinatario')) { <th>Destinatario</th> }
+                    @if (isColumnVisible('fecha')) { <th style="text-align: center;">Fecha</th> }
+                    @if (isColumnVisible('remitente')) { <th style="text-align: center;">Remitente</th> }
+                    @if (isColumnVisible('destinatario')) { <th style="text-align: center;">Destinatario</th> }
                     @if (isColumnVisible('origen')) {
-                      <th>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                      <th style="text-align: center;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                           Origen
                           <button class="filter-btn" [class.active]="showFilters.origen" (click)="toggleColumnFilter('origen')">
                             <span class="material-symbols-outlined filter-ico">filter_alt</span>
@@ -175,8 +175,8 @@ import * as XLSX from 'xlsx';
                       </th>
                     }
                     @if (isColumnVisible('destino')) {
-                      <th>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                      <th style="text-align: center;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                           Destino
                           <button class="filter-btn" [class.active]="showFilters.destino" (click)="toggleColumnFilter('destino')">
                             <span class="material-symbols-outlined filter-ico">filter_alt</span>
@@ -187,11 +187,11 @@ import * as XLSX from 'xlsx';
                         }
                       </th>
                     }
-                    @if (isColumnVisible('peso')) { <th>Peso</th> }
-                    @if (isColumnVisible('costo')) { <th>Costo est.</th> }
+                    @if (isColumnVisible('peso')) { <th style="text-align: center;">Peso</th> }
+                    @if (isColumnVisible('costo')) { <th style="text-align: center;">Costo est.</th> }
                     @if (isColumnVisible('estado')) {
-                      <th>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                      <th style="text-align: center;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                           Estado
                           <button class="filter-btn" [class.active]="showFilters.status" (click)="toggleColumnFilter('status')">
                             <span class="material-symbols-outlined filter-ico">filter_alt</span>
@@ -202,7 +202,7 @@ import * as XLSX from 'xlsx';
                         }
                       </th>
                     }
-                    @if (isColumnVisible('acciones')) { <th style="min-width: 200px;">Acciones</th> }
+                    @if (isColumnVisible('acciones')) { <th class="actions-column">ACCIONES</th> }
                   </tr></thead>
                   <tbody>
                     @for (s of filteredShipments; track s.id; let i = $index) {
@@ -664,6 +664,26 @@ import * as XLSX from 'xlsx';
       border: 1px solid #eee;
       margin: 0 auto;
     }
+    .nx-table th { 
+      font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; 
+      text-align: center !important; padding: 15px; 
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .nx-table th > div { justify-content: center !important; }
+    .nx-table td { color: #e2e8f0; font-size: 0.9rem; text-align: left; padding: 15px; }
+    
+    .nx-table-wrap { position: relative; overflow-x: auto; }
+    .nx-table-wrap::after {
+      content: ''; position: absolute; top: 0; bottom: 0; right: 250px;
+      width: 1px; background: rgba(255, 255, 255, 0.1); pointer-events: none; z-index: 10;
+    }
+    
+    .actions-column { 
+      width: 250px; 
+      min-width: 250px;
+      text-align: left !important;
+      padding-left: 10px !important;
+    }
     .m-table { width: 100%; border-collapse: collapse; border: 2px solid black !important; color: black !important; }
     .m-table td { border: 1px solid black !important; padding: 4px; vertical-align: top; font-size: 9px; line-height: 1.1; color: black !important; }
     .m-header-cell { background: #f3f4f6 !important; font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 2px solid black !important; }
@@ -819,10 +839,10 @@ export class MisEnviosComponent implements OnInit {
   }
 
   constructor(
-    private shipmentService: ShipmentService, 
+    private shipmentService: ShipmentService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadShipments();
@@ -973,7 +993,7 @@ export class MisEnviosComponent implements OnInit {
     const generateAllPages = async () => {
       try {
         const tracking = s.tracking_number || s.trackingNumber || 'ND0000000';
-        
+
         // Esperar renderizado inicial del contenedor
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -990,7 +1010,7 @@ export class MisEnviosComponent implements OnInit {
         for (let i = 1; i <= this.totalPiecesCount; i++) {
           this.currentPieceCount = i;
           this.cdr.detectChanges();
-          
+
           // Esperar renderizado del número de pieza
           await new Promise(resolve => setTimeout(resolve, 300));
 

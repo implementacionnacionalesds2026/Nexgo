@@ -113,13 +113,13 @@ import * as XLSX from 'xlsx';
                 <table class="nx-table">
                   <thead>
                     <tr>
-                      @if (isColumnVisible('usuario')) { <th>USUARIO <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
-                      @if (isColumnVisible('nombre')) { <th>NOMBRE <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
-                      @if (isColumnVisible('email')) { <th>EMAIL <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
-                      @if (isColumnVisible('rol')) { <th>ROL <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
-                      @if (isColumnVisible('empresa')) { <th>EMPRESA <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
-                      @if (isColumnVisible('fecha')) { <th>CREADO <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
-                      <th class="actions-column">ACCIONES</th>
+                      @if (isColumnVisible('usuario')) { <th style="text-align: center;">USUARIO <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('nombre')) { <th style="text-align: center;">NOMBRE <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('email')) { <th style="text-align: center;">EMAIL <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('rol')) { <th style="text-align: center;">ROL <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('empresa')) { <th style="text-align: center;">EMPRESA <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      @if (isColumnVisible('fecha')) { <th style="text-align: center;">CREADO <span class="material-symbols-outlined header-filter">filter_alt</span></th> }
+                      <th class="actions-column" style="text-align: center !important;">ACCIONES</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -311,9 +311,27 @@ import * as XLSX from 'xlsx';
       padding: 4px 8px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; font-weight: 700;
     }
     
-    .nx-table { font-family: 'Inter', sans-serif !important; }
-    .nx-table th { font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
-    .nx-table td { color: #e2e8f0; font-size: 0.9rem; }
+    .nx-table { font-family: 'Inter', sans-serif !important; border-collapse: separate; border-spacing: 0; width: 100%; }
+    .nx-table th { 
+      font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; 
+      text-align: center !important; padding: 15px; 
+      border-bottom: 1px solid rgba(255,255,255,0.05); 
+    }
+    .nx-table th span.material-symbols-outlined { vertical-align: middle; }
+    .nx-table td { color: #e2e8f0; font-size: 0.9rem; padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.02); }
+
+    .nx-table-wrap { position: relative; overflow-x: auto; }
+    .nx-table-wrap::after {
+      content: ''; position: absolute; top: 0; bottom: 0; right: 250px;
+      width: 1px; background: rgba(255, 255, 255, 0.1); pointer-events: none; z-index: 10;
+    }
+    
+    .actions-column { 
+      width: 250px; 
+      min-width: 250px;
+      text-align: left !important;
+      padding-left: 10px !important;
+    }
 
     .status-indicator {
       display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 8px;
