@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -21,12 +22,6 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
           <p class="text-muted" style="margin-top:.35rem;font-size:.78rem;">Sistema de Paquetería Nacional · Guatemala</p>
         </div>
 
-        <!-- Alert -->
-        @if (error) {
-          <div class="nx-alert alert-error">
-            <span><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span></span> {{ error }}
-          </div>
-        }
 
         <!-- Form -->
         <form (ngSubmit)="onLogin()" #loginForm="ngForm">
@@ -98,7 +93,14 @@ export class LoginComponent {
 
   onLogin() {
     if (!this.username || !this.password) {
-      this.error = 'Por favor ingresa tus credenciales';
+      Swal.fire({
+        icon: 'error',
+        title: 'Credenciales incompletas',
+        text: 'Por favor ingresa tu usuario y contraseña',
+        background: '#1e293b',
+        color: '#ffffff',
+        confirmButtonColor: '#6366f1'
+      });
       return;
     }
 
@@ -108,19 +110,37 @@ export class LoginComponent {
     this.authService.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.loading = false;
-        const role = res.data.user.role;
-        // La redirección la maneja el guard/HomeComponent
-        if (role === 'ADMIN') {
-          window.location.href = '/admin/dashboard';
-        } else if (['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(role)) {
-          window.location.href = '/cliente/mis-envios';
-        } else {
-          window.location.href = '/repartidor/guias';
-        }
+        const user = res.data.user;
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Bienvenido de nuevo!',
+          text: `Hola, ${user.name}`,
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#1e293b',
+          color: '#ffffff'
+        }).then(() => {
+          const role = user.role;
+          if (role === 'ADMIN') {
+            window.location.href = '/admin/dashboard';
+          } else if (['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(role)) {
+            window.location.href = '/cliente/mis-envios';
+          } else {
+            window.location.href = '/repartidor/guias';
+          }
+        });
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message || 'Error al iniciar sesión';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de acceso',
+          text: err?.error?.message || 'Credenciales incorrectas o error de servidor',
+          background: '#1e293b',
+          color: '#ffffff',
+          confirmButtonColor: '#f43f5e'
+        });
       },
     });
   }

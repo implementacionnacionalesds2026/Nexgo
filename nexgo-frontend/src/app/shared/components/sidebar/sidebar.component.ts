@@ -10,6 +10,8 @@ interface NavItem {
   roles: string[];
 }
 
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -99,5 +101,32 @@ export class SidebarComponent implements OnInit {
     this.userInitial = this.user?.name?.charAt(0)?.toUpperCase() || 'U';
   }
 
-  logout() { this.authService.logout(); }
+  logout() {
+    Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: '¿Estás seguro de que deseas salir del sistema?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#f43f5e',
+      cancelButtonColor: '#334155',
+      confirmButtonText: 'Sí, salir',
+      cancelButtonText: 'Cancelar',
+      background: '#1e293b',
+      color: '#ffffff'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Sesión cerrada',
+          text: 'Vuelve pronto',
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#1e293b',
+          color: '#ffffff'
+        }).then(() => {
+          this.authService.logout();
+        });
+      }
+    });
+  }
 }

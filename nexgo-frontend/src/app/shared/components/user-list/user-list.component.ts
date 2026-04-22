@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-user-list',
@@ -81,7 +82,6 @@ import * as XLSX from 'xlsx';
         </div>
       </div>
 
-      @if (loading) { <div class="nx-loader"><div class="spinner"></div></div> }
 
       @if (!loading) {
         <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
@@ -538,7 +538,19 @@ export class UserListComponent implements OnInit {
       : this.adminService.createUser(payload);
 
     obs.subscribe({
-      next: () => { this.saving = false; this.closeModal(); this.onRefresh.emit(); },
+      next: () => { 
+        this.saving = false; 
+        this.closeModal(); 
+        this.onRefresh.emit(); 
+        Swal.fire({
+          icon: 'success',
+          title: this.editMode ? '¡Usuario actualizado!' : '¡Usuario creado!',
+          text: `El usuario se ha guardado correctamente.`,
+          background: '#1e293b',
+          color: '#ffffff',
+          confirmButtonColor: '#6366f1'
+        });
+      },
       error: (e) => { this.saving = false; this.modalError = e?.error?.message || 'Error al guardar'; },
     });
   }
@@ -588,13 +600,38 @@ export class UserListComponent implements OnInit {
 
   toggleUserStatus(u: any) {
     const action = u.is_active ? 'desactivar' : 'activar';
-    if (!confirm(`¿Estás seguro de que deseas ${action} al usuario ${u.name}?`)) return;
+    const actionColor = u.is_active ? '#f43f5e' : '#10b981';
 
-    const obs: any = u.is_active
-      ? this.adminService.deleteUser(u.id)
-      : this.adminService.updateUser(u.id, { isActive: true } as any);
+    Swal.fire({
+      title: `¿Deseas ${action} al usuario?`,
+      text: `El usuario ${u.name} dejará de tener acceso al sistema.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: actionColor,
+      cancelButtonColor: '#334155',
+      confirmButtonText: `Sí, ${action}`,
+      cancelButtonText: 'Cancelar',
+      background: '#1e293b',
+      color: '#ffffff'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const obs: any = u.is_active
+          ? this.adminService.deleteUser(u.id)
+          : this.adminService.updateUser(u.id, { isActive: true } as any);
 
-    obs.subscribe(() => this.onRefresh.emit());
+        obs.subscribe(() => {
+          this.onRefresh.emit();
+          Swal.fire({
+            icon: 'success',
+            title: `¡Hecho!`,
+            text: `Usuario ${action === 'activar' ? 'activado' : 'desactivado'} exitosamente.`,
+            background: '#1e293b',
+            color: '#ffffff',
+            confirmButtonColor: '#6366f1'
+          });
+        });
+      }
+    });
   }
 
   exportToExcel() {
@@ -663,7 +700,14 @@ export class UserListComponent implements OnInit {
       next: () => {
         this.saving = false;
         this.closePasswordModal();
-        alert('Contraseña actualizada exitosamente');
+        Swal.fire({
+          icon: 'success',
+          title: '¡Contraseña actualizada!',
+          text: 'La clave se ha guardado correctamente.',
+          background: '#1e293b',
+          color: '#ffffff',
+          confirmButtonColor: '#6366f1'
+        });
       },
       error: (e) => {
         this.saving = false;

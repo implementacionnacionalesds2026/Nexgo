@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import JsBarcode from 'jsbarcode';
 import { GUATEMALA_DATA } from '../../../core/constants/guatemala-data';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-nuevo-envio',
@@ -841,14 +842,26 @@ export class NuevoEnvioComponent {
     if (this.currentStep < 4) {
       if (this.currentStep === 1 && (!this.form.senderName || !this.form.senderPhone || !this.form.senderAddress)) {
         this.attemptedNext = true;
-        this.error = 'Complete los campos obligatorios del remitente';
-        setTimeout(() => this.error = '', 3000);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Datos del Remitente',
+          text: 'Por favor complete todos los campos obligatorios del remitente.',
+          background: '#1e293b',
+          color: '#ffffff',
+          confirmButtonColor: '#6366f1'
+        });
         return;
       }
       if (this.currentStep === 2 && (!this.form.recipientName || !this.form.recipientPhone || !this.form.recipientDepartment || !this.form.recipientMunicipality || !this.form.recipientAddress)) {
         this.attemptedNext = true;
-        this.error = 'Complete los campos obligatorios del destinatario (Nombre, Teléfono, Depto, Municipio y Dirección)';
-        setTimeout(() => this.error = '', 4000);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Datos del Destinatario',
+          text: 'Complete los campos obligatorios del destinatario (Nombre, Teléfono, Depto, Municipio y Dirección)',
+          background: '#1e293b',
+          color: '#ffffff',
+          confirmButtonColor: '#6366f1'
+        });
         return;
       }
       
@@ -887,10 +900,15 @@ export class NuevoEnvioComponent {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (e) => {
-        console.error('Error en registro:', e);
         this.saving = false;
-        this.error = e?.error?.message || 'Error de conexión o datos inválidos. Intente de nuevo.';
-        setTimeout(() => this.error = '', 5000);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al registrar envío',
+          text: e?.error?.message || 'No se pudo conectar con el servidor. Intente de nuevo.',
+          background: '#1e293b',
+          color: '#ffffff',
+          confirmButtonColor: '#f43f5e'
+        });
       },
     });
   }

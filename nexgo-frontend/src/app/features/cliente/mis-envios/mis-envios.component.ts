@@ -131,7 +131,6 @@ import * as XLSX from 'xlsx';
             </div>
           </div>
 
-          @if (loading) { <div class="nx-loader"><div class="spinner"></div></div> }
 
           @if (!loading) {
             <!-- Stats row -->
