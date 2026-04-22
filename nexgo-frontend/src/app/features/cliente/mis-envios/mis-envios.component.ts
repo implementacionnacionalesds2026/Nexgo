@@ -207,7 +207,16 @@ import * as XLSX from 'xlsx';
                   <tbody>
                     @for (s of filteredShipments; track s.id; let i = $index) {
                       <tr>
-                        @if (isColumnVisible('guia')) { <td class="font-mono" style="font-size:.78rem;color:var(--accent);">{{ s.tracking_number }}</td> }
+                        @if (isColumnVisible('guia')) { 
+                          <td>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                              <span style="color: #e2e8f0; font-family: 'Inter', sans-serif;">{{ s.tracking_number }}</span>
+                              <button (click)="copyToClipboard(s.tracking_number)" class="copy-btn" title="Copiar guía">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                              </button>
+                            </div>
+                          </td> 
+                        }
                         @if (isColumnVisible('fecha')) { <td style="font-size:.8rem;">{{ s.created_at | date:'dd/MM/yy' }}</td> }
                         @if (isColumnVisible('remitente')) { <td style="font-size:.83rem;">{{ s.sender_name }}</td> }
                         @if (isColumnVisible('destinatario')) { <td style="font-size:.83rem;">{{ s.recipient_name }}</td> }
@@ -672,6 +681,15 @@ import * as XLSX from 'xlsx';
     .nx-table th > div { justify-content: center !important; }
     .nx-table td { color: #e2e8f0; font-size: 0.9rem; text-align: left; padding: 12px; }
     
+    .copy-btn {
+      background: none; border: none; color: #94a3b8; cursor: pointer;
+      padding: 4px; display: flex; align-items: center; border-radius: 4px;
+      transition: all 0.2s; opacity: 0;
+    }
+    tr:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
+    .copy-btn:active { transform: scale(0.9); }
+    
     .nx-table-wrap { position: relative; overflow-x: auto; }
     .nx-table-wrap::after {
       content: ''; position: absolute; top: 0; bottom: 0; right: 250px;
@@ -1126,5 +1144,23 @@ export class MisEnviosComponent implements OnInit {
     if (!s) return 'GUA';
     const d = s.recipient_department || 'GUA';
     return d.toString().substring(0, 3).toUpperCase();
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: any = {
+      PENDIENTE: 'Pendiente',
+      RECOGIDO: 'Recogido',
+      EN_TRANSITO: 'En tránsito',
+      EN_DESTINO: 'En destino',
+      ENTREGADO: 'Entregado',
+      CANCELADO: 'Cancelado'
+    };
+    return labels[status] || status;
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      // Feedback opcional sin diseño
+    });
   }
 }
