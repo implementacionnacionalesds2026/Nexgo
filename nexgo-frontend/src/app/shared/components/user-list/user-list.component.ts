@@ -145,7 +145,7 @@ import * as XLSX from 'xlsx';
                       <div class="dropdown-container" style="position:relative; display:inline-block;">
                         <button (click)="toggleDropdown(u.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
                          <div class="dropdown-menu" 
-                              [class.dropup]="i === filteredUsers.length - 1 && filteredUsers.length > 1"
+                              [class.dropup]="i === filteredUsers.length - 1 && filteredUsers.length > 2"
                               [style.display]="openDropdownId === u.id ? 'block' : 'none'">
                            @if (u.is_active) {
                              <button (click)="openEdit(u)" class="dropdown-item">
@@ -337,7 +337,13 @@ import * as XLSX from 'xlsx';
     }
     .nx-table td { color: #e2e8f0; font-size: 0.9rem; padding: 10px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.02); }
 
-    .nx-table-wrap { position: relative; overflow-x: auto; min-height: 400px; }
+    .nx-table-wrap { 
+      position: relative; 
+      overflow: auto; 
+      height: 500px; 
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
     .nx-table-wrap::after {
       content: ''; position: absolute; top: 0; bottom: 0; right: 250px;
       width: 1px; background: rgba(255, 255, 255, 0.1); pointer-events: none; z-index: 10;
