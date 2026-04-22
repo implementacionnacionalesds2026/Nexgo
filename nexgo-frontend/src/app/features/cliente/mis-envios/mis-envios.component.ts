@@ -109,35 +109,35 @@ import * as XLSX from 'xlsx';
           @if (!loading) {
             <!-- Stats row -->
             <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
-              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'PENDIENTE'" (click)="toggleStatusFilter('PENDIENTE')">
-                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">pending_actions</span></div>
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'PENDIENTE'" (click)="toggleStatusFilter('PENDIENTE')" style="position:relative; overflow:hidden;">
                 <div class="kpi-label">Pendientes</div>
                 <div class="kpi-value" style="color:var(--status-pending);">{{ countByStatus('PENDIENTE') }}</div>
+                <span class="material-symbols-outlined kpi-bg-icon">pending_actions</span>
               </div>
-              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'RECOGIDO'" (click)="toggleStatusFilter('RECOGIDO')">
-                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">package_2</span></div>
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'RECOGIDO'" (click)="toggleStatusFilter('RECOGIDO')" style="position:relative; overflow:hidden;">
                 <div class="kpi-label">Recogidos</div>
                 <div class="kpi-value" style="color:#a855f7;">{{ countByStatus('RECOGIDO') }}</div>
+                <span class="material-symbols-outlined kpi-bg-icon">package_2</span>
               </div>
-              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'EN_TRANSITO'" (click)="toggleStatusFilter('EN_TRANSITO')">
-                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">local_shipping</span></div>
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'EN_TRANSITO'" (click)="toggleStatusFilter('EN_TRANSITO')" style="position:relative; overflow:hidden;">
                 <div class="kpi-label">En tránsito</div>
                 <div class="kpi-value" style="color:#60A5FA;">{{ countByStatus('EN_TRANSITO') }}</div>
+                <span class="material-symbols-outlined kpi-bg-icon">local_shipping</span>
               </div>
-              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'EN_DESTINO'" (click)="toggleStatusFilter('EN_DESTINO')">
-                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">distance</span></div>
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'EN_DESTINO'" (click)="toggleStatusFilter('EN_DESTINO')" style="position:relative; overflow:hidden;">
                 <div class="kpi-label">En destino</div>
                 <div class="kpi-value" style="color:#f472b6;">{{ countByStatus('EN_DESTINO') }}</div>
+                <span class="material-symbols-outlined kpi-bg-icon">distance</span>
               </div>
-              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'ENTREGADO'" (click)="toggleStatusFilter('ENTREGADO')">
-                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">check_circle</span></div>
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'ENTREGADO'" (click)="toggleStatusFilter('ENTREGADO')" style="position:relative; overflow:hidden;">
                 <div class="kpi-label">Entregados</div>
                 <div class="kpi-value" style="color:var(--status-delivered);">{{ countByStatus('ENTREGADO') }}</div>
+                <span class="material-symbols-outlined kpi-bg-icon">check_circle</span>
               </div>
-              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'CANCELADO'" (click)="toggleStatusFilter('CANCELADO')">
-                <div class="kpi-icon"><span class="material-symbols-outlined" style="font-size:inherit;">cancel</span></div>
+              <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'CANCELADO'" (click)="toggleStatusFilter('CANCELADO')" style="position:relative; overflow:hidden;">
                 <div class="kpi-label">Cancelados</div>
                 <div class="kpi-value" style="color:#ef4444;">{{ countByStatus('CANCELADO') }}</div>
+                <span class="material-symbols-outlined kpi-bg-icon">cancel</span>
               </div>
             </div>
 
@@ -472,7 +472,7 @@ import * as XLSX from 'xlsx';
     .search-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important; background: rgba(0,0,0,0.5) !important; }
 
     /* KPI Interactivity */
-    .nx-kpi-card { cursor: pointer; transition: all var(--tr); border: 2px solid transparent; }
+    .nx-kpi-card { cursor: pointer; transition: all var(--tr); border: 2px solid transparent; position: relative; overflow: hidden; padding: 1.5rem !important; }
     .nx-kpi-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.03); }
     .nx-kpi-card.active { 
       border-color: var(--primary); 
@@ -481,6 +481,13 @@ import * as XLSX from 'xlsx';
       transform: scale(1.02);
       z-index: 2;
     }
+
+    .kpi-bg-icon {
+      position: absolute; right: -15px; bottom: -15px;
+      font-size: 5.5rem !important; color: #94a3b8; opacity: 0.12;
+      transform: rotate(-10deg); pointer-events: none;
+    }
+    .nx-kpi-card.active .kpi-bg-icon { opacity: 0.3; color: var(--primary); }
 
     /* Date Picker */
     .date-picker-container { position: relative; }
