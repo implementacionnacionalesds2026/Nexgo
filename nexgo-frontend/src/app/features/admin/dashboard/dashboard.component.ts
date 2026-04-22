@@ -30,11 +30,8 @@ import { RouterLink }           from '@angular/router';
             <p>Resumen general de operaciones · Nexgo</p>
           </div>
 
-          @if (loading) {
-            <div class="nx-loader"><div class="spinner"></div><span>Cargando datos...</span></div>
-          }
 
-          @if (!loading && stats) {
+          @if (stats) {
             <!-- KPI Grid -->
             <div class="nx-grid kpi-grid" style="margin-bottom:2rem;">
               <div class="nx-kpi-card">

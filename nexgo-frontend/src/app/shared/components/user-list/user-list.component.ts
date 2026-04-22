@@ -83,7 +83,6 @@ import Swal from 'sweetalert2';
       </div>
 
 
-      @if (!loading) {
         <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
           @for (role of roles; track role.id) {
             <div class="nx-kpi-card" [class.active]="activeRoleFilter === role.name" (click)="toggleRoleFilter(role.name)" style="position:relative; overflow:hidden;">
@@ -167,8 +166,7 @@ import Swal from 'sweetalert2';
               </tbody>
             </table>
           </div>
-        </div>
-      }
+      </div>
     </div>
 
     <!-- Modal Crear/Editar -->

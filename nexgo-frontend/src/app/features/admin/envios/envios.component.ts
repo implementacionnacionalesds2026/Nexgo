@@ -29,9 +29,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
             </div>
           </div>
 
-          @if (loading) { <div class="nx-loader"><div class="spinner"></div></div> }
 
-          @if (!loading) {
             <div class="nx-card" style="padding:0;">
               <div class="nx-table-wrap">
                 <table class="nx-table">
@@ -68,7 +66,6 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
               <button class="active">{{ page }}</button>
               <button [disabled]="shipments.length < 20" (click)="changePage(1)"><span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span></button>
             </div>
-          }
         </div>
       </main>
     </div>

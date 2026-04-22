@@ -132,7 +132,6 @@ import * as XLSX from 'xlsx';
           </div>
 
 
-          @if (!loading) {
             <!-- Stats row -->
             <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
               <div class="nx-kpi-card" [class.active]="activeStatusFilter === 'PENDIENTE'" (click)="toggleStatusFilter('PENDIENTE')" style="position:relative; overflow:hidden;">
@@ -291,9 +290,8 @@ import * as XLSX from 'xlsx';
                     }
                   </tbody>
                 </table>
-              </div>
             </div>
-          }
+          </div>
         </div>
       </main>
     </div>
