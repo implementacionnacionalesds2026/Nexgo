@@ -148,9 +148,9 @@ import * as XLSX from 'xlsx';
                         <td class="actions-column">
                           <div class="dropdown-container" style="position:relative; display:inline-block;">
                             <button (click)="toggleDropdown(u.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
-                            <div class="dropdown-menu" 
-                                 [class.dropup]="i === filteredUsers.length - 1 && filteredUsers.length > 2"
-                                 [style.display]="openDropdownId === u.id ? 'block' : 'none'">
+                             <div class="dropdown-menu" 
+                                  [class.dropup]="i === filteredUsers.length - 1 && filteredUsers.length > 1"
+                                  [style.display]="openDropdownId === u.id ? 'block' : 'none'">
                                @if (u.is_active) {
                                  <button (click)="openEdit(u)" class="dropdown-item">
                                    <span class="material-symbols-outlined">edit</span> Editar Usuario
@@ -312,7 +312,22 @@ import * as XLSX from 'xlsx';
       box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); min-width: 180px; backdrop-filter: blur(8px);
     }
 
-    .nx-table-wrap { overflow-x: auto; min-height: 150px; }
+    .nx-table-wrap { 
+      overflow-x: auto; 
+      min-height: 150px; 
+      position: relative; 
+    }
+    .nx-table-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 250px;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+      z-index: 10;
+    }
     .dropdown-container .dropdown-menu.dropup { top: auto; bottom: -10px; }
     .dropdown-item {
       display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px;
@@ -339,17 +354,28 @@ import * as XLSX from 'xlsx';
     .header-filter { font-size: 14px; margin-left: 4px; vertical-align: middle; opacity: 0.5; cursor: pointer; }
     .header-filter:hover { opacity: 1; color: var(--primary); }
 
+    .nx-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: none;
+    }
+
     .actions-column { 
       text-align: left !important; 
       padding-left: 20px !important;
       width: 250px;
-      border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
 
     .nx-table td:last-child {
-      border-left: 1px solid rgba(255, 255, 255, 0.1);
       text-align: left;
       padding-left: 20px;
+    }
+
+    .nx-table th, .nx-table td { 
+      padding: 12px 16px; 
+      text-align: left; 
+      border: none;
+      background: none;
     }
     .robot-confused { font-size: 4rem; color: var(--primary); margin-bottom: 1rem; opacity: 0.5; }
 
