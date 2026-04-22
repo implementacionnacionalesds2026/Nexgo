@@ -20,24 +20,33 @@ import Swal from 'sweetalert2';
         </div>
 
         <div class="header-actions-row">
-          <div class="search-box">
-            <span class="material-symbols-outlined search-icon">search</span>
-            <input 
-              type="text" 
-              [(ngModel)]="searchTerm" 
-              (input)="filterUsers()"
-              placeholder="Buscar por nombre, email, usuario, empresa..." 
-              class="nx-input search-input" 
-            />
-          </div>
-          
-          <div class="table-tools">
-            <!-- Botón Actualizar eliminado por petición del usuario -->
-          </div>
         </div>
       </div>
 
-      <!-- KPI Grid -->
+      <!-- Search & Filters -->
+      <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem;">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" 
+                 [(ngModel)]="searchTerm" 
+                 (input)="filterUsers()"
+                 placeholder="Buscar por nombre, email, usuario, empresa..." 
+                 class="nx-input search-input">
+        </div>
+        
+        <!-- Toggle Inactivos Parity -->
+        <button (click)="toggleActiveState()" 
+                class="nx-btn btn-status-toggle" 
+                [class.state-inactive]="activeStateFilter() === 'ACTIVE'"
+                [class.state-active]="activeStateFilter() === 'INACTIVE'"
+                style="display: flex; align-items: center; gap: 8px; height: 45px; padding: 0 25px; border-radius: 12px; font-weight: 700; transition: all 0.3s; color: white; min-width: 140px; justify-content: center;">
+          <span class="material-symbols-outlined" style="font-size: 1.4rem;">
+            {{ activeStateFilter() === 'ACTIVE' ? 'person_off' : 'person_check' }}
+          </span>
+          {{ activeStateFilter() === 'ACTIVE' ? 'Inactivos' : 'Activos' }}
+        </button>
+      </div>
+
       <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
         @for (role of tierStats; track role.name) {
           <div class="nx-kpi-card" 
@@ -62,13 +71,13 @@ import Swal from 'sweetalert2';
                 <th style="text-align: center;">COSTO BASE</th>
                 <th style="text-align: center;">PESO BASE</th>
                 <th style="text-align: center;">EXTRA x LB</th>
-                <th style="text-align: center;">ESTADO</th>
+                <th style="text-align: center;">TARIFA</th>
                 <th class="actions-column" style="text-align: left !important; padding-left: 10px !important;">ACCIONES</th>
               </tr>
             </thead>
             <tbody>
               @for (user of filteredUsers; track user.id; let i = $index) {
-                <tr [class.custom-rate-row]="user.hasCustomRate">
+                <tr [class.custom-rate-row]="user.hasCustomRate" [style.opacity]="user.is_active ? 1 : 0.6">
                   <td>
                     <div style="display: flex; align-items: center; gap: 12px;">
                        <div class="user-avatar-small" [style.background]="getRoleColor(user.role) + '20'" [style.color]="getRoleColor(user.role)">
@@ -101,17 +110,29 @@ import Swal from 'sweetalert2';
                       <div class="dropdown-menu animate-scale-up" 
                            [class.dropup]="i >= filteredUsers.length - 2 && filteredUsers.length > 3"
                            [style.display]="openDropdownId === user.id ? 'block' : 'none'">
-                        <button (click)="openPricingEditor(user)" class="dropdown-item">
-                          <span class="material-symbols-outlined">edit_note</span> Personalizar Tarifa
-                        </button>
+                        
+                        @if (user.is_active) {
+                          <button (click)="openPricingEditor(user)" class="dropdown-item">
+                            <span class="material-symbols-outlined">edit_note</span> Personalizar Tarifa
+                          </button>
+                          @if (user.hasCustomRate) {
+                            <button (click)="resetToDefault(user)" class="dropdown-item" style="color: #F87171;">
+                              <span class="material-symbols-outlined">restart_alt</span> Restaurar Estándar
+                            </button>
+                          }
+                          <button (click)="toggleUserStatus(user)" class="dropdown-item" style="color: #f43f5e;">
+                            <span class="material-symbols-outlined">person_off</span> Inactivar Cliente
+                          </button>
+                        } @else {
+                          <button (click)="toggleUserStatus(user)" class="dropdown-item" style="color: #10b981;">
+                            <span class="material-symbols-outlined">person_check</span> Activar Cliente
+                          </button>
+                        }
+
                         <button (click)="viewHistory(user, $event)" class="dropdown-item">
                           <span class="material-symbols-outlined">history</span> Ver Historial
                         </button>
-                        @if (user.hasCustomRate) {
-                          <button (click)="resetToDefault(user)" class="dropdown-item" style="color: #F87171;">
-                            <span class="material-symbols-outlined">restart_alt</span> Restaurar Estándar
-                          </button>
-                        }
+
                       </div>
                     </div>
                   </td>
@@ -143,10 +164,30 @@ import Swal from 'sweetalert2';
     .nx-kpi-card { cursor: pointer; transition: all 0.3s; padding: 1.5rem !important; }
     .nx-kpi-card:hover { transform: translateY(-5px); }
     .nx-kpi-card.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+    .nx-kpi-card.mini { border: 1px solid rgba(255,255,255,0.05); }
+    .kpi-value.small { font-size: 1.5rem; line-height: 1; margin-top: 5px; }
     .kpi-bg-icon {
       position: absolute; right: -15px; bottom: -15px;
       font-size: 5.5rem !important; color: #94a3b8; opacity: 0.12;
       transform: rotate(-10deg); pointer-events: none;
+    }
+    .nx-kpi-card.mini .kpi-bg-icon { font-size: 3rem !important; right: -5px; bottom: -5px; }
+
+    .nx-table tr:hover { background: rgba(255,255,255,0.02); transition: background 0.2s; }
+
+    /* Status Toggle Button Parity */
+    .btn-status-toggle {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-status-toggle.state-active {
+      background: #10b981 !important;
+    }
+    .btn-status-toggle.state-inactive {
+      background: #f43f5e !important;
+    }
+    .btn-status-toggle:hover {
+      opacity: 0.95;
     }
 
     /* Table Parity */
@@ -201,14 +242,18 @@ import Swal from 'sweetalert2';
   `]
 })
 export class PricingListComponent implements OnInit {
-  
+
   allUsers: any[] = [];
   filteredUsers: any[] = [];
   pricingRules: any[] = [];
-  
+
   searchTerm = '';
   activeFilter = signal<'ALL' | 'SMALL_CUSTOMER' | 'AVERAGE_CUSTOMER' | 'FULL_CUSTOMER'>('ALL');
+  activeStateFilter = signal<'ACTIVE' | 'INACTIVE'>('ACTIVE');
   openDropdownId: string | null = null;
+
+  activeCount = 0;
+  inactiveCount = 0;
 
   tierStats = [
     { name: 'SMALL_CUSTOMER', label: 'Bronce', count: 0 },
@@ -237,17 +282,13 @@ export class PricingListComponent implements OnInit {
       if (res.success) {
         const clientRoles = ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'];
         const users = res.data.data.filter((u: any) => clientRoles.includes(u.role));
-        
+
         this.allUsers = users.map((user: any) => {
-          // 1. Buscar regla específica del usuario
           let pricing = this.pricingRules.find(r => r.user_id === user.id);
           const hasCustomRate = !!pricing;
-          
-          // 2. Si no hay específica, buscar la del rol (donde user_id es null)
           if (!pricing) {
             pricing = this.pricingRules.find(r => (r.role_id === user.role_id || r.role_id === user.roleId) && !r.user_id);
           }
-
           return { ...user, pricing, hasCustomRate };
         });
 
@@ -258,17 +299,34 @@ export class PricingListComponent implements OnInit {
   }
 
   updateStats() {
-    this.tierStats[0].count = this.allUsers.filter(u => u.role === 'SMALL_CUSTOMER').length;
-    this.tierStats[1].count = this.allUsers.filter(u => u.role === 'AVERAGE_CUSTOMER').length;
-    this.tierStats[2].count = this.allUsers.filter(u => u.role === 'FULL_CUSTOMER').length;
+    this.activeCount = this.allUsers.filter(u => u.is_active).length;
+    this.inactiveCount = this.allUsers.filter(u => !u.is_active).length;
+
+    this.tierStats[0].count = this.allUsers.filter(u => u.role === 'SMALL_CUSTOMER' && u.is_active === (this.activeStateFilter() === 'ACTIVE')).length;
+    this.tierStats[1].count = this.allUsers.filter(u => u.role === 'AVERAGE_CUSTOMER' && u.is_active === (this.activeStateFilter() === 'ACTIVE')).length;
+    this.tierStats[2].count = this.allUsers.filter(u => u.role === 'FULL_CUSTOMER' && u.is_active === (this.activeStateFilter() === 'ACTIVE')).length;
   }
 
   filterUsers() {
+    const isSearching = this.searchTerm.length > 0;
+
     this.filteredUsers = this.allUsers.filter(u => {
       const matchesSearch = (u.name + (u.company_name || '') + u.username).toLowerCase().includes(this.searchTerm.toLowerCase());
       const matchesRole = this.activeFilter() === 'ALL' || u.role === this.activeFilter();
-      return matchesSearch && matchesRole;
+
+      // Si está buscando, ignoramos el filtro de Activo/Inactivo para encontrarlo en cualquier estado
+      const matchesState = isSearching || (this.activeStateFilter() === 'ACTIVE' ? u.is_active : !u.is_active);
+
+      return matchesSearch && matchesRole && matchesState;
     });
+  }
+
+  toggleActiveState() {
+    const newState = this.activeStateFilter() === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    this.activeStateFilter.set(newState);
+    this.activeFilter.set('ALL');
+    this.updateStats();
+    this.filterUsers();
   }
 
   setFilter(filter: any) {
@@ -278,6 +336,31 @@ export class PricingListComponent implements OnInit {
       this.activeFilter.set(filter);
     }
     this.filterUsers();
+  }
+
+  toggleUserStatus(user: any) {
+    const action = user.is_active ? 'desactivar' : 'activar';
+    const actionColor = user.is_active ? '#f43f5e' : '#10b981';
+
+    Swal.fire({
+      title: `¿Deseas ${action} al cliente?`,
+      text: `Al ${action} a ${user.company_name || user.name}, ${user.is_active ? 'no podrá realizar nuevos envíos' : 'recuperará el acceso al sistema'}.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: actionColor,
+      cancelButtonColor: '#334155',
+      confirmButtonText: `Sí, ${action}`,
+      cancelButtonText: 'Cancelar',
+      background: '#1e293b',
+      color: '#ffffff'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.adminService.updateUser(user.id, { isActive: !user.is_active } as any).subscribe(() => {
+          this.showSuccess(`Cliente ${action === 'activar' ? 'activado' : 'desactivado'} exitosamente`);
+          this.loadData();
+        });
+      }
+    });
   }
 
   toggleDropdown(id: string, event: Event) {
@@ -347,7 +430,7 @@ export class PricingListComponent implements OnInit {
     event.stopPropagation();
     const pricingId = user.pricing?.id;
     this.openDropdownId = null;
-    
+
     if (!pricingId) {
       Swal.fire({
         icon: 'info',
@@ -368,7 +451,7 @@ export class PricingListComponent implements OnInit {
       color: '#fff',
       timer: 2000
     });
-    
+
     loadingToast.fire({
       icon: 'info',
       title: 'Consultando historial...'
@@ -379,7 +462,7 @@ export class PricingListComponent implements OnInit {
         if (res.success) {
           const history = res.data || [];
           let historyHtml = '<div class="history-timeline" style="max-height:450px; overflow-y:auto; text-align:left; padding:10px; scrollbar-width:thin;">';
-          
+
           if (history.length === 0) {
             historyHtml += `
               <div style="text-align:center; padding:30px; color:#94a3b8;">
@@ -391,13 +474,13 @@ export class PricingListComponent implements OnInit {
             history.forEach((h: any) => {
               // Aseguramos que el objeto Date entienda que la fecha viene en UTC si tiene el sufijo Z
               const dateObj = new Date(h.created_at);
-              const date = dateObj.toLocaleString('es-GT', { 
+              const date = dateObj.toLocaleString('es-GT', {
                 timeZone: 'America/Guatemala',
                 hour12: true,
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric', 
-                hour: '2-digit', 
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
                 minute: '2-digit'
               });
               historyHtml += `
@@ -415,11 +498,11 @@ export class PricingListComponent implements OnInit {
               `;
             });
           }
-          
+
           historyHtml += '</div>';
 
           Swal.close();
-          
+
           setTimeout(() => {
             Swal.fire({
               title: `<div style="text-align:left; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; font-size:1.2rem;">Historial de Modificaciones</div>`,
@@ -448,18 +531,18 @@ export class PricingListComponent implements OnInit {
 
   private formatHistoryDiff(oldV: any, newV: any): string {
     if (!oldV) return '<span style="color:#10b981; font-weight:700;">✨ Creación inicial de la tarifa</span>';
-    
+
     let changes = [];
     if (oldV.base_price != newV.base_price) changes.push(`• <b>Costo:</b> Q${oldV.base_price} → <span style="color:#10b981">Q${newV.base_price}</span>`);
     if (oldV.base_weight != newV.base_weight) changes.push(`• <b>Peso:</b> ${oldV.base_weight}LB → <span style="color:#10b981">${newV.base_weight}LB</span>`);
     if (oldV.extra_weight_price != newV.extra_weight_price) changes.push(`• <b>Extra:</b> Q${oldV.extra_weight_price} → <span style="color:#10b981">Q${newV.extra_weight_price}</span>`);
-    
+
     return changes.length > 0 ? changes.join('<br>') : '<i style="color:#94a3b8">Actualización de datos generales</i>';
   }
 
   resetToDefault(user: any) {
     if (!user.pricing?.id || !user.hasCustomRate) return;
-    
+
     Swal.fire({
       title: '¿Restaurar tarifa estándar?',
       text: `Se eliminarán los costos personalizados para ${user.company_name || user.name} y volverá a usar la tarifa de su nivel.`,
