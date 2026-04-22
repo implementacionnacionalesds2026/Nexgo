@@ -30,14 +30,6 @@ import JsBarcode from 'jsbarcode';
               <p style="opacity: 0.7;">Documentación oficial y detalles logísticos</p>
             </div>
             <div style="display:flex; gap:12px;">
-              <button class="nx-btn btn-print-action" (click)="imprimirGuia()" [class.loading]="generatingPdf && printMode === 'guia'">
-                <span class="material-symbols-outlined">{{ (generatingPdf && printMode === 'guia') ? 'sync' : 'print' }}</span>
-                {{ (generatingPdf && printMode === 'guia') ? 'Generando...' : 'Imprimir Guía' }}
-              </button>
-              <button class="nx-btn btn-print-action" (click)="imprimirFormulario()" [class.loading]="generatingPdf && printMode === 'formulario'">
-                <span class="material-symbols-outlined">{{ (generatingPdf && printMode === 'formulario') ? 'sync' : 'description' }}</span>
-                {{ (generatingPdf && printMode === 'formulario') ? 'Manifiesto' : 'Generar Manifiesto' }}
-              </button>
               <a routerLink="/cliente/mis-envios" class="nx-btn btn-primary" style="background: #6366f1; border: none; font-weight: 800;">
                 <span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:middle; margin-right:4px;">arrow_back</span>
                 Volver
