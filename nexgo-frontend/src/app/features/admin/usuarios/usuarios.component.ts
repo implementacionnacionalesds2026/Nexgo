@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule }        from '@angular/common';
-import { FormsModule }         from '@angular/forms';
-import { AdminService }        from '../../../core/services/admin.service';
-import { SidebarComponent }    from '../../../shared/components/sidebar/sidebar.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AdminService } from '../../../core/services/admin.service';
+import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { User }                from '../../../core/models/user.model';
+import { User } from '../../../core/models/user.model';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-usuarios',
@@ -15,68 +16,164 @@ import { User }                from '../../../core/models/user.model';
       <app-sidebar />
       <main class="nx-main">
         <div class="nx-navbar">
-          <span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">group</span> Gestión de Usuarios</span>
+          <span class="navbar-title">
+            <span class="material-symbols-outlined" style="vertical-align:bottom;">group</span> 
+            Gestión de Usuarios
+          </span>
         </div>
 
         <div class="nx-content">
           <div class="nx-page-header">
-            <h1>Usuarios del Sistema</h1>
-            <p>Gestión de administradores, repartidores y clientes (Full, Average, Small)</p>
-            <div class="header-actions">
-              <select class="nx-input" style="width:160px;" [(ngModel)]="roleFilter" (change)="loadUsers()">
-                <option value="">Todos los roles</option>
-                @for (r of roles; track r.id) {
-                  <option [value]="r.name">{{ r.description || r.name }}</option>
-                }
-              </select>
-              <button class="nx-btn btn-accent" (click)="openCreate()">➕ Nuevo Usuario</button>
+            <div class="header-main-row">
+              <div>
+                <h1>Usuarios del Sistema</h1>
+                <p>Administra administradores, repartidores y clientes de Nexgo</p>
+              </div>
+            </div>
+
+            <div class="header-actions-row">
+              <div class="search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input 
+                  type="text" 
+                  [(ngModel)]="searchText" 
+                  placeholder="Buscar por nombre, email, usuario, empresa..." 
+                  class="nx-input search-input" 
+                />
+              </div>
+              
+              <div class="table-tools">
+                <div class="options-dropdown-container">
+                  <button class="nx-btn btn-options" (click)="toggleOptionsMenu($event)" [class.active]="isOptionsMenuOpen">
+                    <span class="material-symbols-outlined">settings</span>
+                    Acciones
+                    <span class="material-symbols-outlined">{{ isOptionsMenuOpen ? 'expand_less' : 'expand_more' }}</span>
+                  </button>
+
+                  @if (isOptionsMenuOpen) {
+                    <div class="options-menu animate-scale-up" (click)="$event.stopPropagation()">
+                      <button class="options-item" (click)="openCreate()">
+                        <span class="material-symbols-outlined">person_add</span>
+                        Nuevo Usuario
+                      </button>
+                      <div class="options-divider"></div>
+                      <button class="options-item" (click)="exportToExcel()">
+                        <span class="material-symbols-outlined">download</span>
+                        Exportar Excel
+                      </button>
+                      <button class="options-item" (click)="isColumnMenuOpen = !isColumnMenuOpen">
+                        <span class="material-symbols-outlined">view_column</span>
+                        Gestionar Columnas
+                      </button>
+
+                      @if (isColumnMenuOpen) {
+                        <div class="columns-nested animate-fade-in" style="padding: 8px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-top: 4px;">
+                          @for (col of columnConfigs; track col.key) {
+                            <label class="column-opt" style="display: flex; align-items: center; gap: 10px; padding: 4px 0; color: #94a3b8; font-size: 0.8rem; cursor: pointer;">
+                              <input type="checkbox" [(ngModel)]="col.visible" style="accent-color:var(--primary); cursor:pointer;" />
+                              <span>{{ col.label }}</span>
+                            </label>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- Toggle Status Button -->
+                <button 
+                  class="nx-btn" 
+                  [class.btn-active-toggle]="viewActive"
+                  [class.btn-inactive-toggle]="!viewActive"
+                  (click)="toggleActiveView()"
+                >
+                  <span class="material-symbols-outlined">{{ viewActive ? 'person_off' : 'how_to_reg' }}</span>
+                  {{ viewActive ? 'Inactivos' : 'Activos' }}
+                </button>
+              </div>
             </div>
           </div>
 
           @if (loading) { <div class="nx-loader"><div class="spinner"></div></div> }
 
           @if (!loading) {
+            <!-- KPI Grid (Replicating Mis Envíos style) -->
+            <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
+              @for (role of roles; track role.id) {
+                <div class="nx-kpi-card" [class.active]="activeRoleFilter === role.name" (click)="toggleRoleFilter(role.name)">
+                  <div class="kpi-label">{{ (role.description || role.name) | uppercase }}</div>
+                  <div class="kpi-value">{{ countByRole(role.name) }}</div>
+                </div>
+              }
+            </div>
+
             <div class="nx-card" style="padding:0;">
               <div class="nx-table-wrap">
                 <table class="nx-table">
                   <thead>
                     <tr>
-                      <th>Usuario</th>
-                      <th>Nombre</th>
-                      <th>Email</th>
-                      <th>Rol</th>
-                      <th>Empresa</th>
-                      <th>Estado</th>
+                      @if (isColumnVisible('usuario')) { <th>Usuario</th> }
+                      @if (isColumnVisible('nombre')) { <th>Nombre <span class="material-symbols-outlined" style="font-size:12px;">filter_alt</span></th> }
+                      @if (isColumnVisible('email')) { <th>Email</th> }
+                      @if (isColumnVisible('rol')) { <th>Rol <span class="material-symbols-outlined" style="font-size:12px;">filter_alt</span></th> }
+                      @if (isColumnVisible('empresa')) { <th>Empresa <span class="material-symbols-outlined" style="font-size:12px;">filter_alt</span></th> }
+                      @if (isColumnVisible('fecha')) { <th>Creado</th> }
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (u of users; track u.id) {
-                      <tr>
+                    @for (u of filteredUsers; track u.id; let i = $index) {
+                      <tr [style.opacity]="u.is_active ? 1 : 0.6">
+                        @if (isColumnVisible('usuario')) {
+                          <td>
+                            <span class="user-id-badge">
+                              {{ u.username || u.email.split('@')[0] }}
+                            </span>
+                          </td>
+                        }
+                        @if (isColumnVisible('nombre')) {
+                          <td style="font-weight: 600;">
+                            {{ u.name || (u.first_name + ' ' + u.last_name) }}
+                            @if (!u.is_active) { <span class="status-indicator inactive"></span> }
+                          </td>
+                        }
+                        @if (isColumnVisible('email')) { <td class="text-muted">{{ u.email }}</td> }
+                        @if (isColumnVisible('rol')) { <td><app-status-badge [status]="u.role" /></td> }
+                        @if (isColumnVisible('empresa')) { <td class="text-muted">{{ u.company_name || '—' }}</td> }
+                        @if (isColumnVisible('fecha')) { <td class="text-muted" style="font-size:0.75rem;">{{ u.created_at | date:'dd/MM/yy' }}</td> }
                         <td>
-                          <span style="color: #6366f1; font-weight:700; font-family:monospace; font-size:0.9rem;">
-                            {{ u.username || (u.name?.toLowerCase().replace(' ', '.')) }}
-                          </span>
-                        </td>
-                        <td style="font-weight: 500;">{{ u.name || (u.first_name + ' ' + u.last_name) }}</td>
-                        <td style="color:var(--text-muted);font-size:.85rem;">{{ u.email }}</td>
-                        <td><app-status-badge [status]="u.role" /></td>
-                        <td style="color:var(--text-muted);font-size:.85rem;">{{ u['company_name'] || '—' }}</td>
-                        <td>
-                          <span [style.color]="u.isActive ? '#34D399' : '#F87171'">
-                            {{ u.isActive ? '✓ Activo' : '✗ Inactivo' }}
-                          </span>
-                        </td>
-                        <td>
-                          <div style="display:flex;gap:.5rem;">
-                            <button class="nx-btn btn-ghost btn-sm" (click)="openEdit(u)">✏️</button>
-                            <button class="nx-btn btn-danger btn-sm" (click)="deactivate(u)">🗑️</button>
+                          <div class="dropdown-container" style="position:relative; display:inline-block;">
+                            <button (click)="toggleDropdown(u.id, $event)" class="nx-btn btn-ghost btn-sm" style="font-weight:bold; color:var(--text);">⋮</button>
+                            <div class="dropdown-menu" 
+                                 [class.dropup]="i === filteredUsers.length - 1 && filteredUsers.length > 2"
+                                 [style.display]="openDropdownId === u.id ? 'block' : 'none'">
+                               @if (u.is_active) {
+                                 <button (click)="openEdit(u)" class="dropdown-item">
+                                   <span class="material-symbols-outlined">edit</span> Editar Usuario
+                                 </button>
+                               }
+                               <button (click)="toggleUserStatus(u)" class="dropdown-item" [style.color]="u.is_active ? '#F87171' : '#34D399'">
+                                 <span class="material-symbols-outlined">{{ u.is_active ? 'person_off' : 'how_to_reg' }}</span>
+                                 {{ u.is_active ? 'Inactivar Usuario' : 'Activar Usuario' }}
+                               </button>
+                            </div>
                           </div>
                         </td>
                       </tr>
                     }
-                    @if (users.length === 0) {
-                      <tr><td colspan="7"><div class="nx-empty"><div class="empty-icon"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">group</span></div><h3>Sin usuarios</h3></div></td></tr>
+                    @if (filteredUsers.length === 0) {
+                      <tr>
+                        <td [attr.colspan]="visibleColumnsCount + 1">
+                          <div class="nx-empty search-empty animate-fade-in">
+                            <div class="robot-confused">
+                              <span class="material-symbols-outlined robot-icon">smart_toy</span>
+                            </div>
+                            <h3>No encontré usuarios</h3>
+                            <p>Prueba con otros filtros o términos de búsqueda</p>
+                            <button class="nx-btn btn-ghost" (click)="clearFilters()" style="margin-top:1rem;">Limpiar filtros</button>
+                          </div>
+                        </td>
+                      </tr>
                     }
                   </tbody>
                 </table>
@@ -90,22 +187,22 @@ import { User }                from '../../../core/models/user.model';
     <!-- Modal Crear/Editar -->
     @if (showModal) {
       <div class="nx-modal-backdrop" (click)="closeModal()">
-        <div class="nx-modal" (click)="$event.stopPropagation()">
+        <div class="nx-modal animate-scale-up" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h3>{{ editMode ? '✏️ Editar Usuario' : '➕ Nuevo Usuario' }}</h3>
             <button class="close-btn" (click)="closeModal()">✕</button>
           </div>
           <div class="modal-body">
-            @if (modalError) { <div class="nx-alert alert-error"><span class="material-symbols-outlined" style="vertical-align:bottom; font-size:inherit;">warning</span> {{ modalError }}</div> }
+            @if (modalError) { <div class="nx-alert alert-error"><span class="material-symbols-outlined">warning</span> {{ modalError }}</div> }
 
             <div class="nx-form-row cols-2">
               <div class="nx-form-group">
                 <label>Nombre</label>
-                <input class="nx-input" [(ngModel)]="form.firstName" placeholder="Yeyson" />
+                <input class="nx-input" [(ngModel)]="form.firstName" placeholder="Nombre" />
               </div>
               <div class="nx-form-group">
                 <label>Apellido</label>
-                <input class="nx-input" [(ngModel)]="form.lastName" placeholder="Barillas" />
+                <input class="nx-input" [(ngModel)]="form.lastName" placeholder="Apellido" />
               </div>
             </div>
             <div class="nx-form-row cols-2">
@@ -115,7 +212,7 @@ import { User }                from '../../../core/models/user.model';
               </div>
               <div class="nx-form-group">
                 <label>Email</label>
-                <input class="nx-input" type="email" [(ngModel)]="form.email" [disabled]="editMode" placeholder="usuario@empresa.gt" />
+                <input class="nx-input" type="email" [(ngModel)]="form.email" [disabled]="editMode" placeholder="correo@ejemplo.com" />
               </div>
             </div>
             @if (!editMode) {
@@ -134,33 +231,134 @@ import { User }                from '../../../core/models/user.model';
                 </select>
               </div>
               <div class="nx-form-group">
-                <label>Empresa (clientes)</label>
-                <input class="nx-input" [(ngModel)]="form.companyName" placeholder="Empresa S.A." />
+                <label>Empresa (Solo clientes)</label>
+                <input class="nx-input" [(ngModel)]="form.companyName" placeholder="Nombre de empresa" />
               </div>
             </div>
           </div>
           <div class="modal-footer">
             <button class="nx-btn btn-ghost" (click)="closeModal()">Cancelar</button>
             <button class="nx-btn btn-primary" (click)="saveUser()" [disabled]="saving">
-              {{ saving ? 'Guardando...' : (editMode ? 'Actualizar' : 'Crear usuario') }}
+              {{ saving ? 'Guardando...' : (editMode ? 'Actualizar Usuario' : 'Crear Usuario') }}
             </button>
           </div>
         </div>
       </div>
     }
   `,
+  styles: [`
+    .header-main-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .header-actions-row { display: flex; align-items: center; gap: 1.25rem; flex-wrap: nowrap; margin-bottom: 2rem; }
+    
+    .search-box { flex: 1; min-width: 0; display: flex; align-items: center; position: relative; }
+    .search-icon { position: absolute; left: 12px; color: var(--text-muted); }
+    .search-input { padding-left: 40px !important; height: 45px; background: rgba(0,0,0,0.4) !important; border-radius: 12px !important; }
+
+    .table-tools { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+
+    .btn-options { 
+      background: #5d1d88ff !important; color: white !important; height: 45px; padding: 0 20px;
+      border-radius: 12px !important; display: flex; align-items: center; gap: 10px; font-weight: 700;
+    }
+
+    .btn-active-toggle { background: rgba(248, 113, 113, 0.1) !important; color: #F87171 !important; border: 1px solid rgba(248, 113, 113, 0.2) !important; font-weight:700; border-radius: 12px !important; height: 45px; padding: 0 15px; }
+    .btn-inactive-toggle { background: rgba(52, 211, 153, 0.1) !important; color: #34D399 !important; border: 1px solid rgba(52, 211, 153, 0.2) !important; font-weight:700; border-radius: 12px !important; height: 45px; padding: 0 15px; }
+    .btn-active-toggle:hover { background: rgba(248, 113, 113, 0.2) !important; }
+    .btn-inactive-toggle:hover { background: rgba(52, 211, 153, 0.2) !important; }
+
+    .nx-kpi-card { cursor: pointer; transition: all 0.3s; }
+    .nx-kpi-card:hover { transform: translateY(-5px); }
+    .nx-kpi-card.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+
+    .user-id-badge {
+      background: rgba(99, 102, 241, 0.1); color: var(--primary);
+      padding: 4px 8px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; font-weight: 700;
+    }
+
+    .status-indicator {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 8px;
+    }
+    .status-indicator.inactive { background: #F87171; box-shadow: 0 0 8px #F87171; }
+
+    .text-muted { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* Dropdown */
+    .options-dropdown-container { position: relative; }
+    .options-menu {
+      position: absolute; top: calc(100% + 8px); right: 0; z-index: 130;
+      background: #111827; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6); padding: 8px; min-width: 220px; backdrop-filter: blur(20px);
+    }
+    .options-item {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px;
+      color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 8px;
+      transition: all 0.2s; border: none; background: none; text-align: left;
+    }
+    .options-item:hover { background: var(--primary); }
+    .options-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 6px 0; }
+
+    .dropdown-container .dropdown-menu {
+      position: absolute; left: calc(100% + 10px); top: -10px; z-index: 100;
+      background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); min-width: 180px; backdrop-filter: blur(8px);
+    }
+    .dropdown-container .dropdown-menu.dropup { top: auto; bottom: -10px; }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px;
+      color: rgba(255, 255, 255, 0.8); cursor: pointer; border: none; background: none;
+      font-size: 13px; transition: all 0.2s; text-align: left;
+    }
+    .dropdown-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--primary); }
+
+    /* Modal */
+    .nx-modal-backdrop {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .nx-modal {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; width: 100%; max-width: 600px; overflow: hidden;
+    }
+    .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+    .modal-footer { padding: 1.25rem 1.5rem; background: rgba(0,0,0,0.2); display: flex; justify-content: flex-end; gap: 1rem; }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+
+    .search-empty { padding: 4rem 2rem; text-align: center; color: var(--text-muted); }
+    .robot-confused { font-size: 4rem; color: var(--primary); margin-bottom: 1rem; opacity: 0.5; }
+
+    .animate-scale-up { animation: scaleUp 0.2s ease-out; }
+    @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  `]
 })
 export class UsuariosComponent implements OnInit {
 
-  users:   any[] = [];
-  roles:   any[] = [];
-  loading  = true;
-  saving   = false;
+  users: any[] = [];
+  roles: any[] = [];
+  loading = true;
+  saving = false;
   showModal = false;
-  editMode  = false;
-  roleFilter = '';
+  editMode = false;
   modalError = '';
   selectedUser: any = null;
+  openDropdownId: string | null = null;
+
+  searchText = '';
+  viewActive = true; 
+  activeRoleFilter: string | null = null;
+
+  isOptionsMenuOpen = false;
+  isColumnMenuOpen = false;
+
+  columnConfigs = [
+    { key: 'usuario', label: 'Usuario', visible: true },
+    { key: 'nombre', label: 'Nombre', visible: true },
+    { key: 'email', label: 'Email', visible: true },
+    { key: 'rol', label: 'Rol', visible: true },
+    { key: 'empresa', label: 'Empresa', visible: true },
+    { key: 'fecha', label: 'Fecha Creado', visible: false },
+  ];
 
   form: any = { firstName: '', lastName: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
 
@@ -169,15 +367,76 @@ export class UsuariosComponent implements OnInit {
   ngOnInit() {
     this.adminService.getRoles().subscribe((r) => this.roles = r.data);
     this.loadUsers();
+    
+    document.addEventListener('click', () => {
+      this.openDropdownId = null;
+      this.isOptionsMenuOpen = false;
+    });
   }
 
   loadUsers() {
     this.loading = true;
-    const filters = this.roleFilter ? { role: this.roleFilter } : {};
-    this.adminService.getUsers(filters).subscribe({
-      next: (r) => { this.users = r.data.data; this.loading = false; },
-      error: ()  => { this.loading = false; },
+    this.adminService.getUsers({}).subscribe({
+      next: (r) => { 
+        this.users = r.data.data; 
+        this.loading = false; 
+      },
+      error: () => { this.loading = false; },
     });
+  }
+
+  get filteredUsers(): any[] {
+    let result = [...this.users];
+    result = result.filter(u => u.is_active === this.viewActive);
+    if (this.activeRoleFilter) result = result.filter(u => u.role === this.activeRoleFilter);
+
+    if (this.searchText) {
+      const q = this.searchText.toLowerCase();
+      result = result.filter(u => 
+        u.name?.toLowerCase().includes(q) || 
+        u.email?.toLowerCase().includes(q) || 
+        u.username?.toLowerCase().includes(q) ||
+        u.company_name?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }
+
+  countByRole(roleName: string) {
+    return this.users.filter(u => u.role === roleName && u.is_active === this.viewActive).length;
+  }
+
+  toggleActiveView() {
+    this.viewActive = !this.viewActive;
+    this.openDropdownId = null;
+  }
+
+  toggleRoleFilter(roleName: string) {
+    this.activeRoleFilter = this.activeRoleFilter === roleName ? null : roleName;
+  }
+
+  clearFilters() {
+    this.searchText = '';
+    this.viewActive = true;
+    this.activeRoleFilter = null;
+  }
+
+  isColumnVisible(key: string) {
+    return this.columnConfigs.find(c => c.key === key)?.visible;
+  }
+
+  get visibleColumnsCount() {
+    return this.columnConfigs.filter(c => c.visible).length;
+  }
+
+  toggleOptionsMenu(e: Event) {
+    e.stopPropagation();
+    this.isOptionsMenuOpen = !this.isOptionsMenuOpen;
+  }
+
+  toggleDropdown(id: string, e: Event) {
+    e.stopPropagation();
+    this.openDropdownId = this.openDropdownId === id ? null : id;
   }
 
   openCreate() {
@@ -185,6 +444,7 @@ export class UsuariosComponent implements OnInit {
     this.form = { firstName: '', lastName: '', email: '', password: '', phone: '', roleId: 2, companyName: '' };
     this.modalError = '';
     this.showModal = true;
+    this.isOptionsMenuOpen = false;
   }
 
   openEdit(u: any) {
@@ -200,6 +460,7 @@ export class UsuariosComponent implements OnInit {
     };
     this.modalError = '';
     this.showModal = true;
+    this.openDropdownId = null;
   }
 
   closeModal() { this.showModal = false; }
@@ -207,25 +468,9 @@ export class UsuariosComponent implements OnInit {
   saveUser() {
     this.saving = true;
     this.modalError = '';
-
-    const payload = {
-      firstName: this.form.firstName,
-      lastName: this.form.lastName,
-      phone: this.form.phone,
-      email: this.form.email,
-      companyName: this.form.companyName,
-      password: this.form.password,
-      roleId: this.form.roleId
-    };
-
+    const payload = { ...this.form };
     const obs = this.editMode
-      ? this.adminService.updateUser(this.selectedUser.id, {
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          phone: payload.phone,
-          companyName: payload.companyName,
-          roleId: payload.roleId
-        } as any)
+      ? this.adminService.updateUser(this.selectedUser.id, payload)
       : this.adminService.createUser(payload);
 
     obs.subscribe({
@@ -234,8 +479,31 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  deactivate(u: any) {
-    if (!confirm(`¿Desactivar al usuario ${u.name}?`)) return;
-    this.adminService.deleteUser(u.id).subscribe(() => this.loadUsers());
+  toggleUserStatus(u: any) {
+    const action = u.is_active ? 'desactivar' : 'activar';
+    if (!confirm(`¿Estás seguro de que deseas ${action} al usuario ${u.name}?`)) return;
+    
+    const obs: any = u.is_active 
+      ? this.adminService.deleteUser(u.id) 
+      : this.adminService.updateUser(u.id, { isActive: true } as any);
+
+    obs.subscribe(() => this.loadUsers());
+  }
+
+  exportToExcel() {
+    const data = this.filteredUsers.map(u => ({
+      Usuario: u.username,
+      Nombre: u.name,
+      Email: u.email,
+      Rol: u.role,
+      Empresa: u.company_name || 'N/A',
+      Estado: u.is_active ? 'Activo' : 'Inactivo',
+      Creado: new Date(u.created_at).toLocaleDateString()
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Usuarios');
+    XLSX.writeFile(wb, 'Reporte_Usuarios_Nexgo.xlsx');
+    this.isOptionsMenuOpen = false;
   }
 }
