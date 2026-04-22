@@ -100,9 +100,10 @@ import * as XLSX from 'xlsx';
             <!-- KPI Grid (Replicating Mis Envíos style) -->
             <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
               @for (role of roles; track role.id) {
-                <div class="nx-kpi-card" [class.active]="activeRoleFilter === role.name" (click)="toggleRoleFilter(role.name)">
+                <div class="nx-kpi-card" [class.active]="activeRoleFilter === role.name" (click)="toggleRoleFilter(role.name)" style="position:relative; overflow:hidden;">
                   <div class="kpi-label">{{ (role.description || role.name) | uppercase }}</div>
                   <div class="kpi-value">{{ countByRole(role.name) }}</div>
+                  <span class="material-symbols-outlined kpi-bg-icon">{{ getRoleIcon(role.name) }}</span>
                 </div>
               }
             </div>
@@ -285,9 +286,16 @@ import * as XLSX from 'xlsx';
     .btn-active-toggle:hover { background: #e11d48 !important; opacity: 0.9; }
     .btn-inactive-toggle:hover { background: #059669 !important; opacity: 0.9; }
 
-    .nx-kpi-card { cursor: pointer; transition: all 0.3s; }
+    .nx-kpi-card { cursor: pointer; transition: all 0.3s; padding: 1.5rem !important; }
     .nx-kpi-card:hover { transform: translateY(-5px); }
     .nx-kpi-card.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+    
+    .kpi-bg-icon {
+      position: absolute; right: -15px; bottom: -15px;
+      font-size: 5.5rem !important; color: #94a3b8; opacity: 0.12;
+      transform: rotate(-10deg); pointer-events: none;
+    }
+    .nx-kpi-card.active .kpi-bg-icon { opacity: 0.3; color: var(--primary); }
 
     .user-id-badge {
       background: rgba(99, 102, 241, 0.1); color: var(--primary);
@@ -551,6 +559,16 @@ export class UsuariosComponent implements OnInit {
   isInternalRole() {
     // 1: Admin, 5: Repartidor
     return this.form.roleId == 1 || this.form.roleId == 5;
+  }
+
+  getRoleIcon(role: string): string {
+    const r = role?.toUpperCase() || '';
+    if (r.includes('ADMIN')) return 'admin_panel_settings';
+    if (r.includes('REPARTIDOR')) return 'delivery_dining';
+    if (r.includes('ORO')) return 'workspace_premium';
+    if (r.includes('PLATA')) return 'military_tech';
+    if (r.includes('BRONCE')) return 'social_leaderboard';
+    return 'person';
   }
 
   toggleUserStatus(u: any) {
