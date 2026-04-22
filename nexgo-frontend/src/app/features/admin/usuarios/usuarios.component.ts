@@ -126,8 +126,15 @@ import * as XLSX from 'xlsx';
                     @for (u of filteredUsers; track u.id; let i = $index) {
                       <tr [style.opacity]="u.is_active ? 1 : 0.6">
                         @if (isColumnVisible('usuario')) {
-                          <td style="color: #e2e8f0; font-family: 'Inter', sans-serif; font-weight: 500;">
-                            {{ u.username || u.email.split('@')[0] }}
+                          <td>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                              <span style="color: #e2e8f0; font-family: 'Inter', sans-serif; font-weight: 500;">
+                                {{ u.username || u.email.split('@')[0] }}
+                              </span>
+                              <button (click)="copyToClipboard(u.username || u.email.split('@')[0])" class="copy-btn" title="Copiar usuario">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                              </button>
+                            </div>
                           </td>
                         }
                         @if (isColumnVisible('nombre')) {
@@ -314,6 +321,15 @@ import * as XLSX from 'xlsx';
     .status-indicator.inactive { background: #F87171; box-shadow: 0 0 8px #F87171; }
 
     .text-muted { color: var(--text-muted); font-size: 0.85rem; }
+
+    .copy-btn {
+      background: none; border: none; color: #94a3b8; cursor: pointer;
+      padding: 4px; display: flex; align-items: center; border-radius: 4px;
+      transition: all 0.2s; opacity: 0;
+    }
+    tr:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
+    .copy-btn:active { transform: scale(0.9); }
 
     /* Dropdown */
     .options-dropdown-container { position: relative; }
@@ -624,5 +640,11 @@ export class UsuariosComponent implements OnInit {
     XLSX.utils.book_append_sheet(wb, ws, 'Usuarios');
     XLSX.writeFile(wb, 'Reporte_Usuarios_Nexgo.xlsx');
     this.isOptionsMenuOpen = false;
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      // Feedback opcional sin diseño como pidió el usuario
+    });
   }
 }
