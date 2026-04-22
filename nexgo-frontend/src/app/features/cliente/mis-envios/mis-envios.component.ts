@@ -666,11 +666,11 @@ import * as XLSX from 'xlsx';
     }
     .nx-table th { 
       font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; 
-      text-align: center !important; padding: 15px; 
+      text-align: center !important; padding: 12px; 
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .nx-table th > div { justify-content: center !important; }
-    .nx-table td { color: #e2e8f0; font-size: 0.9rem; text-align: left; padding: 15px; }
+    .nx-table td { color: #e2e8f0; font-size: 0.9rem; text-align: left; padding: 12px; }
     
     .nx-table-wrap { position: relative; overflow-x: auto; }
     .nx-table-wrap::after {
