@@ -243,7 +243,10 @@ import * as XLSX from 'xlsx';
       <div class="nx-modal-backdrop" (click)="closePasswordModal()">
         <div class="nx-modal animate-scale-up" style="max-width: 400px;" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3>🔐 Cambiar Contraseña</h3>
+            <h3>
+              <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px; color: var(--primary);">lock</span>
+              Cambiar Contraseña
+            </h3>
             <button class="close-btn" (click)="closePasswordModal()">✕</button>
           </div>
           <div class="modal-body">
@@ -270,13 +273,17 @@ import * as XLSX from 'xlsx';
               <button class="nx-btn btn-ghost btn-sm" (click)="generateRandomPassword()" style="flex: 1; font-size: 0.75rem; background: rgba(255,255,255,0.05) !important;">
                 <span class="material-symbols-outlined" style="font-size: 16px;">autorenew</span> Generar
               </button>
-              <button class="nx-btn btn-ghost btn-sm" (click)="copyPassword()" [disabled]="!passwordForm.password" style="flex: 1; font-size: 0.75rem; background: rgba(255,255,255,0.05) !important;">
-                <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span> Copiar
+              <button class="nx-btn btn-ghost btn-sm" (click)="copyPassword()" [disabled]="!passwordForm.password" 
+                      style="flex: 1; font-size: 0.75rem; background: rgba(255,255,255,0.05) !important;"
+                      [style.color]="passwordSuccess ? '#34D399' : ''">
+                <span class="material-symbols-outlined" style="font-size: 16px;">
+                  {{ passwordSuccess ? 'check' : 'content_copy' }}
+                </span> 
+                {{ passwordSuccess ? 'Copiado' : 'Copiar' }}
               </button>
             </div>
 
             @if (passwordError) { <div class="nx-alert alert-error" style="margin-top: 1rem; font-size: 0.8rem;">{{ passwordError }}</div> }
-            @if (passwordSuccess) { <div class="nx-alert alert-success" style="margin-top: 1rem; font-size: 0.8rem;">✅ Contraseña copiada</div> }
           </div>
           <div class="modal-footer">
             <button class="nx-btn btn-ghost" (click)="closePasswordModal()">Cancelar</button>
