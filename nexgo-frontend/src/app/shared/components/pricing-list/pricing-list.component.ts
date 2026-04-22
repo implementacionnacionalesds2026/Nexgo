@@ -25,13 +25,14 @@ import Swal from 'sweetalert2';
 
       <!-- Search & Filters -->
       <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem;">
-        <div class="search-box">
-          <span class="material-symbols-outlined search-icon">search</span>
+        <div class="search-box" style="flex: 1; height: 45px !important; position: relative;">
+          <span class="material-symbols-outlined search-icon" style="position: absolute; top: 50%; transform: translateY(-50%); left: 12px; color: #94a3b8; z-index: 5;">search</span>
           <input type="text" 
                  [(ngModel)]="searchTerm" 
                  (input)="filterUsers()"
                  placeholder="Buscar por nombre, email, usuario, empresa..." 
-                 class="nx-input search-input">
+                 class="nx-input search-input"
+                 style="height: 45px !important; width: 100%; padding: 0 15px 0 40px !important; border-radius: 12px !important; background: rgba(0,0,0,0.4) !important; border: 1px solid rgba(255,255,255,0.1) !important; box-sizing: border-box !important;">
         </div>
         
         <!-- Toggle Inactivos Parity -->
@@ -39,8 +40,8 @@ import Swal from 'sweetalert2';
                 class="nx-btn btn-status-toggle" 
                 [class.state-inactive]="activeStateFilter() === 'ACTIVE'"
                 [class.state-active]="activeStateFilter() === 'INACTIVE'"
-                style="display: flex; align-items: center; gap: 8px; height: 45px; padding: 0 25px; border-radius: 12px; font-weight: 700; transition: all 0.3s; color: white; min-width: 140px; justify-content: center;">
-          <span class="material-symbols-outlined" style="font-size: 1.4rem;">
+                style="height: 45px !important; padding: 0 25px; border-radius: 12px; font-weight: 700; transition: all 0.3s; color: white; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; box-sizing: border-box !important; margin: 0;">
+          <span class="material-symbols-outlined" style="font-size: 1.3rem;">
             {{ activeStateFilter() === 'ACTIVE' ? 'person_off' : 'person_check' }}
           </span>
           {{ activeStateFilter() === 'ACTIVE' ? 'Inactivos' : 'Activos' }}
