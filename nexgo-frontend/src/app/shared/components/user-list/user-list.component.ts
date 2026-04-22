@@ -151,6 +151,9 @@ import * as XLSX from 'xlsx';
                              <button (click)="openEdit(u)" class="dropdown-item">
                                <span class="material-symbols-outlined">edit</span> Editar Usuario
                              </button>
+                             <button (click)="openPasswordModal(u)" class="dropdown-item">
+                               <span class="material-symbols-outlined">lock_reset</span> Cambiar Contraseña
+                             </button>
                            }
                            <button (click)="toggleUserStatus(u)" class="dropdown-item" [style.color]="u.is_active ? '#F87171' : '#34D399'">
                              <span class="material-symbols-outlined">{{ u.is_active ? 'person_off' : 'how_to_reg' }}</span>
@@ -229,6 +232,56 @@ import * as XLSX from 'xlsx';
             <button class="nx-btn btn-ghost" (click)="closeModal()">Cancelar</button>
             <button class="nx-btn btn-primary" (click)="saveUser()" [disabled]="saving">
               {{ saving ? 'Guardando...' : (editMode ? 'Actualizar Usuario' : 'Crear Usuario') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Cambiar Contraseña -->
+    @if (showPasswordModal) {
+      <div class="nx-modal-backdrop" (click)="closePasswordModal()">
+        <div class="nx-modal animate-scale-up" style="max-width: 400px;" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>🔐 Cambiar Contraseña</h3>
+            <button class="close-btn" (click)="closePasswordModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">
+              Actualizando contraseña para: <strong style="color: white;">{{ selectedUser?.name }}</strong>
+            </p>
+
+            <div class="nx-form-group">
+              <label>Nueva Contraseña</label>
+              <div style="display: flex; gap: 8px;">
+                <input 
+                  class="nx-input" 
+                  [type]="showPassword ? 'text' : 'password'" 
+                  [(ngModel)]="passwordForm.password" 
+                  placeholder="Mínimo 8 caracteres" 
+                />
+                <button class="nx-btn btn-ghost" (click)="showPassword = !showPassword" style="padding: 0 10px; border: 1px solid rgba(255,255,255,0.1) !important;">
+                  <span class="material-symbols-outlined" style="font-size: 20px;">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 1rem;">
+              <button class="nx-btn btn-ghost btn-sm" (click)="generateRandomPassword()" style="flex: 1; font-size: 0.75rem; background: rgba(255,255,255,0.05) !important;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">autorenew</span> Generar
+              </button>
+              <button class="nx-btn btn-ghost btn-sm" (click)="copyPassword()" [disabled]="!passwordForm.password" style="flex: 1; font-size: 0.75rem; background: rgba(255,255,255,0.05) !important;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span> Copiar
+              </button>
+            </div>
+
+            @if (passwordError) { <div class="nx-alert alert-error" style="margin-top: 1rem; font-size: 0.8rem;">{{ passwordError }}</div> }
+            @if (passwordSuccess) { <div class="nx-alert alert-success" style="margin-top: 1rem; font-size: 0.8rem;">✅ Contraseña copiada</div> }
+          </div>
+          <div class="modal-footer">
+            <button class="nx-btn btn-ghost" (click)="closePasswordModal()">Cancelar</button>
+            <button class="nx-btn btn-primary" (click)="updatePassword()" [disabled]="saving || !passwordForm.password">
+              {{ saving ? 'Actualizando...' : 'Actualizar' }}
             </button>
           </div>
         </div>
@@ -352,6 +405,13 @@ export class UserListComponent implements OnInit {
   modalError = '';
   selectedUser: any = null;
   openDropdownId: string | null = null;
+
+  // Password Modal State
+  showPasswordModal = false;
+  passwordForm = { password: '' };
+  passwordError = '';
+  passwordSuccess = false;
+  showPassword = false;
 
   searchText = '';
   viewActive = true;
@@ -543,5 +603,59 @@ export class UserListComponent implements OnInit {
 
   copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(() => {});
+  }
+
+  // Password Methods
+  openPasswordModal(u: any) {
+    this.selectedUser = u;
+    this.passwordForm = { password: '' };
+    this.passwordError = '';
+    this.passwordSuccess = false;
+    this.showPasswordModal = true;
+    this.openDropdownId = null;
+  }
+
+  closePasswordModal() {
+    this.showPasswordModal = false;
+  }
+
+  generateRandomPassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let pass = '';
+    for (let i = 0; i < 12; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    this.passwordForm.password = pass;
+    this.passwordError = '';
+  }
+
+  copyPassword() {
+    if (!this.passwordForm.password) return;
+    navigator.clipboard.writeText(this.passwordForm.password).then(() => {
+      this.passwordSuccess = true;
+      setTimeout(() => this.passwordSuccess = false, 2000);
+    });
+  }
+
+  updatePassword() {
+    if (!this.passwordForm.password || this.passwordForm.password.length < 8) {
+      this.passwordError = 'La contraseña debe tener al menos 8 caracteres';
+      return;
+    }
+
+    this.saving = true;
+    this.passwordError = '';
+    
+    this.adminService.updateUser(this.selectedUser.id, { password: this.passwordForm.password } as any).subscribe({
+      next: () => {
+        this.saving = false;
+        this.closePasswordModal();
+        alert('Contraseña actualizada exitosamente');
+      },
+      error: (e) => {
+        this.saving = false;
+        this.passwordError = e?.error?.message || 'Error al actualizar contraseña';
+      }
+    });
   }
 }

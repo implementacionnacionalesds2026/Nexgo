@@ -79,7 +79,7 @@ const updateUser = async (req, res, next) => {
       return res.status(422).json({ success: false, message: 'Datos inválidos', errors: errors.array() });
     }
 
-    const { firstName, lastName, phone, companyName, isActive, roleId } = req.body;
+    const { firstName, lastName, phone, companyName, isActive, roleId, password } = req.body;
 
     // Fetch current user to compute updates
     const current = await query('SELECT * FROM users WHERE id = $1', [req.params.id]);
@@ -93,21 +93,30 @@ const updateUser = async (req, res, next) => {
     const newName = `${newFirstName} ${newLastName}`.trim();
     const newUsername = `${newFirstName.toLowerCase().replace(/\s+/g, '')}.${newLastName.toLowerCase().replace(/\s+/g, '')}`;
 
-    const result = await query(
-      `UPDATE users
-       SET name = $1,
-           first_name = $2,
-           last_name = $3,
-           username = $4,
-           phone = COALESCE($5, phone),
-           company_name = COALESCE($6, company_name),
-           is_active = COALESCE($7, is_active),
-           role_id = COALESCE($8, role_id),
-           updated_at = NOW()
-       WHERE id = $9
-       RETURNING id, name, username, email, phone, company_name, is_active`,
-      [newName, newFirstName, newLastName, newUsername, phone, companyName, isActive, roleId, req.params.id]
-    );
+    let updateQuery = `
+      UPDATE users
+      SET name = $1,
+          first_name = $2,
+          last_name = $3,
+          username = $4,
+          phone = COALESCE($5, phone),
+          company_name = COALESCE($6, company_name),
+          is_active = COALESCE($7, is_active),
+          role_id = COALESCE($8, role_id),
+          updated_at = NOW()`;
+    
+    const params = [newName, newFirstName, newLastName, newUsername, phone, companyName, isActive, roleId];
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      params.push(hashedPassword);
+      updateQuery += `, password_hash = $${params.length}`;
+    }
+
+    params.push(req.params.id);
+    updateQuery += ` WHERE id = $${params.length} RETURNING id, name, username, email, phone, company_name, is_active`;
+
+    const result = await query(updateQuery, params);
 
     if (!result.rows[0]) {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
