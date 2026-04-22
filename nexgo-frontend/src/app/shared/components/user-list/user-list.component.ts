@@ -330,7 +330,7 @@ import * as XLSX from 'xlsx';
     }
     .nx-table td { color: #e2e8f0; font-size: 0.9rem; padding: 10px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.02); }
 
-    .nx-table-wrap { position: relative; overflow-x: auto; min-height: 150px; }
+    .nx-table-wrap { position: relative; overflow-x: auto; min-height: 400px; }
     .nx-table-wrap::after {
       content: ''; position: absolute; top: 0; bottom: 0; right: 250px;
       width: 1px; background: rgba(255, 255, 255, 0.1); pointer-events: none; z-index: 10;
@@ -602,7 +602,7 @@ export class UserListComponent implements OnInit {
   }
 
   copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text).then(() => {});
+    navigator.clipboard.writeText(text).then(() => { });
   }
 
   // Password Methods
@@ -645,7 +645,7 @@ export class UserListComponent implements OnInit {
 
     this.saving = true;
     this.passwordError = '';
-    
+
     this.adminService.updateUser(this.selectedUser.id, { password: this.passwordForm.password } as any).subscribe({
       next: () => {
         this.saving = false;
