@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, StatusBadgeComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   template: `
     <div class="nx-layout">
       <app-sidebar />
@@ -102,7 +102,7 @@ import * as XLSX from 'xlsx';
               @for (role of roles; track role.id) {
                 <div class="nx-kpi-card" [class.active]="activeRoleFilter === role.name" (click)="toggleRoleFilter(role.name)" style="position:relative; overflow:hidden;">
                   <div class="kpi-label">{{ (role.description || role.name) | uppercase }}</div>
-                  <div class="kpi-value">{{ countByRole(role.name) }}</div>
+                  <div class="kpi-value" [style.color]="getRoleColor(role.name)">{{ countByRole(role.name) }}</div>
                   <span class="material-symbols-outlined kpi-bg-icon">{{ getRoleIcon(role.name) }}</span>
                 </div>
               }
@@ -126,10 +126,8 @@ import * as XLSX from 'xlsx';
                     @for (u of filteredUsers; track u.id; let i = $index) {
                       <tr [style.opacity]="u.is_active ? 1 : 0.6">
                         @if (isColumnVisible('usuario')) {
-                          <td>
-                            <span class="user-id-badge">
-                              {{ u.username || u.email.split('@')[0] }}
-                            </span>
+                          <td style="color: #e2e8f0; font-family: 'Inter', sans-serif; font-weight: 500;">
+                            {{ u.username || u.email.split('@')[0] }}
                           </td>
                         }
                         @if (isColumnVisible('nombre')) {
@@ -139,7 +137,11 @@ import * as XLSX from 'xlsx';
                           </td>
                         }
                         @if (isColumnVisible('email')) { <td class="text-muted">{{ u.email }}</td> }
-                        @if (isColumnVisible('rol')) { <td><app-status-badge [status]="u.role" /></td> }
+                        @if (isColumnVisible('rol')) { 
+                          <td style="color: #e2e8f0; font-family: 'Inter', sans-serif;">
+                            {{ getRoleLabel(u.role) }}
+                          </td> 
+                        }
                         @if (isColumnVisible('empresa')) { 
                           <td class="text-muted">
                             {{ (u.role === 'ADMIN' || u.role === 'REPARTIDOR') ? 'Nacionales Delivery Services' : (u.company_name || '—') }}
@@ -301,6 +303,10 @@ import * as XLSX from 'xlsx';
       background: rgba(99, 102, 241, 0.1); color: var(--primary);
       padding: 4px 8px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; font-weight: 700;
     }
+    
+    .nx-table { font-family: 'Inter', sans-serif !important; }
+    .nx-table th { font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    .nx-table td { color: #e2e8f0; font-size: 0.9rem; }
 
     .status-indicator {
       display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 8px;
@@ -569,6 +575,27 @@ export class UsuariosComponent implements OnInit {
     if (r.includes('PLATA')) return 'military_tech';
     if (r.includes('BRONCE')) return 'social_leaderboard';
     return 'person';
+  }
+
+  getRoleColor(role: string): string {
+    const r = role?.toUpperCase() || '';
+    if (r.includes('ADMIN')) return '#818cf8';
+    if (r.includes('REPARTIDOR')) return '#fb923c';
+    if (r.includes('FULL') || r.includes('ORO')) return '#facc15';      // Oro
+    if (r.includes('AVERAGE') || r.includes('PLATA')) return '#94a3b8'; // Plata
+    if (r.includes('SMALL') || r.includes('BRONCE')) return '#d97706';  // Bronce
+    return '#6366f1';
+  }
+
+  getRoleLabel(role: string): string {
+    const labels: any = {
+      ADMIN: 'Admin',
+      SMALL_CUSTOMER: 'Cliente Bronce',
+      AVERAGE_CUSTOMER: 'Cliente Plata',
+      FULL_CUSTOMER: 'Cliente Oro',
+      REPARTIDOR: 'Repartidor'
+    };
+    return labels[role] || role;
   }
 
   toggleUserStatus(u: any) {
