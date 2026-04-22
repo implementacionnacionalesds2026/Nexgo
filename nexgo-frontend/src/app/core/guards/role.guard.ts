@@ -11,10 +11,15 @@ export const roleGuard = (...allowedRoles: string[]): CanActivateFn => {
 
     if (!user || !allowedRoles.includes(user.role)) {
       // Redirigir al dashboard del rol actual
-      if (user?.role === 'ADMIN')       router.navigate(['/admin/dashboard']);
-      else if (user?.role === 'CLIENTE') router.navigate(['/cliente/cotizador']);
-      else if (user?.role === 'REPARTIDOR') router.navigate(['/repartidor/guias']);
-      else router.navigate(['/login']);
+      if (user?.role === 'ADMIN') {
+        router.navigate(['/admin/dashboard']);
+      } else if (user?.role && ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(user.role)) {
+        router.navigate(['/cliente/mis-envios']);
+      } else if (user?.role === 'REPARTIDOR') {
+        router.navigate(['/repartidor/guias']);
+      } else {
+        router.navigate(['/login']);
+      }
       return false;
     }
     return true;

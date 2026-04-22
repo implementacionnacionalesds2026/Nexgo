@@ -110,9 +110,13 @@ export class LoginComponent {
         this.loading = false;
         const role = res.data.user.role;
         // La redirección la maneja el guard/HomeComponent
-        if (role === 'ADMIN') window.location.href = '/admin/dashboard';
-        else if (role === 'CLIENTE') window.location.href = '/cliente/cotizador';
-        else window.location.href = '/repartidor/guias';
+        if (role === 'ADMIN') {
+          window.location.href = '/admin/dashboard';
+        } else if (['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(role)) {
+          window.location.href = '/cliente/mis-envios';
+        } else {
+          window.location.href = '/repartidor/guias';
+        }
       },
       error: (err) => {
         this.loading = false;
