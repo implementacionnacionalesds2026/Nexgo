@@ -72,10 +72,10 @@ export class SidebarComponent implements OnInit {
   private allNavItems: NavItem[] = [
     // ADMIN
     { label: 'Dashboard',     icon: 'dashboard', route: '/admin/dashboard',     roles: ['ADMIN'] },
+    { label: 'Tarifas',       icon: 'payments', route: '/admin/tarifas',        roles: ['ADMIN'] },
     { label: 'Usuarios',      icon: 'group', route: '/admin/usuarios',       roles: ['ADMIN'] },
     { label: 'Envíos',        icon: 'inventory_2', route: '/admin/envios',         roles: ['ADMIN'] },
     { label: 'Rastreo Live',  icon: 'location_on', route: '/admin/rastreo',        roles: ['ADMIN'] },
-    { label: 'Tarifas',       icon: 'payments', route: '/admin/tarifas',        roles: ['ADMIN'] },
     { label: 'Reportes',      icon: 'monitoring', route: '/admin/reportes',       roles: ['ADMIN'] },
 
     // CLIENTE

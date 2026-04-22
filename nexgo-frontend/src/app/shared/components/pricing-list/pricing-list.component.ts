@@ -73,7 +73,7 @@ import Swal from 'sweetalert2';
                 <th style="text-align: center;">PESO BASE</th>
                 <th style="text-align: center;">EXTRA x LB</th>
                 <th style="text-align: center;">TARIFA</th>
-                <th class="actions-column" style="text-align: left !important; padding-left: 10px !important;">ACCIONES</th>
+                <th class="actions-column" style="text-align: center !important;">ACCIONES</th>
               </tr>
             </thead>
             <tbody>
@@ -531,7 +531,7 @@ export class PricingListComponent implements OnInit {
   }
 
   private formatHistoryDiff(oldV: any, newV: any): string {
-    if (!oldV) return '<span style="color:#10b981; font-weight:700;">✨ Creación inicial de la tarifa</span>';
+    if (!oldV) return '<span style="color:#10b981; font-weight:700;"><span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:middle; margin-right:5px;">magic_button</span> Creación inicial de la tarifa</span>';
 
     let changes = [];
     if (oldV.base_price != newV.base_price) changes.push(`• <b>Costo:</b> Q${oldV.base_price} → <span style="color:#10b981">Q${newV.base_price}</span>`);
