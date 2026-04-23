@@ -28,10 +28,12 @@ const getShipments = async (req, res, next) => {
     const { status, month, year, page, limit } = req.query;
     let filters = { status, month, year, page, limit };
 
-    // Cliente solo ve sus propios envíos
-    if (req.user.role === 'CLIENTE') {
+    // Roles de cliente: solo ven sus propios envíos
+    const isClient = ['CLIENTE', 'SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(req.user.role);
+    if (isClient) {
       filters.clientId = req.user.id;
     }
+
     // Repartidor solo ve los envíos asignados a él
     if (req.user.role === 'REPARTIDOR') {
       filters.driverId = req.user.id;
@@ -52,7 +54,8 @@ const getShipmentById = async (req, res, next) => {
     const shipment = await shipmentsService.getShipmentById(req.params.id);
 
     // Validar que el cliente solo vea sus propios envíos
-    if (req.user.role === 'CLIENTE' && shipment.client_id !== req.user.id) {
+    const isClient = ['CLIENTE', 'SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(req.user.role);
+    if (isClient && shipment.client_id !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Sin acceso a este envío' });
     }
 

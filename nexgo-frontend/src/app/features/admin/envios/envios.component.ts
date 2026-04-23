@@ -174,7 +174,7 @@ import * as XLSX from 'xlsx';
                     <th style="text-align: center;">
                       <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                         Guía 
-                        <button class="filter-btn" [class.active]="showFilters.tracking" (click)="toggleColumnFilter('tracking')">
+                        <button class="filter-btn" [class.active]="showFilters.tracking" (click)="$event.stopPropagation(); toggleColumnFilter('tracking')">
                           <span class="material-symbols-outlined filter-ico">filter_alt</span>
                         </button>
                       </div>
@@ -187,7 +187,7 @@ import * as XLSX from 'xlsx';
                     <th style="text-align: center;">
                       <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
                         Cliente
-                        <button class="filter-btn" [class.active]="showFilters.cliente" (click)="toggleColumnFilter('cliente')">
+                        <button class="filter-btn" [class.active]="showFilters.cliente" (click)="$event.stopPropagation(); toggleColumnFilter('cliente')">
                           <span class="material-symbols-outlined filter-ico">filter_alt</span>
                         </button>
                       </div>
@@ -196,6 +196,8 @@ import * as XLSX from 'xlsx';
                       }
                     </th>
                   }
+                  @if (isColumnVisible('remitente')) { <th style="text-align: center;">Remitente</th> }
+                  @if (isColumnVisible('destinatario')) { <th style="text-align: center;">Destinatario</th> }
                   @if (isColumnVisible('fecha')) { <th style="text-align: center;">Fecha</th> }
                   @if (isColumnVisible('origen')) { <th style="text-align: center;">Origen</th> }
                   @if (isColumnVisible('destino')) { <th style="text-align: center;">Destino</th> }
@@ -208,17 +210,27 @@ import * as XLSX from 'xlsx';
                   @for (s of filteredShipments; track s.id; let i = $index) {
                     <tr>
                       @if (isColumnVisible('guia')) { 
-                        <td class="font-mono" style="font-size:.78rem;color:var(--accent);">{{ s.tracking_number }}</td> 
+                        <td>
+                          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                            <span class="font-mono" style="font-size:.78rem;color:var(--accent);">{{ s.tracking_number }}</span>
+                            <button (click)="copyToClipboard(s.tracking_number)" class="copy-btn" title="Copiar guía">
+                              <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                            </button>
+                          </div>
+                        </td> 
                       }
                       @if (isColumnVisible('cliente')) { 
                         <td style="font-size:.83rem;">{{ s.company_name || s.client_name }}</td> 
                       }
+                      @if (isColumnVisible('remitente')) { <td style="font-size:.83rem;">{{ s.sender_name }}</td> }
+                      @if (isColumnVisible('destinatario')) { <td style="font-size:.83rem;">{{ s.recipient_name }}</td> }
                       @if (isColumnVisible('fecha')) { <td style="font-size:.8rem; text-align:center;">{{ s.created_at | date:'dd/MM/yy' }}</td> }
                       @if (isColumnVisible('origen')) { <td style="font-size:.83rem; text-align:center;">{{ s.origin_city }}</td> }
                       @if (isColumnVisible('destino')) { <td style="font-size:.83rem; text-align:center;">{{ s.destination_city }}</td> }
                       @if (isColumnVisible('peso')) { <td style="font-size:.83rem; text-align:center;">{{ s.weight_kg }} kg</td> }
                       @if (isColumnVisible('costo')) { <td style="font-size:.83rem;font-weight:600;color:var(--accent); text-align:center;">Q{{ s.estimated_cost | number:'1.2-2' }}</td> }
                       @if (isColumnVisible('estado')) { <td style="text-align:center;"><app-status-badge [status]="s.current_status" /></td> }
+
                       
                       @if (isColumnVisible('acciones')) {
                         <td>
@@ -438,11 +450,24 @@ import * as XLSX from 'xlsx';
     }
     .options-item:hover, .dropdown-item:hover { background: var(--primary); }
 
-    .nx-table-wrap { overflow-x: auto; min-height: 300px; }
-    .search-empty { padding: 4rem 2rem; text-align: center; }
-    .robot-icon { font-size: 5rem; color: var(--primary); }
+    .actions-column { 
+      width: 250px; 
+      min-width: 250px;
+      text-align: left !important;
+      padding-left: 10px !important;
+    }
+
+    .copy-btn {
+      background: none; border: none; color: #94a3b8; cursor: pointer;
+      padding: 4px; display: flex; align-items: center; border-radius: 4px;
+      transition: all 0.2s; opacity: 0;
+    }
+    tr:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
+    .copy-btn:active { transform: scale(0.9); }
 
     .dropdown-menu {
+
       position: absolute; right: 0; top: calc(100% + 5px); z-index: 150;
       background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4); min-width: 200px; padding: 6px;
@@ -502,6 +527,8 @@ export class EnviosAdminComponent implements OnInit {
   columnConfigs = [
     { key: 'guia', label: 'Guía', visible: true },
     { key: 'cliente', label: 'Cliente', visible: true },
+    { key: 'remitente', label: 'Remitente', visible: false },
+    { key: 'destinatario', label: 'Destinatario', visible: false },
     { key: 'fecha', label: 'Fecha', visible: true },
     { key: 'origen', label: 'Origen', visible: true },
     { key: 'destino', label: 'Destino', visible: true },
@@ -510,6 +537,7 @@ export class EnviosAdminComponent implements OnInit {
     { key: 'estado', label: 'Estado', visible: true },
     { key: 'acciones', label: 'Acciones', visible: true }
   ];
+
 
   monthsShort = [
     { value: 1, label: 'Ene' }, { value: 2, label: 'Feb' }, { value: 3, label: 'Mar' },
@@ -752,4 +780,11 @@ export class EnviosAdminComponent implements OnInit {
     const l: any = { PENDIENTE: 'Pendiente', RECOGIDO: 'Recogido', EN_TRANSITO: 'En tránsito', EN_DESTINO: 'En destino', ENTREGADO: 'Entregado', CANCELADO: 'Cancelado' };
     return l[s] || s;
   }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      // Feedback opcional sin diseño
+    });
+  }
 }
+
