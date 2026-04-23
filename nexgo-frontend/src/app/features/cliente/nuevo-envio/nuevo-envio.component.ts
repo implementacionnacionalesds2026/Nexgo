@@ -250,7 +250,7 @@ import Swal from 'sweetalert2';
                         </div>
                         <div class="nx-form-group">
                           <label>Cant. Piezas</label>
-                          <input class="nx-input" type="number" [(ngModel)]="form.quantity" />
+                          <input class="nx-input" type="number" min="1" max="35" onkeypress="return event.charCode >= 48 && event.charCode <= 57" (input)="validateQuantity($event)" [(ngModel)]="form.quantity" />
                         </div>
                         <div class="nx-form-group" style="padding-top: 1.8rem;">
                           <label style="display:flex; align-items:center; gap: 8px; cursor:pointer;">
@@ -496,7 +496,7 @@ import Swal from 'sweetalert2';
                 <div style="border: 2.5px solid black; width: 100%; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white;">
                   <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1; margin-bottom: 3px;">Piezas</div>
                   <div style="font-size: 20px; font-weight: 900; color: black; display: flex; gap: 8px; align-items: center;">
-                    <span>01</span>
+                    <span>{{ currentPieceCount | number:'2.0' }}</span>
                     <span style="font-size: 10px;">DE</span>
                     <span>{{ form.quantity | number:'2.0' }}</span>
                   </div>
@@ -1223,12 +1223,12 @@ export class NuevoEnvioComponent {
           this.currentPieceCount = i;
           this.cdr.detectChanges();
 
-          // Esperar renderizado del número de pieza
-          await new Promise(resolve => setTimeout(resolve, 250));
+          // Esperar renderizado del número de pieza (yield to browser)
+          await new Promise(resolve => setTimeout(resolve, 5));
 
           const element = this.guiaContainer.nativeElement;
           const canvas = await html2canvas(element, {
-            scale: 4,
+            scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
             onclone: (clonedDoc) => {
@@ -1240,9 +1240,9 @@ export class NuevoEnvioComponent {
             }
           });
 
-          const imgData = canvas.toDataURL('image/png');
+          const imgData = canvas.toDataURL('image/jpeg', 0.8);
           if (i > 1) doc.addPage([100, 100], 'p');
-          doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
+          doc.addImage(imgData, 'JPEG', 0, 0, 100, 100);
           console.log(`Bulto ${i} procesado`);
         }
 
@@ -1323,6 +1323,22 @@ export class NuevoEnvioComponent {
       val = 1;
     }
     this.form.recipientZone = val.toString();
+    event.target.value = val.toString();
+  }
+
+  validateQuantity(event: any) {
+    let val = parseInt(event.target.value, 10);
+    if (isNaN(val)) {
+      this.form.quantity = 1;
+      event.target.value = '1';
+      return;
+    }
+    if (val > 35) {
+      val = 35;
+    } else if (val < 1) {
+      val = 1;
+    }
+    this.form.quantity = val;
     event.target.value = val.toString();
   }
 }

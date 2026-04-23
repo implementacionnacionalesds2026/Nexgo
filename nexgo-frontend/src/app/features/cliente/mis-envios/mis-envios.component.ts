@@ -365,9 +365,9 @@ import * as XLSX from 'xlsx';
                 <div style="border: 2.5px solid black; width: 100%; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white;">
                   <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1; margin-bottom: 3px;">Piezas</div>
                   <div style="font-size: 20px; font-weight: 900; color: black; display: flex; gap: 8px; align-items: center;">
-                    <span>{{ currentPieceCount }}</span>
+                    <span #pieceCounter>{{ currentPieceCount | number:'2.0' }}</span>
                     <span style="font-size: 10px;">DE</span>
-                    <span>{{ totalPiecesCount }}</span>
+                    <span>{{ totalPiecesCount | number:'2.0' }}</span>
                   </div>
                 </div>
               </div>
@@ -806,6 +806,7 @@ import * as XLSX from 'xlsx';
 export class MisEnviosComponent implements OnInit {
   @ViewChild('guiaContainer') guiaContainer!: ElementRef;
   @ViewChild('manifestContainer') manifestContainer!: ElementRef;
+  @ViewChild('pieceCounter') pieceCounter?: ElementRef;
 
   shipments: any[] = [];
   total = 0;
@@ -1185,15 +1186,19 @@ export class MisEnviosComponent implements OnInit {
         */
 
         for (let i = 1; i <= this.totalPiecesCount; i++) {
-          this.currentPieceCount = i;
-          this.cdr.detectChanges();
+          if (this.pieceCounter) {
+            this.pieceCounter.nativeElement.innerText = i.toString().padStart(2, '0');
+          } else {
+            this.currentPieceCount = i;
+            this.cdr.detectChanges();
+          }
 
-          // Esperar renderizado del número de pieza
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Esperar renderizado del número de pieza (yield to browser)
+          await new Promise(resolve => setTimeout(resolve, 5));
 
           const element = this.guiaContainer.nativeElement;
           const canvas = await html2canvas(element, {
-            scale: 3.5,
+            scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
@@ -1206,9 +1211,9 @@ export class MisEnviosComponent implements OnInit {
             }
           });
 
-          const imgData = canvas.toDataURL('image/png');
+          const imgData = canvas.toDataURL('image/jpeg', 0.8);
           if (i > 1) doc.addPage([100, 100], 'p');
-          doc.addImage(imgData, 'PNG', 0, 0, 100, 100);
+          doc.addImage(imgData, 'JPEG', 0, 0, 100, 100);
           console.log(`Bulto ${i} de ${this.totalPiecesCount} procesado`);
         }
 

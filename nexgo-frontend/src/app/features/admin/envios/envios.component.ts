@@ -386,9 +386,9 @@ import * as XLSX from 'xlsx';
                 <div style="border: 2.5px solid black; width: 100%; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white;">
                   <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1; margin-bottom: 3px;">Piezas</div>
                   <div style="font-size: 20px; font-weight: 900; color: black; display: flex; gap: 8px; align-items: center;">
-                    <span>{{ currentPieceCount }}</span>
+                    <span #pieceCounter>{{ currentPieceCount | number:'2.0' }}</span>
                     <span style="font-size: 10px;">DE</span>
-                    <span>{{ totalPiecesCount }}</span>
+                    <span>{{ totalPiecesCount | number:'2.0' }}</span>
                   </div>
                 </div>
               </div>
@@ -590,6 +590,7 @@ import * as XLSX from 'xlsx';
 export class EnviosAdminComponent implements OnInit {
   @ViewChild('guiaContainer') guiaContainer!: ElementRef;
   @ViewChild('manifestContainer') manifestContainer!: ElementRef;
+  @ViewChild('pieceCounter') pieceCounter!: ElementRef;
 
   shipments: any[] = [];
   loading = true;
@@ -855,12 +856,16 @@ export class EnviosAdminComponent implements OnInit {
         const element = this.guiaContainer.nativeElement;
 
         for (let i = 1; i <= this.totalPiecesCount; i++) {
-          this.currentPieceCount = i;
-          this.cdr.detectChanges();
-          await new Promise(r => setTimeout(r, 200));
+          if (this.pieceCounter) {
+            this.pieceCounter.nativeElement.innerText = i.toString().padStart(2, '0');
+          } else {
+            this.currentPieceCount = i;
+            this.cdr.detectChanges();
+          }
+          await new Promise(r => setTimeout(r, 5));
           const canvas = await html2canvas(element, { scale: 2 });
           if (i > 1) doc.addPage();
-          doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 100, 100);
+          doc.addImage(canvas.toDataURL('image/jpeg', 0.8), 'JPEG', 0, 0, 100, 100);
         }
         window.open(URL.createObjectURL(doc.output('blob')), '_blank');
       } finally {
