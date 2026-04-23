@@ -140,7 +140,7 @@ import Swal from 'sweetalert2';
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Teléfono * (+502)</label>
-                          <input class="nx-input" type="tel" maxlength="8" minlength="8" pattern="[0-9]{8}" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="46402539" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
+                          <input class="nx-input" type="tel" maxlength="8" minlength="8" pattern="[0-9]{8}" onkeypress="return event.charCode >= 48 && event.charCode <= 57" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="12345678" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
                         </div>
                         <div class="nx-form-group">
                           <label>Correo Electrónico</label>
@@ -154,7 +154,7 @@ import Swal from 'sweetalert2';
                         </div>
                         <div class="nx-form-group">
                           <label>Dirección de Recolección *</label>
-                          <input class="nx-input" maxlength="200" [class.error]="attemptedNext && !form.senderAddress" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
+                          <input class="nx-input" maxlength="75" [class.error]="attemptedNext && !form.senderAddress" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
                         </div>
                       </div>
                     </div>
@@ -177,11 +177,11 @@ import Swal from 'sweetalert2';
                     <div class="card-body">
                       <div class="nx-form-group">
                         <label>Nombre del Destinatario *</label>
-                        <input class="nx-input" [class.error]="attemptedNext && !form.recipientName" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
+                        <input class="nx-input" maxlength="50" [class.error]="attemptedNext && !form.recipientName" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
                       </div>
                       <div class="nx-form-group">
                         <label>Teléfono de contacto * (+502)</label>
-                        <input class="nx-input" type="tel" maxlength="8" minlength="8" pattern="[0-9]{8}" [class.error]="attemptedNext && !form.recipientPhone" [(ngModel)]="form.recipientPhone" placeholder="46402539" />
+                        <input class="nx-input" type="tel" maxlength="8" minlength="8" pattern="[0-9]{8}" onkeypress="return event.charCode >= 48 && event.charCode <= 57" [class.error]="attemptedNext && !form.recipientPhone" [(ngModel)]="form.recipientPhone" placeholder="12345678" />
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
@@ -206,7 +206,7 @@ import Swal from 'sweetalert2';
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Zona (Opcional)</label>
-                          <input class="nx-input" type="number" min="1" max="35" [(ngModel)]="form.recipientZone" placeholder="Ej: 1" />
+                          <input class="nx-input" type="number" min="1" max="35" onkeypress="return event.charCode >= 48 && event.charCode <= 57" (input)="validateZone($event)" [(ngModel)]="form.recipientZone" placeholder="Ej: 1" />
                         </div>
                         <div class="nx-form-group">
                           <label>Referencia / Comentarios (Opcional)</label>
@@ -1308,5 +1308,21 @@ export class NuevoEnvioComponent {
 
   getDeptCode(): string {
     return (this.form.recipientDepartment || 'GUA').toString().substring(0, 3).toUpperCase();
+  }
+
+  validateZone(event: any) {
+    let val = parseInt(event.target.value, 10);
+    if (isNaN(val)) {
+      this.form.recipientZone = '';
+      event.target.value = '';
+      return;
+    }
+    if (val > 35) {
+      val = 35;
+    } else if (val < 1) {
+      val = 1;
+    }
+    this.form.recipientZone = val.toString();
+    event.target.value = val.toString();
   }
 }
