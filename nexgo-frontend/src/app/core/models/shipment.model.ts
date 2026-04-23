@@ -127,6 +127,7 @@ export interface CreateShipmentRequest {
 
   distanceKm?: number;
   pricingRuleId?: number;
+  clientId?: string;
 }
 
 export interface CotizacionResult {

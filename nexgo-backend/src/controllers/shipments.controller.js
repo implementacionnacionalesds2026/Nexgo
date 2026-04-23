@@ -12,7 +12,9 @@ const createShipment = async (req, res, next) => {
       return res.status(422).json({ success: false, message: 'Datos inválidos', errors: errors.array() });
     }
 
-    const clientId = req.user.role === 'ADMIN' ? (req.body.clientId || req.user.id) : req.user.id;
+    // Si es ADMIN o GESTOR_ADMINISTRATIVO, puede crear envíos para otros clientes
+    const isPrivileged = ['ADMIN', 'GESTOR_ADMINISTRATIVO'].includes(req.user.role);
+    const clientId = isPrivileged ? (req.body.clientId || req.user.id) : req.user.id;
     const shipment = await shipmentsService.createShipment(req.body, clientId);
     return successResponse(res, shipment, 'Envío registrado exitosamente', 201);
   } catch (err) {

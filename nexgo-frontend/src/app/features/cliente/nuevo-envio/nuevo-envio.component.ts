@@ -1041,6 +1041,16 @@ export class NuevoEnvioComponent {
     // Asignar automáticamente el monto calculado como el monto a cobrar
     // Si el gestor activó modo manual, usamos su valor
     this.form.totalPaymentAmount = this.isManualPrice ? this.manualPriceValue : this.currentEstimatedNexgoCost;
+    
+    // Asignar regla de tarifa si existe
+    if (this.userRule) {
+      this.form.pricingRuleId = this.userRule.id;
+    }
+
+    // Si es gestor y seleccionó un cliente, lo mandamos
+    if (this.isGestor && this.selectedClientId) {
+      this.form.clientId = this.selectedClientId;
+    }
 
     this.saving = true;
     this.error = '';

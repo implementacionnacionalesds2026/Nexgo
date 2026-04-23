@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// Crear envío (CLIENTE, ADMIN, GESTOR y Tiers de Cliente)
-router.post('/', authorize('CLIENTE', 'ADMIN', 'GESTOR_ADMINISTRATIVO', 'FULL_CUSTOMER', 'GOLD_CUSTOMER', 'SILVER_CUSTOMER', 'BRONZE_CUSTOMER'), shipmentsCtrl.createShipment);
+// Crear envío (ADMIN, GESTOR y todos los niveles de Cliente)
+router.post('/', authorize('ADMIN', 'GESTOR_ADMINISTRATIVO', 'CLIENTE', 'SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'), shipmentsCtrl.createShipment);
 
 // Listar envíos (todos los roles, filtrado internamente por rol)
 router.get('/', shipmentsCtrl.getShipments);
