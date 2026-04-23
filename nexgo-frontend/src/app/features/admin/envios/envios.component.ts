@@ -51,24 +51,22 @@ import * as XLSX from 'xlsx';
 
                   @if (isMonthMenuOpen) {
                     <div class="month-picker-dropdown animate-scale-up">
-                      <div class="picker-header" style="flex-direction: column; gap: 12px; border-bottom: none; margin-bottom: 8px;">
-                        <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                           <div style="display: flex; align-items: center; gap: 8px;">
-                              @if (!isDayView || dateSelectionMode === 'MONTH') {
-                                <button class="nav-btn" (click)="changeTempYear(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
-                                <span class="picker-year">{{ tempYear }}</span>
-                                <button class="nav-btn" (click)="changeTempYear(1)"><span class="material-symbols-outlined">chevron_right</span></button>
-                              } @else {
-                                <button class="nav-btn" (click)="changeTempMonth(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
-                                <span class="picker-year" style="font-size: 0.9rem; min-width: 80px; text-align: center;">{{ getMonthName(tempMonth) }} {{ tempYear }}</span>
-                                <button class="nav-btn" (click)="changeTempMonth(1)"><span class="material-symbols-outlined">chevron_right</span></button>
-                              }
-                           </div>
-                           <div class="picker-mode-toggle">
-                              <button [class.active]="dateSelectionMode === 'MONTH'" (click)="setPickerMode('MONTH')">Mes</button>
-                              <button [class.active]="dateSelectionMode === 'DAY'" (click)="setPickerMode('DAY')">Día</button>
-                           </div>
-                        </div>
+                      <div class="picker-header">
+                         <div style="display: flex; align-items: center; gap: 8px;">
+                            @if (!isDayView || dateSelectionMode === 'MONTH') {
+                              <button class="nav-btn" (click)="changeTempYear(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
+                              <span class="picker-year">{{ tempYear }}</span>
+                              <button class="nav-btn" (click)="changeTempYear(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                            } @else {
+                              <button class="nav-btn" (click)="changeTempMonth(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
+                              <span class="picker-year" style="font-size: 0.9rem; min-width: 80px; text-align: center;">{{ getMonthName(tempMonth) }} {{ tempYear }}</span>
+                              <button class="nav-btn" (click)="changeTempMonth(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+                            }
+                         </div>
+                         <div class="picker-mode-toggle">
+                            <button [class.active]="dateSelectionMode === 'MONTH'" (click)="setPickerMode('MONTH')">Mes</button>
+                            <button [class.active]="dateSelectionMode === 'DAY'" (click)="setPickerMode('DAY')">Día</button>
+                         </div>
                       </div>
 
                       @if (!isDayView || dateSelectionMode === 'MONTH') {
@@ -97,7 +95,7 @@ import * as XLSX from 'xlsx';
                 </div>
 
                 <!-- 2. Menu de Opciones -->
-                <div class="options-dropdown-container">
+                <div class="options-dropdown-container" (click)="$event.stopPropagation()">
                   <button class="nx-btn btn-options" (click)="toggleOptionsMenu($event)" [class.active]="isOptionsMenuOpen">
                     <span class="material-symbols-outlined">settings</span>
                     Acciones
@@ -422,6 +420,8 @@ import * as XLSX from 'xlsx';
 
     /* Date Picker & Options UI ported from MisEnvios */
     .table-tools { display: flex; align-items: center; gap: 12px; }
+    .date-picker-container, .options-dropdown-container { position: relative; }
+    
     .btn-date-picker, .btn-options { 
       background: #5d1d88ff !important; border: 1px solid rgba(255,255,255,0.2) !important; 
       color: white !important; font-weight: 700; height: 45px; padding: 0 16px; border-radius: 12px !important;
@@ -430,25 +430,49 @@ import * as XLSX from 'xlsx';
     .btn-date-picker:hover, .btn-options:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
     .month-picker-dropdown, .options-menu {
-      position: absolute; top: calc(100% + 8px); right: 0; z-index: 130;
+      position: absolute; top: calc(100% + 8px); right: 0; z-index: 500;
       background: #111827; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6); padding: 12px; min-width: 240px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6); padding: 16px; min-width: 280px;
       backdrop-filter: blur(20px); transform-origin: top right;
     }
     .month-picker-dropdown { left: 0; transform-origin: top left; }
 
-    .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .month-item, .day-item {
-      background: rgba(255,255,255,0.03); border: 1px solid transparent; color: #9ca3af; 
-      padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; text-align: center;
+    .picker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .nav-btn { 
+      background: rgba(255,255,255,0.05); border: none; color: white; 
+      width: 32px; height: 32px; border-radius: 8px; display: flex; 
+      align-items: center; justify-content: center; cursor: pointer;
     }
-    .month-item.selected, .day-item.selected { background: var(--primary); color: white; }
+    .nav-btn:hover { background: rgba(255,255,255,0.1); }
+    .picker-year { font-weight: 800; color: white; font-size: 1.1rem; min-width: 60px; text-align: center; }
+
+    .picker-mode-toggle { 
+      background: rgba(0,0,0,0.3); padding: 4px; border-radius: 10px; display: flex; gap: 4px;
+    }
+    .picker-mode-toggle button {
+      background: none; border: none; color: #94a3b8; padding: 6px 12px; 
+      border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .picker-mode-toggle button.active { background: var(--primary); color: white; }
+
+    .month-grid, .day-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .day-grid { grid-template-columns: repeat(7, 1fr); }
+    
+    .month-item, .day-item {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; 
+      padding: 10px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; text-align: center;
+      transition: all 0.2s; font-weight: 600;
+    }
+    .month-item:hover, .day-item:hover { background: rgba(255,255,255,0.08); color: white; border-color: rgba(255,255,255,0.1); }
+    .month-item.selected, .day-item.selected { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
 
     .options-item, .dropdown-item {
-      display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px;
-      color: white; font-size: 0.85rem; cursor: pointer; border-radius: 8px; border: none; background: none; text-align: left;
+      display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px;
+      color: #e2e8f0; font-size: 0.9rem; cursor: pointer; border-radius: 12px; border: none; background: none; text-align: left;
+      transition: all 0.2s;
     }
-    .options-item:hover, .dropdown-item:hover { background: var(--primary); }
+    .options-item:hover, .dropdown-item:hover { background: rgba(255,255,255,0.05); color: white; }
+    .options-item .material-symbols-outlined { color: var(--primary); }
 
     .actions-column { 
       width: 250px; 
@@ -481,6 +505,21 @@ import * as XLSX from 'xlsx';
     .filter-btn { background: none; border: none; color: inherit; cursor: pointer; display: flex; align-items: center; }
     .filter-btn.active { color: var(--primary); }
     .filter-ico { font-size: 14px; }
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .header-actions-row { flex-direction: column; align-items: stretch; }
+      .search-box { width: 100%; }
+      .table-tools { justify-content: space-between; }
+    }
+    @media (max-width: 480px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .nx-kpi-card { padding: 1rem !important; }
+      .kpi-value { font-size: 1.5rem !important; }
+    }
   `]
 })
 export class EnviosAdminComponent implements OnInit {
@@ -571,28 +610,19 @@ export class EnviosAdminComponent implements OnInit {
     });
   }
 
-  get filteredShipments(): any[] {
+  get baseFilteredShipments(): any[] {
     if (!this.shipments) return [];
     let result = [...this.shipments];
 
-    // Status Filter (KPIs)
-    if (this.activeStatusFilter) {
-      result = result.filter(s => s.current_status === this.activeStatusFilter);
-    }
-
     // Date Filter (Day level if selected)
     if (this.selectedDay) {
-      result = result.filter(s => new Date(s.created_at).getDate() === this.selectedDay);
-    }
-
-    // Column Filters
-    if (this.columnFilters.tracking) {
-      const q = this.columnFilters.tracking.toLowerCase();
-      result = result.filter(s => s.tracking_number?.toLowerCase().includes(q));
-    }
-    if (this.columnFilters.cliente) {
-      const q = this.columnFilters.cliente.toLowerCase();
-      result = result.filter(s => (s.company_name || s.client_name)?.toLowerCase().includes(q));
+      // Usar local date para comparar con el día seleccionado
+      result = result.filter(s => {
+        const d = new Date(s.created_at);
+        return d.getDate() === this.selectedDay && 
+               (d.getMonth() + 1) === this.selectedMonth && 
+               d.getFullYear() === this.selectedYear;
+      });
     }
 
     // Global Search
@@ -605,6 +635,27 @@ export class EnviosAdminComponent implements OnInit {
         s.destination_city?.toLowerCase().includes(q) ||
         s.sender_name?.toLowerCase().includes(q)
       );
+    }
+
+    return result;
+  }
+
+  get filteredShipments(): any[] {
+    let result = this.baseFilteredShipments;
+
+    // Status Filter (KPIs)
+    if (this.activeStatusFilter) {
+      result = result.filter(s => s.current_status === this.activeStatusFilter);
+    }
+
+    // Column Filters
+    if (this.columnFilters.tracking) {
+      const q = this.columnFilters.tracking.toLowerCase();
+      result = result.filter(s => s.tracking_number?.toLowerCase().includes(q));
+    }
+    if (this.columnFilters.cliente) {
+      const q = this.columnFilters.cliente.toLowerCase();
+      result = result.filter(s => (s.company_name || s.client_name)?.toLowerCase().includes(q));
     }
 
     return result;
@@ -692,7 +743,7 @@ export class EnviosAdminComponent implements OnInit {
   }
 
   countByStatus(status: string): number {
-    return this.shipments.filter(s => s.current_status === status).length;
+    return this.baseFilteredShipments.filter(s => s.current_status === status).length;
   }
 
   isColumnVisible(k: string) { return this.columnConfigs.find(c => c.key === k)?.visible; }
