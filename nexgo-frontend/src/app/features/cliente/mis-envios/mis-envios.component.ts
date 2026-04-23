@@ -1215,8 +1215,8 @@ export class MisEnviosComponent implements OnInit {
       try {
         const tracking = s.tracking_number || s.trackingNumber || 'ND0000000';
 
-        // Esperar renderizado inicial del contenedor
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Esperar renderizado inicial del contenedor (mínimo)
+        await new Promise(resolve => setTimeout(resolve, 50));
 
         // Generar el código de barras una vez (asegurando que el elemento esté en el DOM)
         /*
@@ -1239,14 +1239,15 @@ export class MisEnviosComponent implements OnInit {
           }
 
           // Esperar renderizado del número de pieza (yield to browser)
-          await new Promise(resolve => setTimeout(resolve, 5));
+          await new Promise(resolve => requestAnimationFrame(resolve));
 
           const element = this.guiaContainer.nativeElement;
           const canvas = await html2canvas(element, {
-            scale: 2,
+            scale: 1.5,
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
+            ignoreElements: (el) => el.classList.contains('nx-layout'),
             onclone: (clonedDoc) => {
               const el = clonedDoc.querySelector('.print-guia-container') as HTMLElement;
               if (el) {

@@ -27,7 +27,7 @@ import Swal from 'sweetalert2';
               <span class="material-symbols-outlined icon-inside">print</span>
             </div>
             <h3 class="loader-title">Procesando Guías</h3>
-            <p class="loader-subtitle">Por favor espera, no cierres esta ventana...</p>
+            <p class="loader-subtitle">Por favor espera un momento...</p>
           </div>
         </div>
       }
