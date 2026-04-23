@@ -11,7 +11,7 @@ export const roleGuard = (...allowedRoles: string[]): CanActivateFn => {
 
     if (!user || !allowedRoles.includes(user.role)) {
       // Redirigir al dashboard del rol actual
-      if (user?.role === 'ADMIN') {
+      if (user?.role === 'ADMIN' || user?.role === 'GESTOR_ADMINISTRATIVO') {
         router.navigate(['/admin/dashboard']);
       } else if (user?.role && ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(user.role)) {
         router.navigate(['/cliente/mis-envios']);

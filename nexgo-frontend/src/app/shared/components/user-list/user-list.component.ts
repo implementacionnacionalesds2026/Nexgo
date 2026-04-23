@@ -562,12 +562,13 @@ export class UserListComponent implements OnInit {
   }
 
   isInternalRole() {
-    return this.form.roleId == 1 || this.form.roleId == 5;
+    return this.form.roleId == 1 || this.form.roleId == 5 || this.form.roleId == 6;
   }
 
   getRoleIcon(role: string): string {
     const r = role?.toUpperCase() || '';
-    if (r.includes('ADMIN')) return 'admin_panel_settings';
+    if (r.includes('ADMIN') && !r.includes('GESTOR')) return 'admin_panel_settings';
+    if (r.includes('GESTOR')) return 'manage_accounts';
     if (r.includes('REPARTIDOR')) return 'delivery_dining';
     if (r.includes('ORO')) return 'workspace_premium';
     if (r.includes('PLATA')) return 'military_tech';
@@ -577,7 +578,8 @@ export class UserListComponent implements OnInit {
 
   getRoleColor(role: string): string {
     const r = role?.toUpperCase() || '';
-    if (r.includes('ADMIN')) return '#818cf8';
+    if (r.includes('ADMIN') && !r.includes('GESTOR')) return '#818cf8';
+    if (r.includes('GESTOR')) return '#10b981';
     if (r.includes('REPARTIDOR')) return '#fb923c';
     if (r.includes('FULL') || r.includes('ORO')) return '#facc15';
     if (r.includes('AVERAGE') || r.includes('PLATA')) return '#94a3b8';
@@ -588,6 +590,8 @@ export class UserListComponent implements OnInit {
   getRoleLabel(role: string): string {
     const labels: any = {
       ADMIN: 'Admin',
+      GESTOR_ADMINISTRATIVO: 'Gestor Administrativo',
+      GESTOR_ADMIN: 'Gestor Administrativo',
       SMALL_CUSTOMER: 'Cliente Bronce',
       AVERAGE_CUSTOMER: 'Cliente Plata',
       FULL_CUSTOMER: 'Cliente Oro',

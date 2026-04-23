@@ -121,14 +121,26 @@ import Swal from 'sweetalert2';
                       <span class="step-indicator">Paso 1 de 4</span>
                     </div>
                     <div class="card-body">
+                      @if (isGestor) {
+                        <div class="nx-form-group" style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.2); margin-bottom: 1.5rem;">
+                          <label style="color: var(--primary); font-weight: 800;">SELECCIONAR CLIENTE (MODO GESTOR)</label>
+                          <select class="nx-input" [(ngModel)]="selectedClientId" (change)="onClientSelect(selectedClientId)">
+                            <option value="">-- Seleccionar Cliente --</option>
+                            @for (u of allUsers; track u.id) {
+                              <option [value]="u.id">{{ u.companyName || u.name }} ({{ u.username }})</option>
+                            }
+                          </select>
+                        </div>
+                      }
+
                       <div class="nx-form-group">
                         <label>Nombre del Remitente *</label>
-                        <input class="nx-input" [class.error]="attemptedNext && !form.senderName" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
+                        <input class="nx-input" [class.error]="attemptedNext && !form.senderName" [(ngModel)]="form.senderName" placeholder="Nombre completo o Empresa" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Teléfono *</label>
-                          <input class="nx-input" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);" />
+                          <input class="nx-input" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
                         </div>
                         <div class="nx-form-group">
                           <label>Ciudad de Origen</label>
@@ -314,6 +326,29 @@ import Swal from 'sweetalert2';
                               <b>Total Peso:</b> {{ (form.quantity || 1) * (form.weightKg || 0) }} LB
                             </div>
                           </div>
+                        </div>
+                      }
+
+                      @if (isGestor) {
+                        <div class="nx-card" style="margin-bottom: 2rem; padding: 1.25rem; border: 1px solid var(--accent-2);">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                            <span style="font-weight: 700; color: var(--accent-2);">MODO MANUAL (GESTOR)</span>
+                            <label class="nx-switch">
+                              <input type="checkbox" [(ngModel)]="isManualPrice">
+                              <span class="slider round"></span>
+                            </label>
+                          </div>
+                          
+                          @if (isManualPrice) {
+                            <div class="nx-form-group animate-fade-in">
+                              <label>Monto Personalizado a Cobrar (Q)</label>
+                              <div class="input-with-icon">
+                                <span class="currency-prefix">Q</span>
+                                <input class="nx-input" type="number" [(ngModel)]="manualPriceValue" placeholder="0.00" style="padding-left: 2.5rem; border-color: var(--accent-2);" />
+                              </div>
+                              <small style="color: var(--text-muted);">Este monto ignorará la tarifa calculada y será el cobro final.</small>
+                            </div>
+                          }
                         </div>
                       }
 
@@ -780,6 +815,37 @@ import Swal from 'sweetalert2';
     .m-section-header { background: #e5e7eb !important; font-weight: 800; text-align: center; font-size: 9px; border-top: 2px solid black !important; border-bottom: 2px solid black !important; color: black !important; }
     .m-sig-box { height: 60px; border-top: 1px solid black !important; margin-top: 20px; text-align: center; font-size: 8px; font-weight: 700; color: black !important; padding-top: 40px; flex: 1; }
 
+    /* GESTOR SWITCH */
+    .nx-switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    .nx-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .4s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+    }
+    input:checked + .slider { background-color: var(--accent-2); }
+    input:focus + .slider { box-shadow: 0 0 1px var(--accent-2); }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .slider.round { border-radius: 24px; }
+    .slider.round:before { border-radius: 50%; }
+
     .copied-badge {
       position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
       background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px;
@@ -800,6 +866,9 @@ export class NuevoEnvioComponent {
   currentStep = 1;
   copied = false;
   generatingPdf = false;
+  isGestor = false;
+  allUsers: any[] = [];
+  selectedClientId: string = '';
 
   steps = [
     { id: 1, title: 'Remitente', icon: 'person', component: 'sender' },
@@ -844,28 +913,49 @@ export class NuevoEnvioComponent {
   ngOnInit() {
     const user = this.auth.currentUser();
     if (user) {
+      this.isGestor = user.role === 'GESTOR_ADMINISTRATIVO' || user.role === 'ADMIN';
       this.form.senderName = user.companyName || user.name;
       this.form.senderPhone = user.phone || '';
       this.form.originCity = 'Guatemala';
 
-      // Cargar tarifa para mostrar costos estimados
-      this.admin.getPricingRules().subscribe((res: any) => {
-        if (res.success) {
-          const rules = res.data as any[];
-          // Prioridad personalizada -> Fallback Nivel
-          let rule = rules.find(r => r.user_id === user.id && r.is_active);
-          if (!rule) {
-            rule = rules.find(r => r.role_id == user.role_id && !r.user_id && r.is_active);
-          }
-          this.userRule = rule;
-        }
-      });
-    }
+      if (this.isGestor) {
+        this.loadAllUsers();
+      }
 
-    if (this.form.recipientDepartment) {
-      this.onDepartmentChange();
+      this.loadPricingRules(user);
     }
   }
+
+  loadAllUsers() {
+    this.admin.getUsers({}).subscribe((res: any) => {
+      this.allUsers = res.data.data;
+    });
+  }
+
+  loadPricingRules(user: any) {
+    this.admin.getPricingRules().subscribe((res: any) => {
+      if (res.success) {
+        const rules = res.data as any[];
+        let rule = rules.find(r => r.user_id === user.id && r.is_active);
+        if (!rule) {
+          rule = rules.find(r => r.role_id == user.role_id && !r.user_id && r.is_active);
+        }
+        this.userRule = rule;
+      }
+    });
+  }
+
+  onClientSelect(userId: string) {
+    const selectedUser = this.allUsers.find(u => u.id === userId);
+    if (selectedUser) {
+      this.form.senderName = selectedUser.companyName || selectedUser.name;
+      this.form.senderPhone = selectedUser.phone || '';
+      this.loadPricingRules(selectedUser);
+    }
+  }
+
+  isManualPrice = false;
+  manualPriceValue = 0;
 
   get currentEstimatedNexgoCost(): number {
     if (!this.userRule) return 0;
@@ -949,7 +1039,8 @@ export class NuevoEnvioComponent {
     this.form.destinationCity = this.form.recipientMunicipality || '';
     
     // Asignar automáticamente el monto calculado como el monto a cobrar
-    this.form.totalPaymentAmount = this.currentEstimatedNexgoCost;
+    // Si el gestor activó modo manual, usamos su valor
+    this.form.totalPaymentAmount = this.isManualPrice ? this.manualPriceValue : this.currentEstimatedNexgoCost;
 
     this.saving = true;
     this.error = '';

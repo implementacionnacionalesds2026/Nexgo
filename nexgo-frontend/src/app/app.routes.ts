@@ -17,7 +17,7 @@ export const routes: Routes = [
   // ── ADMIN ──────────────────────────────────────────────────
   {
     path: 'admin',
-    canActivate: [authGuard, roleGuard('ADMIN')],
+    canActivate: [authGuard, roleGuard('ADMIN', 'GESTOR_ADMINISTRATIVO')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -50,24 +50,29 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/reportes/reportes.component').then((m) => m.ReportesComponent),
       },
+      {
+        path: 'repartidores',
+        loadComponent: () =>
+          import('./features/admin/repartidores/repartidores-list.component').then((m) => m.RepartidoresListComponent),
+      },
     ],
   },
 
   // ── CLIENTE ────────────────────────────────────────────────
   {
     path: 'cliente',
-    canActivate: [authGuard, roleGuard('SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN')],
+    canActivate: [authGuard, roleGuard('SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN', 'GESTOR_ADMINISTRATIVO')],
     children: [
       { path: '', redirectTo: 'mis-envios', pathMatch: 'full' },
       {
         path: 'cotizador',
-        canActivate: [roleGuard('AVERAGE_CUSTOMER', 'ADMIN')],
+        canActivate: [roleGuard('AVERAGE_CUSTOMER', 'ADMIN', 'GESTOR_ADMINISTRATIVO')],
         loadComponent: () =>
           import('./features/cliente/cotizador/cotizador.component').then((m) => m.CotizadorComponent),
       },
       {
         path: 'tarifas',
-        canActivate: [roleGuard('SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN')],
+        canActivate: [roleGuard('SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'ADMIN', 'GESTOR_ADMINISTRATIVO')],
         loadComponent: () =>
           import('./features/cliente/tarifas/tarifas.component').then((m) => m.ClientTarifasComponent),
       },

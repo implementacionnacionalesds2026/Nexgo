@@ -10,8 +10,8 @@ router.use(authenticate);
 // Public/Client view: Solo lectura
 router.get('/', pricingCtrl.getPricingRules);
 
-// Solo Admin: Gestión
-router.use(authorize('ADMIN'));
+// Solo Admin y Gestor: Gestión
+router.use(authorize('ADMIN', 'GESTOR_ADMINISTRATIVO'));
 router.post('/',        pricingCtrl.createPricingRule);
 router.get('/:id/history', pricingCtrl.getPricingHistory);
 router.put('/:id',      pricingCtrl.updatePricingRule);

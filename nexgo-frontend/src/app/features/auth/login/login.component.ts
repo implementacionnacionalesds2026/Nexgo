@@ -122,12 +122,14 @@ export class LoginComponent {
           color: '#ffffff'
         }).then(() => {
           const role = user.role;
-          if (role === 'ADMIN') {
+          if (role === 'ADMIN' || role === 'GESTOR_ADMINISTRATIVO') {
             window.location.href = '/admin/dashboard';
           } else if (['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'].includes(role)) {
             window.location.href = '/cliente/mis-envios';
-          } else {
+          } else if (role === 'REPARTIDOR') {
             window.location.href = '/repartidor/guias';
+          } else {
+            window.location.href = '/login';
           }
         });
       },

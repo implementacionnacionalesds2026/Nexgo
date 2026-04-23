@@ -70,19 +70,20 @@ export class SidebarComponent implements OnInit {
   userInitial = this.user?.name?.charAt(0)?.toUpperCase() || 'U';
 
   private allNavItems: NavItem[] = [
-    // ADMIN
+    // ADMIN & GESTOR
     { label: 'Dashboard',     icon: 'dashboard', route: '/admin/dashboard',     roles: ['ADMIN'] },
-    { label: 'Tarifas',       icon: 'payments', route: '/admin/tarifas',        roles: ['ADMIN'] },
-    { label: 'Usuarios',      icon: 'group', route: '/admin/usuarios',       roles: ['ADMIN'] },
-    { label: 'Envíos',        icon: 'inventory_2', route: '/admin/envios',         roles: ['ADMIN'] },
+    { label: 'Tarifas',       icon: 'payments', route: '/admin/tarifas',        roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
+    { label: 'Usuarios',      icon: 'group', route: '/admin/usuarios',       roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
+    { label: 'Envíos',        icon: 'inventory_2', route: '/admin/envios',         roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
     { label: 'Rastreo Live',  icon: 'location_on', route: '/admin/rastreo',        roles: ['ADMIN'] },
-    { label: 'Reportes',      icon: 'monitoring', route: '/admin/reportes',       roles: ['ADMIN'] },
+    { label: 'Reportes',      icon: 'monitoring', route: '/admin/reportes',       roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
+    { label: 'Repartidores',  icon: 'directions_bike', route: '/admin/repartidores', roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
 
-    // CLIENTE
-    { label: 'Cotizador',     icon: 'calculate', route: '/cliente/cotizador',    roles: ['AVERAGE_CUSTOMER'] },
+    // CLIENTE & GESTOR (Operational)
+    { label: 'Cotizador',     icon: 'calculate', route: '/cliente/cotizador',    roles: ['AVERAGE_CUSTOMER', 'GESTOR_ADMINISTRATIVO'] },
     { label: 'Tarifas',       icon: 'payments', route: '/cliente/tarifas',      roles: ['FULL_CUSTOMER', 'AVERAGE_CUSTOMER'] },
-    { label: 'Nuevo Envío',   icon: 'add_box', route: '/cliente/nuevo-envio',  roles: ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'] },
-    { label: 'Mis Envíos',    icon: 'inventory_2', route: '/cliente/mis-envios',   roles: ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'] },
+    { label: 'Nuevo Envío',   icon: 'add_box', route: '/cliente/nuevo-envio',  roles: ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'GESTOR_ADMINISTRATIVO'] },
+    { label: 'Mis Envíos',    icon: 'inventory_2', route: '/cliente/mis-envios',   roles: ['SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER', 'GESTOR_ADMINISTRATIVO'] },
 
     // REPARTIDOR
     { label: 'Mis Guías',     icon: 'assignment', route: '/repartidor/guias',     roles: ['REPARTIDOR'] },
