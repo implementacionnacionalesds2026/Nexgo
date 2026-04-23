@@ -299,103 +299,122 @@ import * as XLSX from 'xlsx';
     <!-- ZONA IMPRESIÓN GUÍA -->
     @if (printMode === 'guia' && printShipment) {
       <div class="print-guia-container">
-        <div style="display: flex; justify-content: center; align-items: flex-start; background: white; width: 100mm; height: 100mm;">
-          <div #guiaContainer style="width: 385px; height: 375px; background: white; border: 2px solid black; box-sizing: border-box; display: flex; flex-direction: column; color: black; font-family: Arial, sans-serif;">
-            
+        <div style="display: flex; justify-content: center; align-items: center; background: white; width: 100mm;">
+          <div #guiaContainer style="width: 385px; height: 375px; background: white; border: 3px solid black; box-sizing: border-box; display: flex; flex-direction: column; color: black; font-family: Arial, sans-serif; position: relative; padding: 6px;">
+            <div style="border: 2px solid black; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
             <!-- Row 1: REMITENTE -->
-            <div style="display:flex; border-bottom: 2px solid black; height: 65px;">
-              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: black; color: white; width: 22px; font-size: 10px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center;">Remitente</div>
-              <div style="flex:1; padding: 4px; display:flex; flex-direction:column; justify-content:center;">
-                <div style="font-size: 16px; font-weight: 800; color: black;">Nombre: {{ printShipment.sender_name || printShipment.senderName }}</div>
-                <div style="font-size: 15px; font-weight: 700; color: black;">Tel. {{ printShipment.sender_phone || printShipment.senderPhone }}</div>
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; align-items: center;">
+                <div style="background: black; color: white; font-size: 7px; font-weight: 900; padding: 1px 10px; text-transform: uppercase; letter-spacing: 1px;">Remitente</div>
               </div>
-              <div style="width: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #ccc; padding: 2px;">
-                <div style="display:flex; align-items:center; gap:4px;">
-                  <div style="width:24px; height:24px; background:black; color:white; display:flex; align-items:center; justify-content:center; border-radius:4px; font-size: 14px;">📦</div>
-                  <div style="text-align:left;">
-                    <div style="font-size:12px; font-weight:900; line-height:1; color: black;">Nacionales</div>
-                    <div style="font-size:7px; font-weight:bold; color: #444;">Delivery Services</div>
-                  </div>
-                  <div style="font-size:14px; font-weight:900; margin-left:4px; color: black;">GT</div>
+              <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
+                <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
+                  <div>Nombre: {{ printShipment.sender_name }}</div>
+                  <div>Tel: {{ printShipment.sender_phone }}</div>
+                  <div>Correo: {{ printShipment.client_email || 'info@nexgo.com' }}</div>
+                  <div>Empresa: {{ printShipment.company_name || 'Nexgo Customer' }}</div>
                 </div>
-                <div style="display:flex; gap:10px; margin-top:2px;">
-                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">{{ printShipment.order_number || '0' }}</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Orden</div></div>
-                  <div style="text-align:center;"><div style="font-size:10px; font-weight:900; color: black;">{{ printShipment.ticket_number || '0' }}</div><div style="font-size:6.5px; font-weight:bold; color: black;">No. Ticket</div></div>
+                <div style="width: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
+                  <div style="text-align:center; margin-bottom: 2px;">
+                    <div style="font-size:12px; font-weight:900; line-height:1; color: black; font-family: 'Arial Black', sans-serif;">Nacionales</div>
+                    <div style="font-size:5px; font-weight:bold; color: #333; letter-spacing: 0.5px;">Delivery Services</div>
+                  </div>
+                  <div style="display:flex; gap:12px; width: 90%; justify-content: center;">
+                    <div style="text-align:center;"><div style="font-size:12px; font-weight:900; color: black; line-height:1;">{{ printShipment.order_number || '0' }}</div><div style="font-size:5px; font-weight:bold; color: black;">No. Orden</div></div>
+                    <div style="text-align:center;"><div style="font-size:12px; font-weight:900; color: black; line-height:1;">{{ printShipment.ticket_number || '0' }}</div><div style="font-size:5px; font-weight:bold; color: black;">No. Ticket</div></div>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Row 2: DESTINATARIO -->
-            <div style="display:flex; border-bottom: 2px solid black; height: 95px;">
-              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: black; color: white; width: 22px; font-size: 10px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center;">Destinatario</div>
-              <div style="flex:1; padding: 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden;">
-                <div style="font-size: 16px; font-weight: 800; color: black;">Nombre: {{ printShipment.recipient_name || printShipment.recipientName }}</div>
-                <div style="font-size: 11px; font-weight: 700; color: black;">Tel: {{ printShipment.recipient_phone || printShipment.recipientPhone }}</div>
-                <div style="font-size: 11px; font-weight: 500; line-height: 1.1; color: black;">Dir: {{ printShipment.recipient_address || printShipment.recipientAddress }}, {{ printShipment.recipient_municipality || printShipment.destination_city }}, {{ printShipment.recipient_department || '' }} {{ printShipment.recipient_zone || '' }}</div>
-                <div style="font-size: 11px; font-weight: 700; margin-top:2px; color: black;">
-                  {{ printShipment.payment_instructions || 'Favor Cobrar Q' + (printShipment.total_payment_amount || '0.00') + ' con envío incluido' }}
-                </div>
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; align-items: center;">
+                <div style="background: black; color: white; font-size: 7px; font-weight: 900; padding: 1px 10px; text-transform: uppercase; letter-spacing: 1px;">Destinatario</div>
               </div>
-              <div style="width: 80px; border-left: 2px solid black; display: flex; align-items: center; justify-content: center;">
-                <div style="border: 3px solid black; font-size: 24px; font-weight: 900; padding: 6px 4px; color: black;">{{ printShipment.service_tag || 'DOM' }}</div>
+              <div style="display: flex; height: 75px; border-bottom: 2px solid black;">
+                <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size: 8px; line-height: 1.1;">
+                  <div style="margin-bottom: 1px;">Nombre: {{ printShipment.recipient_name }}</div>
+                  <div>Tel: {{ printShipment.recipient_phone }}</div>
+                  <div>Dir: {{ printShipment.recipient_address }}, {{ printShipment.recipient_municipality }}, {{ printShipment.recipient_department }}</div>
+                  <div style="font-size: 8.5px; margin-top:2px; color: black; border-top: 1px dashed black; padding-top: 2px;">
+                    Indicaciones: {{ printShipment.payment_instructions || 'Favor Cobrar Q' + (printShipment.total_payment_amount || '0.00') + ' con envío incluido' }}
+                  </div>
+                </div>
+                <div style="width: 80px; display: flex; align-items: center; justify-content: center; background: white;">
+                  <div style="border: 2px solid black; font-size: 20px; font-weight: 900; padding: 6px 4px; color: black; line-height: 1;">{{ printShipment.service_tag || 'DOM' }}</div>
+                </div>
               </div>
             </div>
 
-            <!-- Row 3: MIDDLE SECTION (BARCODE) -->
+            <!-- Row 3: TRACKING & PIEZA -->
+            <div style="display:flex; border-bottom: 2px solid black; height: 80px; align-items:stretch;">
+              <!-- Col 1: No. Guía -->
+              <div style="flex:1; display:flex; flex-direction:column;">
+                <div style="display: flex; align-items: center;">
+                  <div style="background: black; color: white; font-size: 7px; font-weight: 900; padding: 1px 10px; text-transform: uppercase; letter-spacing: 1px;">No. Guía</div>
+                </div>
+                <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; padding-left: 10px; font-size: 19px; font-weight: 900; color: black; font-family: 'Arial Black', sans-serif;">
+                   {{ printShipment.tracking_number }}
+                </div>
+              </div>
+              <!-- Col 2: Pieza Boxed -->
+              <div style="width: 140px; display: flex; align-items: center; justify-content: center; padding: 6px;">
+                <div style="border: 2.5px solid black; width: 100%; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white;">
+                  <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1; margin-bottom: 3px;">Piezas</div>
+                  <div style="font-size: 20px; font-weight: 900; color: black; display: flex; gap: 8px; align-items: center;">
+                    <span>{{ currentPieceCount }}</span>
+                    <span style="font-size: 10px;">DE</span>
+                    <span>{{ totalPiecesCount }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4: DESTINATION & WEIGHT & PAYMENT -->
             <div style="display:flex; border-bottom: 2px solid black; flex: 1; align-items:stretch;">
-              <div style="writing-mode: vertical-rl; transform: rotate(180deg); background: white; color: black; width: 22px; font-size: 9px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; border-right: 2px solid black; font-family: monospace;">Guía No.<br>{{ getTrackingPrefix(printShipment) }}</div>
-              <div style="flex:1; display:flex; align-items:center; justify-content:center; padding: 5px;">
-                <svg id="barcodeCanvas"></svg>
+              <div style="flex:1.4; display:flex; align-items:center; padding: 4px; gap: 8px;">
+                <div style="border: 2.5px solid black; font-size: 36px; font-weight: 900; padding: 2px 8px; line-height: 0.9; color: black; font-family: 'Arial Black', sans-serif; min-width: 70px; text-align: center;">{{ printShipment.destination_code || 'GUA' }}</div>
+                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>Pequeño</div>
               </div>
-              <div style="width: 75px; border-left: 2px solid black; display: flex; flex-direction: column;">
-                <div style="flex:1; border-bottom: 2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
-                  PIEZA<br><span style="font-size: 28px; line-height: 1;">{{ currentPieceCount | number:'2.0' }}</span>DE<br><span style="font-size: 24px; line-height: 0.8;">{{ totalPiecesCount | number:'2.0' }}</span>
+              <div style="flex:1; border-left:2px solid black; display: flex; flex-direction: column;">
+                <!-- Peso -->
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid black; background: white;">
+                  <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1;">PESO lb</div>
+                  <div style="font-size: 20px; font-weight: 900; color: black; line-height: 1;">{{ printShipment.weight_kg }}</div>
+                </div>
+                <!-- Forma Pago & Servicio -->
+                <div style="display: flex; flex: 1;">
+                  <div style="flex: 1; border-right: 2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white;">
+                    <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1;">Forma Pago</div>
+                    <div style="font-size: 14px; font-weight: 900; color: black; line-height: 1;">COLLECT</div>
+                  </div>
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white;">
+                    <div style="font-size: 7px; font-weight: 900; color: black; text-transform: uppercase; line-height: 1;">Servicio</div>
+                    <div style="font-size: 14px; font-weight: 900; color: black; line-height: 1;">COD</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Row 4: GUA SECTION -->
-            <div style="display:flex; border-bottom: 2px solid black; height: 110px; align-items:stretch;">
-              <div style="flex:1; display:flex; align-items:center; padding: 5px; gap: 10px;">
-                <div style="border: 3px solid black; font-size: 64px; font-weight: 900; padding: 4px 10px; line-height: 1; color: black;">{{ printShipment.destination_code || 'GUA' }}</div>
-                <div style="font-size: 14px; font-weight: 800; line-height: 1.1; color: black;">GT-004:<br>paquete<br>pequeño</div>
-              </div>
-              <div style="width: 140px; display:flex; flex-direction:column;">
-                <div style="flex:1; display:flex; flex-direction:column; border-left:2px solid black;">
-                  <div style="flex:1; border-bottom:2px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: black;">
-                    PESO lb<br><span style="font-size: 28px; line-height: 1;">{{ printShipment.weight_kg || printShipment.weightKg }}</span>DE<br><span style="font-size: 24px; line-height: 0.8;">999</span>
-                  </div>
-                  <div style="height: 45px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 4px;">
-                    <div style="border: 2.5px solid black; text-align: center; padding: 2px 5px; color: black;">
-                      <div style="font-size: 8px; font-weight: 900;">Forma Pago</div>
-                      <div style="font-size: 18px; font-weight: 900; line-height: 1;">COLLECT</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style="width: 75px; border-left: 2px solid black; display: flex; flex-direction: column;">
-                <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: black;">
-                  Servicio<br><span style="font-size: 20px; line-height: 1;">COD</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Row 5: FOOTER -->
-            <div style="display:flex; height: 35px; background: black; color: white;">
+            <!-- Row 5: FOOTER (Black Bar) -->
+            <div style="display:flex; height: 22px; background: black; color: white;">
               <div style="flex:1; border-right: 1px solid white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size: 18px; font-weight: 900; line-height: 1;">{{ getDeptCode(printShipment) }}</div>
-                <div style="font-size: 7px; font-weight: bold;">Departamento</div>
+                <div style="font-size: 11px; font-weight: 900; line-height: 1; font-family: 'Arial Black', sans-serif;">{{ getDeptCode(printShipment) }}</div>
+                <div style="font-size: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px;">Departamento</div>
               </div>
               <div style="flex:3; border-right: 1px solid white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size: 18px; font-weight: 900; line-height: 1;">{{ printShipment.recipient_municipality || printShipment.destination_city || 'Xela' }}</div>
-                <div style="font-size: 7px; font-weight: bold;">Municipio</div>
+                <div style="font-size: 11px; font-weight: 900; line-height: 1; text-transform: uppercase; font-family: 'Arial Black', sans-serif; letter-spacing: 0.5px;">{{ printShipment.recipient_municipality || 'Guatemala' }}</div>
+                <div style="font-size: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px;">Municipio</div>
               </div>
               <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size: 20px; font-weight: 900; line-height: 1;">{{ printShipment.recipient_zone || 'S/D' }}</div>
-                <div style="font-size: 7px; font-weight: bold;">Zona</div>
+                <div style="font-size: 12px; font-weight: 900; line-height: 1; font-family: 'Arial Black', sans-serif;">{{ printShipment.recipient_zone || '0' }}</div>
+                <div style="font-size: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px;">Zona</div>
               </div>
             </div>
-            <div style="font-size: 6px; text-align: center; color: black;">** Guía sujeta a términos y condiciones **</div>
+
+            <div style="font-size: 4px; text-align: center; color: black; background: white; font-weight: bold; padding: 1px 0;">** Guía sujeta a términos y condiciones de Nexgo **</div>
+            </div><!-- end inner border wrapper -->
           </div>
         </div>
       </div>
@@ -1030,7 +1049,7 @@ export class MisEnviosComponent implements OnInit {
 
   countByStatus(status: string): number {
     let list = [...this.shipments];
-    
+
     // Filter by Selected Day if present
     if (this.selectedDay) {
       list = list.filter(s => {
@@ -1042,7 +1061,7 @@ export class MisEnviosComponent implements OnInit {
     // Filter by Search Text if present
     if (this.searchText) {
       const q = this.searchText.toLowerCase();
-      list = list.filter(s => 
+      list = list.filter(s =>
         (s.tracking_number?.toLowerCase().includes(q)) ||
         (s.origin_city?.toLowerCase().includes(q)) ||
         (s.destination_city?.toLowerCase().includes(q)) ||
@@ -1151,6 +1170,7 @@ export class MisEnviosComponent implements OnInit {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // Generar el código de barras una vez (asegurando que el elemento esté en el DOM)
+        /*
         try {
           JsBarcode("#barcodeCanvas", tracking, {
             format: "CODE128", width: 2.2, height: 55, displayValue: false, margin: 0,
@@ -1159,6 +1179,7 @@ export class MisEnviosComponent implements OnInit {
         } catch (bErr) {
           console.error('Error generando código de barras:', bErr);
         }
+        */
 
         for (let i = 1; i <= this.totalPiecesCount; i++) {
           this.currentPieceCount = i;
