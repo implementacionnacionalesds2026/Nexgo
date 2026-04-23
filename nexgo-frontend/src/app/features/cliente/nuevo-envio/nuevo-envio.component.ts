@@ -143,13 +143,19 @@ import Swal from 'sweetalert2';
                           <input class="nx-input" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
                         </div>
                         <div class="nx-form-group">
+                          <label>Correo Electrónico</label>
+                          <input class="nx-input" [(ngModel)]="senderEmail" placeholder="correo@empresa.com" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
+                        </div>
+                      </div>
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
                           <label>Ciudad de Origen</label>
                           <input class="nx-input" [(ngModel)]="form.originCity" placeholder="Ej: Guatemala" />
                         </div>
-                      </div>
-                      <div class="nx-form-group">
-                        <label>Dirección de Recolección *</label>
+                        <div class="nx-form-group">
+                          <label>Dirección de Recolección *</label>
                           <input class="nx-input" [class.error]="attemptedNext && !form.senderAddress" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
+                        </div>
                       </div>
                     </div>
                     <div class="card-footer-actions">
@@ -233,8 +239,14 @@ import Swal from 'sweetalert2';
                     <div class="card-body">
                       <div class="nx-form-row cols-3">
                         <div class="nx-form-group">
-                          <label>Peso (libras) *</label>
-                          <input class="nx-input" type="number" [(ngModel)]="form.weightKg" />
+                          <label style="display:flex; align-items:center; justify-content:space-between;">
+                            <span>Peso (libras) *</span>
+                            <button type="button" (click)="weightLocked = !weightLocked" style="background:none; border:1px solid rgba(99,102,241,0.3); border-radius:6px; padding:2px 8px; cursor:pointer; display:flex; align-items:center; gap:4px; font-size:0.65rem; color:var(--primary); transition:all 0.2s;" [style.background]="!weightLocked ? 'rgba(99,102,241,0.15)' : 'transparent'">
+                              <span class="material-symbols-outlined" style="font-size:14px;">{{ weightLocked ? 'lock' : 'lock_open' }}</span>
+                              {{ weightLocked ? 'Editar' : 'Bloqueado' }}
+                            </button>
+                          </label>
+                          <input class="nx-input" type="number" [(ngModel)]="form.weightKg" [readonly]="weightLocked" [style.opacity]="weightLocked ? '0.7' : '1'" [style.cursor]="weightLocked ? 'not-allowed' : 'text'" [style.background]="weightLocked ? 'rgba(255,255,255,0.05)' : 'transparent'" />
                         </div>
                         <div class="nx-form-group">
                           <label>Cant. Piezas</label>
@@ -245,6 +257,17 @@ import Swal from 'sweetalert2';
                             <input type="checkbox" [(ngModel)]="form.isFragile" /> Frágil
                           </label>
                         </div>
+                      </div>
+                      <div class="nx-form-row cols-2">
+                        <div class="nx-form-group">
+                          <label>Tamaño del Paquete *</label>
+                          <select class="nx-input" [(ngModel)]="packageSize">
+                            <option value="Pequeño">Pequeño</option>
+                            <option value="Mediano">Mediano</option>
+                            <option value="Grande">Grande</option>
+                          </select>
+                        </div>
+                        <div></div>
                       </div>
                       <hr class="nx-divider">
                       <div class="nx-form-row cols-2">
@@ -420,7 +443,7 @@ import Swal from 'sweetalert2';
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
                   <div>Nombre: {{ form.senderName }}</div>
                   <div>Tel: {{ form.senderPhone }}</div>
-                  <div>Correo: {{ auth.currentUser()?.email || 'info@nexgo.com' }}</div>
+                  <div>Correo: {{ senderEmail || auth.currentUser()?.email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ $any(form).companyName || auth.currentUser()?.companyName || 'Nexgo Customer' }}</div>
                 </div>
                 <div style="width: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
@@ -484,7 +507,7 @@ import Swal from 'sweetalert2';
             <div style="display:flex; border-bottom: 2px solid black; flex: 1; align-items:stretch;">
               <div style="flex:1.4; display:flex; align-items:center; padding: 4px; gap: 8px;">
                 <div style="border: 2.5px solid black; font-size: 36px; font-weight: 900; padding: 2px 8px; line-height: 0.9; color: black; font-family: 'Arial Black', sans-serif; min-width: 70px; text-align: center;">{{ form.destinationCode || 'GUA' }}</div>
-                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>Pequeño</div>
+                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>{{ packageSize }}</div>
               </div>
               <div style="flex:1; border-left:2px solid black; display: flex; flex-direction: column;">
                 <!-- Peso -->
@@ -918,6 +941,9 @@ export class NuevoEnvioComponent {
 
   destCodes = ['GUA', 'QTZ', 'HUE', 'XELA', 'PET', 'ESC', 'SAC'];
   serviceTags = ['DOM', 'EXP', 'COL', 'COD'];
+  packageSize = 'Pequeño';
+  senderEmail = '';
+  weightLocked = true;
 
   form: CreateShipmentRequest = {
     senderName: '', senderPhone: '', senderAddress: '', originCity: 'Guatemala',
@@ -951,6 +977,7 @@ export class NuevoEnvioComponent {
       this.isGestor = user.role === 'GESTOR_ADMINISTRATIVO' || user.role === 'ADMIN';
       this.form.senderName = user.companyName || user.name;
       this.form.senderPhone = user.phone || '';
+      this.senderEmail = user.email || '';
       this.form.originCity = 'Guatemala';
 
       if (this.isGestor) {
@@ -976,6 +1003,9 @@ export class NuevoEnvioComponent {
           rule = rules.find(r => r.role_id == user.role_id && !r.user_id && r.is_active);
         }
         this.userRule = rule;
+        if (rule && rule.base_weight) {
+          this.form.weightKg = Number(rule.base_weight);
+        }
       }
     });
   }
@@ -1113,6 +1143,9 @@ export class NuevoEnvioComponent {
         this.success = true;
         this.trackingNumber = (r.data as any).tracking_number || r.data.trackingNumber;
         this.estimatedCost = (r.data as any).estimated_cost || 0;
+        // Capturar No. Orden y No. Ticket generados por el backend
+        this.form.orderNumber = (r.data as any).order_number || '';
+        this.form.ticketNumber = (r.data as any).ticket_number || '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (e) => {
