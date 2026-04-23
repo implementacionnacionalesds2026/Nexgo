@@ -36,19 +36,9 @@ export const routes: Routes = [
           import('./features/admin/envios/envios.component').then((m) => m.EnviosAdminComponent),
       },
       {
-        path: 'rastreo',
-        loadComponent: () =>
-          import('./features/admin/rastreo/rastreo.component').then((m) => m.RastreoComponent),
-      },
-      {
         path: 'tarifas',
         loadComponent: () =>
           import('./features/admin/tarifas/tarifas.component').then((m) => m.AdminTarifasComponent),
-      },
-      {
-        path: 'reportes',
-        loadComponent: () =>
-          import('./features/admin/reportes/reportes.component').then((m) => m.ReportesComponent),
       },
       {
         path: 'repartidores',
