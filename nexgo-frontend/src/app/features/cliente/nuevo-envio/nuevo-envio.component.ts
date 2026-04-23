@@ -326,6 +326,25 @@ import Swal from 'sweetalert2';
                               <b>Total Peso:</b> {{ (form.quantity || 1) * (form.weightKg || 0) }} LB
                             </div>
                           </div>
+                          <!-- DISPONIBILIDAD DE GUÍAS -->
+                          <div style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid {{ (userRule.available_guides || 0) < (form.quantity || 1) ? 'rgba(244,63,94,0.3)' : 'rgba(16,185,129,0.3)' }}">
+                             <div>
+                                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">INVENTARIO DE GUÍAS:</div>
+                                <div style="font-size: 1.1rem; font-weight: 800; color: {{ (userRule.available_guides || 0) < (form.quantity || 1) ? '#f43f5e' : '#10b981' }}">
+                                   {{ userRule.available_guides || 0 }} disponibles
+                                </div>
+                             </div>
+                             <div style="text-align: right;">
+                                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">REQUERIDAS:</div>
+                                <div style="font-size: 1.1rem; font-weight: 800; color: white;">{{ form.quantity || 1 }}</div>
+                             </div>
+                          </div>
+                          @if ((userRule.available_guides || 0) < (form.quantity || 1)) {
+                             <div style="margin-top: 8px; font-size: 0.75rem; color: #f43f5e; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">error</span>
+                                No tienes guías suficientes para esta cantidad de piezas.
+                             </div>
+                          }
                         </div>
                       }
 
@@ -1050,6 +1069,22 @@ export class NuevoEnvioComponent {
     // Si es gestor y seleccionó un cliente, lo mandamos
     if (this.isGestor && this.selectedClientId) {
       this.form.clientId = this.selectedClientId;
+    }
+
+    // Validar disponibilidad de guías
+    const totalPieces = this.form.quantity || 1;
+    const available = this.userRule?.available_guides || 0;
+    
+    if (totalPieces > available) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Guías Insuficientes',
+        text: `No tienes suficientes guías para este envío (${totalPieces} piezas). Tu balance actual es de ${available} guías.`,
+        background: '#1e293b',
+        color: '#ffffff',
+        confirmButtonColor: '#f43f5e'
+      });
+      return;
     }
 
     this.saving = true;

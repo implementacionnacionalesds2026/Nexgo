@@ -56,13 +56,19 @@ import { AdminService } from '../../../core/services/admin.service';
                         {{ userRule.base_weight }} <span class="unit">{{ userRule.weight_unit || 'LB' }}</span>
                       </div>
                     </div>
-                    <div class="info-item">
-                      <div class="info-label">LIBRA EXTRA</div>
-                      <div class="info-value">
-                        Q{{ userRule.extra_weight_price }} <span class="unit">/ LB</span>
-                      </div>
-                    </div>
-                  </div>
+                     <div class="info-item">
+                       <div class="info-label">LIBRA EXTRA</div>
+                       <div class="info-value">
+                         Q{{ userRule.extra_weight_price }} <span class="unit">/ LB</span>
+                       </div>
+                     </div>
+                     <div class="info-item" style="grid-column: span 2; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; margin-top: 0.5rem;">
+                       <div class="info-label">GUÍAS DISPONIBLES</div>
+                       <div class="info-value" style="color: var(--accent); font-size: 1.8rem;">
+                         {{ userRule.available_guides || 0 }} <span class="unit">UNIDADES</span>
+                       </div>
+                     </div>
+                   </div>
 
                   <div class="footer-note">
                     <span class="material-symbols-outlined">info</span>
