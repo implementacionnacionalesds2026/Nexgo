@@ -975,7 +975,7 @@ export class NuevoEnvioComponent {
     const user = this.auth.currentUser();
     if (user) {
       this.isGestor = user.role === 'GESTOR_ADMINISTRATIVO' || user.role === 'ADMIN';
-      this.form.senderName = user.companyName || user.name;
+      this.form.senderName = user.name || user.companyName || '';
       this.form.senderPhone = user.phone || '';
       this.senderEmail = user.email || '';
       this.form.originCity = 'Guatemala';

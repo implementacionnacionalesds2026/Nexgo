@@ -331,7 +331,7 @@ import * as XLSX from 'xlsx';
               </div>
               <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
-                  <div>Nombre: {{ printShipment.sender_name }}</div>
+                  <div>Nombre: {{ printShipment.client_name || printShipment.sender_name }}</div>
                   <div>Tel: {{ printShipment.sender_phone }}</div>
                   <div>Correo: {{ printShipment.client_email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ printShipment.company_name || 'Nexgo Customer' }}</div>

@@ -5,6 +5,7 @@ import { ShipmentService } from '../../../core/services/shipment.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { Shipment } from '../../../core/models/shipment.model';
+import { AuthService } from '../../../core/services/auth.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import JsBarcode from 'jsbarcode';
@@ -309,9 +310,9 @@ import * as XLSX from 'xlsx';
               </div>
               <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
-                  <div>Nombre: {{ printShipment.sender_name }}</div>
+                  <div>Nombre: {{ printShipment.client_name || printShipment.sender_name }}</div>
                   <div>Tel: {{ printShipment.sender_phone }}</div>
-                  <div>Correo: {{ printShipment.client_email || 'info@nexgo.com' }}</div>
+                  <div>Correo: {{ printShipment.client_email || auth.currentUser()?.email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ printShipment.company_name || 'Nexgo Customer' }}</div>
                 </div>
                 <div style="width: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
@@ -928,7 +929,8 @@ export class MisEnviosComponent implements OnInit {
   constructor(
     private shipmentService: ShipmentService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public auth: AuthService
   ) { }
 
   ngOnInit() {

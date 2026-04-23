@@ -189,7 +189,7 @@ const getShipments = async (filters = {}) => {
   params.push(limit, offset);
   const result = await query(
     `SELECT s.*,
-            uc.name AS client_name, uc.company_name,
+            uc.name AS client_name, uc.company_name, uc.email AS client_email,
             ud.name AS driver_name
      FROM shipments s
      LEFT JOIN users uc ON uc.id = s.client_id

@@ -282,9 +282,9 @@ import JsBarcode from 'jsbarcode';
               </div>
               <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
-                  <div>Nombre: {{ shipment.senderName || $any(shipment).sender_name }}</div>
+                  <div>Nombre: {{ $any(shipment).client_name || shipment.senderName || $any(shipment).sender_name }}</div>
                   <div>Tel: {{ shipment.senderPhone || $any(shipment).sender_phone }}</div>
-                  <div>Correo: {{ $any(shipment).client_email || 'info@nexgo.com' }}</div>
+                  <div>Correo: {{ $any(shipment).client_email || auth.currentUser()?.email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ shipment.companyName || $any(shipment).company_name || 'Nexgo Customer' }}</div>
                 </div>
                 <div style="width: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
