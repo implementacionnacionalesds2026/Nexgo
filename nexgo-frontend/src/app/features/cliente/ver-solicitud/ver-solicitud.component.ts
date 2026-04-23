@@ -283,7 +283,7 @@ import JsBarcode from 'jsbarcode';
               <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
                   <div>Nombre: {{ $any(shipment).client_name || shipment.senderName || $any(shipment).sender_name }}</div>
-                  <div>Tel: {{ shipment.senderPhone || $any(shipment).sender_phone }}</div>
+                  <div>Tel: +502 {{ shipment.senderPhone || $any(shipment).sender_phone }}</div>
                   <div>Correo: {{ $any(shipment).client_email || auth.currentUser()?.email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ shipment.companyName || $any(shipment).company_name || 'Nexgo Customer' }}</div>
                 </div>
@@ -308,7 +308,7 @@ import JsBarcode from 'jsbarcode';
               <div style="display: flex; height: 75px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size: 8px; line-height: 1.1;">
                   <div style="margin-bottom: 1px;">Nombre: {{ shipment.recipientName || $any(shipment).recipient_name }}</div>
-                  <div>Tel: {{ shipment.recipientPhone || $any(shipment).recipient_phone }}</div>
+                  <div>Tel: +502 {{ shipment.recipientPhone || $any(shipment).recipient_phone }}</div>
                   <div>Dir: {{ shipment.recipientAddress || $any(shipment).recipient_address }}, {{ shipment.recipientMunicipality || $any(shipment).recipient_municipality }}, {{ shipment.recipientDepartment || $any(shipment).recipient_department }}</div>
                   <div style="font-size: 8.5px; margin-top:2px; color: black; border-top: 1px dashed black; padding-top: 2px;">
                     Indicaciones: {{ shipment.paymentInstructions || $any(shipment).payment_instructions || 'Favor Cobrar Q' + (shipment.totalPaymentAmount || $any(shipment).total_payment_amount || '0.00') + ' con envío incluido' }}

@@ -311,7 +311,7 @@ import * as XLSX from 'xlsx';
               <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
                   <div>Nombre: {{ printShipment.client_name || printShipment.sender_name }}</div>
-                  <div>Tel: {{ printShipment.sender_phone }}</div>
+                  <div>Tel: +502 {{ printShipment.sender_phone }}</div>
                   <div>Correo: {{ printShipment.client_email || auth.currentUser()?.email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ printShipment.company_name || 'Nexgo Customer' }}</div>
                 </div>
@@ -335,8 +335,8 @@ import * as XLSX from 'xlsx';
               </div>
               <div style="display: flex; height: 75px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size: 8px; line-height: 1.1;">
-                  <div style="margin-bottom: 1px;">Nombre: {{ printShipment.recipient_name }}</div>
-                  <div>Tel: {{ printShipment.recipient_phone }}</div>
+                  <div>Nombre: {{ printShipment.recipient_name }}</div>
+                  <div>Tel: +502 {{ printShipment.recipient_phone }}</div>
                   <div>Dir: {{ printShipment.recipient_address }}, {{ printShipment.recipient_municipality }}, {{ printShipment.recipient_department }}</div>
                   <div style="font-size: 8.5px; margin-top:2px; color: black; border-top: 1px dashed black; padding-top: 2px;">
                     Indicaciones: {{ printShipment.payment_instructions || 'Favor Cobrar Q' + (printShipment.total_payment_amount || '0.00') + ' con envío incluido' }}

@@ -139,8 +139,8 @@ import Swal from 'sweetalert2';
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
-                          <label>Teléfono *</label>
-                          <input class="nx-input" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="502XXXXXXXX" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
+                          <label>Teléfono * (+502)</label>
+                          <input class="nx-input" type="tel" maxlength="8" minlength="8" pattern="[0-9]{8}" [class.error]="attemptedNext && !form.senderPhone" [(ngModel)]="form.senderPhone" placeholder="46402539" [readonly]="!isGestor" [style.opacity]="!isGestor ? '0.7' : '1'" [style.cursor]="!isGestor ? 'not-allowed' : 'text'" [style.background]="!isGestor ? 'rgba(255,255,255,0.05)' : 'transparent'" />
                         </div>
                         <div class="nx-form-group">
                           <label>Correo Electrónico</label>
@@ -150,11 +150,11 @@ import Swal from 'sweetalert2';
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Ciudad de Origen</label>
-                          <input class="nx-input" [(ngModel)]="form.originCity" placeholder="Ej: Guatemala" />
+                          <input class="nx-input" maxlength="50" [(ngModel)]="form.originCity" placeholder="Ej: Guatemala" />
                         </div>
                         <div class="nx-form-group">
                           <label>Dirección de Recolección *</label>
-                          <input class="nx-input" [class.error]="attemptedNext && !form.senderAddress" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
+                          <input class="nx-input" maxlength="200" [class.error]="attemptedNext && !form.senderAddress" [(ngModel)]="form.senderAddress" placeholder="Calle, Av, Edificio, Oficina..." />
                         </div>
                       </div>
                     </div>
@@ -180,8 +180,8 @@ import Swal from 'sweetalert2';
                         <input class="nx-input" [class.error]="attemptedNext && !form.recipientName" [(ngModel)]="form.recipientName" placeholder="¿Quién recibe el paquete?" />
                       </div>
                       <div class="nx-form-group">
-                        <label>Teléfono de contacto *</label>
-                        <input class="nx-input" [class.error]="attemptedNext && !form.recipientPhone" [(ngModel)]="form.recipientPhone" placeholder="502XXXXXXXX" />
+                        <label>Teléfono de contacto * (+502)</label>
+                        <input class="nx-input" type="tel" maxlength="8" minlength="8" pattern="[0-9]{8}" [class.error]="attemptedNext && !form.recipientPhone" [(ngModel)]="form.recipientPhone" placeholder="46402539" />
                       </div>
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
@@ -206,16 +206,16 @@ import Swal from 'sweetalert2';
                       <div class="nx-form-row cols-2">
                         <div class="nx-form-group">
                           <label>Zona (Opcional)</label>
-                          <input class="nx-input" [(ngModel)]="form.recipientZone" placeholder="Ej: Zona 1" />
+                          <input class="nx-input" type="number" min="1" max="35" [(ngModel)]="form.recipientZone" placeholder="Ej: 1" />
                         </div>
                         <div class="nx-form-group">
                           <label>Referencia / Comentarios (Opcional)</label>
-                          <input class="nx-input" [(ngModel)]="form.comments" placeholder="A la par de..." />
+                          <input class="nx-input" maxlength="50" [(ngModel)]="form.comments" placeholder="A la par de..." />
                         </div>
                       </div>
                       <div class="nx-form-group">
                         <label>Dirección exacta de entrega *</label>
-                        <input class="nx-input" [class.error]="attemptedNext && !form.recipientAddress" [(ngModel)]="form.recipientAddress" placeholder="Avenida, Calle, Casa numeral..." />
+                        <input class="nx-input" maxlength="200" [class.error]="attemptedNext && !form.recipientAddress" [(ngModel)]="form.recipientAddress" placeholder="Avenida, Calle, Casa numeral..." />
                       </div>
                     </div>
                     <div class="card-footer-actions">
@@ -397,7 +397,7 @@ import Swal from 'sweetalert2';
                       <!-- El monto a cobrar ahora es automático basado en la tarifa -->
                       <div class="nx-form-group">
                         <label>Instrucciones de Pago y Comentarios</label>
-                        <textarea class="nx-input" [(ngModel)]="form.paymentInstructions" rows="4" placeholder="Ej: Favor cobrar con envío incluido, dejar en recepción..."></textarea>
+                        <textarea class="nx-input" maxlength="200" [(ngModel)]="form.paymentInstructions" rows="4" placeholder="Ej: Favor cobrar con envío incluido, dejar en recepción..."></textarea>
                       </div>
                       
                       @if (error) { 
@@ -442,7 +442,7 @@ import Swal from 'sweetalert2';
               <div style="display: flex; height: 55px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; font-size: 8px; line-height: 1.1;">
                   <div>Nombre: {{ form.senderName }}</div>
-                  <div>Tel: {{ form.senderPhone }}</div>
+                  <div>Tel: +502 {{ form.senderPhone }}</div>
                   <div>Correo: {{ senderEmail || auth.currentUser()?.email || 'info@nexgo.com' }}</div>
                   <div>Empresa: {{ $any(form).companyName || auth.currentUser()?.companyName || 'Nexgo Customer' }}</div>
                 </div>
@@ -466,8 +466,8 @@ import Swal from 'sweetalert2';
               </div>
               <div style="display: flex; height: 75px; border-bottom: 2px solid black;">
                 <div style="flex:1; padding: 2px 4px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size: 8px; line-height: 1.1;">
-                  <div style="margin-bottom: 1px;">Nombre: {{ form.recipientName }}</div>
-                  <div>Tel: {{ form.recipientPhone }}</div>
+                  <div>Nombre: {{ form.recipientName }}</div>
+                  <div>Tel: +502 {{ form.recipientPhone }}</div>
                   <div>Dir: {{ form.recipientAddress }}, {{ form.recipientMunicipality }}, {{ form.recipientDepartment }}</div>
                   <div style="font-size: 8.5px; margin-top:2px; color: black; border-top: 1px dashed black; padding-top: 2px;">
                     Indicaciones: {{ form.paymentInstructions || 'Favor Cobrar Q' + (form.totalPaymentAmount || '0.00') + ' con envío incluido' }}
