@@ -50,16 +50,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/repartidores/repartidores-list.component').then((m) => m.RepartidoresListComponent),
       },
-      {
-        path: 'rastreo',
-        loadComponent: () =>
-          import('./features/admin/rastreo/rastreo.component').then((m) => m.RastreoComponent),
-      },
-      {
-        path: 'asignar-ruta',
-        loadComponent: () =>
-          import('./features/admin/asignar-ruta/asignar-ruta.component').then((m) => m.AsignarRutaComponent),
-      },
     ],
   },
 

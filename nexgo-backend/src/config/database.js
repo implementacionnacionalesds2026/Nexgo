@@ -1,14 +1,8 @@
-require('dotenv').config();
-
 const { Pool } = require('pg');
 const logger = require('../utils/logger');
 
 const pool = new Pool({
-  host: process.env.DB_HOST || '127.0.0.1',
-  port: Number(process.env.DB_PORT || 5433),
-  database: process.env.DB_NAME || 'nexgo',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD ? String(process.env.DB_PASSWORD) : 'Manager1',
+  connectionString: process.env.DATABASE_URL,
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   max: 10,
   idleTimeoutMillis: 30000,
@@ -23,6 +17,11 @@ pool.on('error', (err) => {
   logger.error('Error inesperado en cliente PostgreSQL', err);
 });
 
+/**
+ * Ejecuta una query con parámetros
+ * @param {string} text - SQL query
+ * @param {Array} params - Parámetros
+ */
 const query = async (text, params) => {
   const start = Date.now();
   try {
@@ -36,6 +35,9 @@ const query = async (text, params) => {
   }
 };
 
+/**
+ * Verifica la conexión a la base de datos
+ */
 const testConnection = async () => {
   try {
     const res = await query('SELECT NOW() as current_time');

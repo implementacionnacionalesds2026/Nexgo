@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { query } = require('./src/config/database');
+require('dotenv').config();
 
 async function checkUsers() {
   try {
@@ -13,4 +13,4 @@ async function checkUsers() {
   }
 }
 
-checkUsers(); 
+checkUsers();
