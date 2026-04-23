@@ -340,6 +340,7 @@ import * as XLSX from 'xlsx';
                   <div>Dir: {{ printShipment.recipient_address }}, {{ printShipment.recipient_municipality }}, {{ printShipment.recipient_department }}</div>
                   <div style="font-size: 8.5px; margin-top:2px; color: black; border-top: 1px dashed black; padding-top: 2px;">
                     Indicaciones: {{ printShipment.payment_instructions || 'Favor Cobrar Q' + (printShipment.total_payment_amount || '0.00') + ' con envío incluido' }}
+                    {{ printShipment.comments ? '- Ref: ' + printShipment.comments : '' }}
                   </div>
                 </div>
                 <div style="width: 80px; display: flex; align-items: center; justify-content: center; background: white;">
@@ -376,7 +377,7 @@ import * as XLSX from 'xlsx';
             <div style="display:flex; border-bottom: 2px solid black; flex: 1; align-items:stretch;">
               <div style="flex:1.4; display:flex; align-items:center; padding: 4px; gap: 8px;">
                 <div style="border: 2.5px solid black; font-size: 36px; font-weight: 900; padding: 2px 8px; line-height: 0.9; color: black; font-family: 'Arial Black', sans-serif; min-width: 70px; text-align: center;">{{ printShipment.destination_code || 'GUA' }}</div>
-                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>Pequeño</div>
+                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>{{ printShipment.description || 'Pequeño' }}</div>
               </div>
               <div style="flex:1; border-left:2px solid black; display: flex; flex-direction: column;">
                 <!-- Peso -->

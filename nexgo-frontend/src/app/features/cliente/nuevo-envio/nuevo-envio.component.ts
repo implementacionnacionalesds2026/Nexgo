@@ -470,7 +470,8 @@ import Swal from 'sweetalert2';
                   <div>Tel: +502 {{ form.recipientPhone }}</div>
                   <div>Dir: {{ form.recipientAddress }}, {{ form.recipientMunicipality }}, {{ form.recipientDepartment }}</div>
                   <div style="font-size: 8.5px; margin-top:2px; color: black; border-top: 1px dashed black; padding-top: 2px;">
-                    Indicaciones: {{ form.paymentInstructions || 'Favor Cobrar Q' + (form.totalPaymentAmount || '0.00') + ' con envío incluido' }}
+                    Indicaciones: {{ form.paymentInstructions || 'Favor Cobrar Q' + (form.totalPaymentAmount || currentEstimatedNexgoCost || '0.00') + ' con envío incluido' }}
+                    {{ form.comments ? '- Ref: ' + form.comments : '' }}
                   </div>
                 </div>
                 <div style="width: 80px; display: flex; align-items: center; justify-content: center; background: white;">
@@ -507,7 +508,7 @@ import Swal from 'sweetalert2';
             <div style="display:flex; border-bottom: 2px solid black; flex: 1; align-items:stretch;">
               <div style="flex:1.4; display:flex; align-items:center; padding: 4px; gap: 8px;">
                 <div style="border: 2.5px solid black; font-size: 36px; font-weight: 900; padding: 2px 8px; line-height: 0.9; color: black; font-family: 'Arial Black', sans-serif; min-width: 70px; text-align: center;">{{ form.destinationCode || 'GUA' }}</div>
-                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>{{ packageSize }}</div>
+                <div style="font-size: 9px; font-weight: 900; line-height: 1.1; color: black; text-transform: uppercase;">GT:<br>Paquete<br>{{ packageSize || 'Pequeño' }}</div>
               </div>
               <div style="flex:1; border-left:2px solid black; display: flex; flex-direction: column;">
                 <!-- Peso -->
@@ -1102,6 +1103,7 @@ export class NuevoEnvioComponent {
 
   submit() {
     this.form.destinationCity = this.form.recipientMunicipality || '';
+    this.form.description = this.packageSize || 'Pequeño';
 
     // Asignar automáticamente el monto calculado como el monto a cobrar
     // Si el gestor activó modo manual, usamos su valor
