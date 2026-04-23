@@ -19,6 +19,18 @@ import * as XLSX from 'xlsx';
   imports: [CommonModule, SidebarComponent, StatusBadgeComponent, RouterLink, FormsModule],
   template: `
     <div class="nx-layout">
+      @if (generatingPdfId) {
+        <div class="print-loading-overlay">
+          <div class="print-loader-card">
+            <div class="spinner-container">
+              <div class="circle-spinner"></div>
+              <span class="material-symbols-outlined icon-inside">print</span>
+            </div>
+            <h3 class="loader-title">Procesando Guías</h3>
+            <p class="loader-subtitle">Por favor espera, no cierres esta ventana...</p>
+          </div>
+        </div>
+      }
       <app-sidebar />
       <main class="nx-main">
         <div class="nx-navbar"><span class="navbar-title"><span class="material-symbols-outlined" style="vertical-align:bottom;">inventory_2</span> Mis Envíos</span></div>
@@ -801,6 +813,39 @@ import * as XLSX from 'xlsx';
         width: 24px; text-align: center; font-size: 11px; font-weight: bold; padding: 4px 0; border-right: 2px solid black; line-height: 1.2;
       }
     }
+
+    /* Print Loader Overlay */
+    .print-loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 15, 30, 0.85); backdrop-filter: blur(10px);
+      z-index: 99999; display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .print-loader-card {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 3rem; text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .spinner-container {
+      position: relative; width: 80px; height: 80px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .circle-spinner {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      border: 4px solid rgba(99, 102, 241, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .icon-inside {
+      font-size: 32px; color: var(--primary);
+      animation: pulseOpacity 1.5s ease-in-out infinite;
+    }
+    .loader-title { font-size: 1.5rem; font-weight: 700; color: white; margin: 0; }
+    .loader-subtitle { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulseOpacity { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
   `]
 })
 export class MisEnviosComponent implements OnInit {
