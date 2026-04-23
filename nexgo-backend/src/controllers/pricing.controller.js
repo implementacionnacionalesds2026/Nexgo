@@ -177,7 +177,7 @@ const createPricingRule = async (req, res, next) => {
 const addGuides = async (req, res, next) => {
   try {
     const { amount, reason } = req.body;
-    const ruleId = req.params.id;
+    const ruleId = parseInt(req.params.id);
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ success: false, message: 'Cantidad inválida' });
@@ -213,14 +213,36 @@ const addGuides = async (req, res, next) => {
  */
 const getInventoryLogs = async (req, res, next) => {
   try {
-    const result = await query(
-      `SELECT l.*, u.name as admin_name 
+    const ruleId = parseInt(req.params.id);
+    console.log('>>> Solicitando bitácora para ID:', ruleId);
+    
+    // 1. Intentamos buscar por el ID directo de la tarifa
+    let result = await query(
+      `SELECT l.*, COALESCE(u.name, 'Admin') as admin_name 
        FROM guide_inventory_logs l 
-       JOIN users u ON l.admin_id = u.id 
+       LEFT JOIN users u ON l.admin_id = u.id 
        WHERE l.pricing_rule_id = $1 
        ORDER BY l.created_at DESC`,
-      [req.params.id]
+      [ruleId]
     );
+
+    // 2. Si no hay nada, es posible que el ID sea en realidad un userId o haya un desajuste.
+    // Buscamos todas las tarifas relacionadas a ese cliente y traemos su historial.
+    if (result.rowCount === 0) {
+      console.log('>>> Fallback: Buscando logs por relación de usuario...');
+      result = await query(
+        `SELECT l.*, COALESCE(u.name, 'Admin') as admin_name 
+         FROM guide_inventory_logs l 
+         LEFT JOIN users u ON l.admin_id = u.id 
+         WHERE l.pricing_rule_id IN (
+           SELECT id FROM pricing_rules WHERE user_id = (SELECT user_id FROM pricing_rules WHERE id = $1)
+         )
+         ORDER BY l.created_at DESC`,
+        [ruleId]
+      );
+    }
+    
+    console.log(`>>> Resultado: ${result.rowCount} registros encontrados.`);
     return successResponse(res, result.rows);
   } catch (err) {
     next(err);

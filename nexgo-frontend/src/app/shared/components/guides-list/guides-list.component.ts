@@ -114,7 +114,7 @@ import Swal from 'sweetalert2';
                           <span class="material-symbols-outlined">add_circle</span> Añadir Guías
                         </button>
                         
-                        <button (click)="viewRobustHistory(user)" class="dropdown-item">
+                        <button (click)="viewRobustHistory(user, $event)" class="dropdown-item">
                           <span class="material-symbols-outlined">history_edu</span> Ver Bitácora
                         </button>
                       </div>
@@ -126,6 +126,69 @@ import Swal from 'sweetalert2';
           </table>
         </div>
       </div>
+
+      <!-- Modal de Bitácora Nativo (Angular) -->
+      @if (showHistoryModal) {
+        <div class="history-modal-backdrop" (click)="closeHistoryModal()">
+          <div class="history-modal animate-scale-up" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="material-symbols-outlined" style="color:var(--primary);">history_edu</span>
+                <h3 style="margin:0; font-size:1.1rem;">Bitácora de Guías: {{ selectedUserForHistory?.company_name || selectedUserForHistory?.name }}</h3>
+              </div>
+              <button class="close-btn" (click)="closeHistoryModal()">✕</button>
+            </div>
+            
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto; padding: 20px;">
+              @if (historyLoading) {
+                <div style="text-align:center; padding:40px;">
+                  <div class="loading-spinner"></div>
+                  <p style="color:#94a3b8; margin-top:10px;">Cargando historial...</p>
+                </div>
+              } @else if (historyLogs.length === 0) {
+                <div style="text-align:center; padding:40px; color:#94a3b8;">
+                  <span class="material-symbols-outlined" style="font-size:3rem; opacity:0.3; display:block; margin-bottom:10px;">inventory_2</span>
+                  No hay movimientos registrados para este cliente.
+                </div>
+              } @else {
+                @for (log of historyLogs; track log.id) {
+                  <div class="log-entry" [style.border-left]="(log.added_amount >= 0 ? '4px solid #10b981' : '4px solid #f43f5e')">
+                    <div class="log-header">
+                      <span class="log-date">{{ log.created_at | date:'dd MMM yyyy, HH:mm' }}</span>
+                      <span class="log-type" [style.background]="(log.added_amount >= 0 ? '#10b98120' : '#f43f5e20')" [style.color]="(log.added_amount >= 0 ? '#10b981' : '#f43f5e')">
+                        {{ log.added_amount >= 0 ? 'INGRESO' : 'REDUCCIÓN' }}
+                      </span>
+                    </div>
+                    <div class="log-content">
+                      <div class="log-amount">
+                        <small>{{ log.added_amount >= 0 ? 'Añadido' : 'Quitado' }}</small>
+                        <span [style.color]="(log.added_amount >= 0 ? '#10b981' : '#f43f5e')">
+                          {{ log.added_amount >= 0 ? '+' : '' }}{{ log.added_amount }}
+                        </span>
+                      </div>
+                      <div class="log-divider"></div>
+                      <div class="log-info">
+                        <small>Gestionado por</small>
+                        <strong>{{ log.admin_name || 'Administrador' }}</strong>
+                      </div>
+                    </div>
+                    @if (log.reason) {
+                      <div class="log-reason">"{{ log.reason }}"</div>
+                    }
+                    <div class="log-footer">
+                      Balance anterior: {{ log.previous_balance }} ➔ Nuevo balance: <strong>{{ log.new_balance }}</strong>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+            
+            <div class="modal-footer" style="padding: 15px 20px; background: rgba(0,0,0,0.2); text-align:right;">
+              <button class="nx-btn btn-primary" (click)="closeHistoryModal()" style="padding: 0 25px;">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -161,6 +224,43 @@ import Swal from 'sweetalert2';
     .btn-status-toggle.state-active { background: #10b981 !important; }
     .btn-status-toggle.state-inactive { background: #f43f5e !important; }
 
+    /* Modal Styles */
+    .history-modal-backdrop {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; z-index: 99999;
+    }
+    .history-modal {
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; width: 90%; max-width: 500px; overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+    .close-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; }
+    
+    .log-entry { 
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
+      border-radius: 12px; padding: 15px; margin-bottom: 12px; 
+    }
+    .log-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .log-date { font-size: 0.75rem; color: #818cf8; font-weight: 700; }
+    .log-type { background: #10b98120; color: #10b981; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; }
+    .log-content { display: flex; gap: 15px; align-items: center; }
+    .log-amount { display: flex; flex-direction: column; min-width: 60px; }
+    .log-amount small { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; }
+    .log-amount span { font-size: 1.1rem; font-weight: 800; }
+    .log-divider { width: 1px; height: 30px; background: rgba(255,255,255,0.1); }
+    .log-info small { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; display: block; }
+    .log-reason { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: #cbd5e1; font-style: italic; }
+    .log-footer { margin-top: 5px; text-align: right; font-size: 0.7rem; color: #94a3b8; }
+
+    .loading-spinner {
+      width: 40px; height: 40px; border: 3px solid rgba(99, 102, 241, 0.1);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 1s linear infinite; margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Dropdown CSS Parity */
     .dropdown-container .dropdown-menu {
       position: absolute; left: calc(100% + 10px); top: -10px; z-index: 500;
@@ -193,6 +293,12 @@ export class GuidesListComponent implements OnInit {
     { name: 'FULL_CUSTOMER', label: 'Oro', count: 0 }
   ];
 
+  // Bitácora Local Modal
+  showHistoryModal = false;
+  historyLogs: any[] = [];
+  historyLoading = false;
+  selectedUserForHistory: any = null;
+
   constructor(private adminService: AdminService) {}
 
   ngOnInit() {
@@ -216,8 +322,8 @@ export class GuidesListComponent implements OnInit {
         const users = res.data.data.filter((u: any) => clientRoles.includes(u.role));
 
         this.allUsers = users.map((user: any) => {
-          const pricing = this.pricingRules.find(r => r.user_id === user.id) || 
-                        this.pricingRules.find(r => (r.role_id === user.role_id || r.role_id === user.roleId) && !r.user_id);
+          const pricing = this.pricingRules.find(r => r.user_id == user.id) || 
+                        this.pricingRules.find(r => (r.role_id == user.role_id || r.role_id == user.roleId) && !r.user_id);
           return { ...user, pricing };
         });
 
@@ -302,62 +408,49 @@ export class GuidesListComponent implements OnInit {
     }
   }
 
-  viewRobustHistory(user: any) {
+  viewRobustHistory(user: any, event: Event) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
+    this.openDropdownId = null;
     const pricingId = user.pricing?.id;
-    if (!pricingId) return;
+    
+    if (!pricingId) {
+      Swal.fire({ icon: 'warning', title: 'Sin Tarifa', text: 'Este cliente no tiene una tarifa asignada.', background: '#1e293b', color: '#fff' });
+      return;
+    }
 
-    Swal.fire({ title: 'Cargando bitácora...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#1e293b', color: '#fff' });
+    this.selectedUserForHistory = user;
+    this.showHistoryModal = true;
+    this.historyLoading = true;
+    this.historyLogs = [];
 
+    // Forzamos la limpieza de caché en la petición
     this.adminService.getInventoryLogs(pricingId).subscribe({
       next: (res: any) => {
-        const logs = res.data || [];
-        let logsHtml = '<div style="max-height:500px; overflow-y:auto; text-align:left; padding:10px; scrollbar-width:thin;">';
-        
-        if (logs.length === 0) {
-          logsHtml += '<div style="text-align:center; padding:40px; color:#94a3b8;">No hay movimientos registrados.</div>';
+        this.historyLoading = false;
+        if (res && res.success) {
+          // Ordenamos por fecha de forma descendente por seguridad
+          this.historyLogs = (res.data || []).sort((a: any, b: any) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
         } else {
-          logs.forEach((l: any) => {
-            const date = new Date(l.created_at).toLocaleString('es-GT', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            logsHtml += `
-              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 12px; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                  <div style="font-size: 0.75rem; color: #818cf8; font-weight: 700;">${date}</div>
-                  <div style="background: #10b98120; color: #10b981; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 800;">INGRESO</div>
-                </div>
-                <div style="display: flex; gap: 15px; align-items: center;">
-                  <div style="text-align: center; min-width: 60px;">
-                    <div style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">Añadido</div>
-                    <div style="font-size: 1.2rem; font-weight: 900; color: #10b981;">+${l.added_amount}</div>
-                  </div>
-                  <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1);"></div>
-                  <div>
-                    <div style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">Gestionado por</div>
-                    <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">${l.admin_name}</div>
-                  </div>
-                </div>
-                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: #cbd5e1; font-style: italic;">
-                  "${l.reason || 'Sin comentario detallado'}"
-                </div>
-                <div style="margin-top: 5px; text-align: right; font-size: 0.75rem; color: #94a3b8;">
-                  Balance Resultante: <b>${l.new_balance}</b>
-                </div>
-              </div>
-            `;
-          });
+          this.historyLogs = [];
+          console.warn('Bitácora vacía para ID:', pricingId);
         }
-        logsHtml += '</div>';
-
-        Swal.fire({
-          title: `<div style="text-align:left; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Bitácora de Guías: ${user.company_name || user.name}</div>`,
-          html: logsHtml,
-          width: '500px',
-          background: '#1e293b',
-          color: '#fff',
-          confirmButtonText: 'Cerrar Bitácora',
-          confirmButtonColor: '#6366f1'
-        });
+      },
+      error: (err) => {
+        this.historyLoading = false;
+        console.error('Error al cargar bitácora:', err);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los movimientos.', background: '#1e293b', color: '#fff' });
       }
     });
+  }
+
+  closeHistoryModal() {
+    this.showHistoryModal = false;
   }
 
   getRoleLabel(role: string) { return { SMALL_CUSTOMER: 'Bronce', AVERAGE_CUSTOMER: 'Plata', FULL_CUSTOMER: 'Oro' }[role] || role; }

@@ -68,7 +68,9 @@ export class AdminService {
   }
 
   getInventoryLogs(id: number): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/inventory-logs`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/inventory-logs`, {
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
   }
 
   // ── Tracking ───────────────────────────────────────────────
