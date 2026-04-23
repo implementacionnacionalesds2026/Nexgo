@@ -22,11 +22,15 @@ import Swal from 'sweetalert2';
       @if (generatingPdf) {
         <div class="print-loading-overlay">
           <div class="print-loader-card">
-            <div class="spinner-container">
-              <div class="circle-spinner"></div>
-              <span class="material-symbols-outlined icon-inside">print</span>
+            <div class="label-stack-container">
+              <div class="label-stack">
+                <div class="stack-card card-1"></div>
+                <div class="stack-card card-2"></div>
+                <div class="stack-card card-3"></div>
+                <span class="material-symbols-outlined stack-icon">print</span>
+              </div>
             </div>
-            <h3 class="loader-title">Procesando Guías</h3>
+            <h3 class="loader-title">¡Casi listo!</h3>
             <p class="loader-subtitle">Por favor espera un momento...</p>
           </div>
         </div>
@@ -954,8 +958,55 @@ import Swal from 'sweetalert2';
     }
     .loader-title { font-size: 1.5rem; font-weight: 700; color: white; margin: 0; }
     .loader-subtitle { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulseOpacity { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    
+    .label-stack-container {
+      width: 140px; height: 140px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .label-stack {
+      position: relative;
+      width: 60px; height: 80px;
+    }
+
+    .stack-card {
+      position: absolute;
+      width: 100%; height: 100%;
+      background: white;
+      border-radius: 8px;
+      border: 1.5px solid #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .card-1 { z-index: 3; animation: stackMove 2s infinite; }
+    .card-2 { z-index: 2; transform: translate(6px, 6px); opacity: 0.8; }
+    .card-3 { z-index: 1; transform: translate(12px, 12px); opacity: 0.5; }
+
+    .stack-icon {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: black; font-size: 32px;
+      z-index: 4;
+      animation: iconPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes stackMove {
+      0% { transform: translate(0, 0); z-index: 3; opacity: 1; }
+      30% { transform: translate(-80px, -40px) rotate(-15deg); z-index: 3; opacity: 0; }
+      31% { transform: translate(12px, 12px); z-index: 1; opacity: 0; }
+      60% { transform: translate(12px, 12px); z-index: 1; opacity: 0.5; }
+      100% { transform: translate(0, 0); z-index: 3; opacity: 1; }
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  `]
   `]
 })
 export class NuevoEnvioComponent {
