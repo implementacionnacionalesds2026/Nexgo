@@ -68,7 +68,8 @@ export class AdminService {
   }
 
   getInventoryLogs(id: number): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/inventory-logs`, {
+    const t = new Date().getTime();
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/inventory-logs?t=${t}`, {
       headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
     });
   }

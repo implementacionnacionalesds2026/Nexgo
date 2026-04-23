@@ -134,9 +134,15 @@ import Swal from 'sweetalert2';
             <div class="modal-header">
               <div style="display:flex; align-items:center; gap:10px;">
                 <span class="material-symbols-outlined" style="color:var(--primary);">history_edu</span>
-                <h3 style="margin:0; font-size:1.1rem;">Bitácora de Guías: {{ selectedUserForHistory?.company_name || selectedUserForHistory?.name }}</h3>
+                <div>
+                  <h3 style="margin:0; font-size:1.1rem;">Bitácora de Guías</h3>
+                  <div style="font-size:0.75rem; color:#94a3b8;">{{ selectedUserForHistory?.company_name || selectedUserForHistory?.name }}</div>
+                </div>
               </div>
-              <button class="close-btn" (click)="closeHistoryModal()">✕</button>
+              <div style="text-align:right;">
+                <button class="close-btn" (click)="closeHistoryModal()">✕</button>
+                <div style="font-size:0.6rem; color:#6366f1; margin-top:4px;">Actualizado: {{ lastRefresh | date:'HH:mm:ss' }}</div>
+              </div>
             </div>
             
             <div class="modal-body" style="max-height: 60vh; overflow-y: auto; padding: 20px;">
@@ -298,6 +304,7 @@ export class GuidesListComponent implements OnInit {
   historyLogs: any[] = [];
   historyLoading = false;
   selectedUserForHistory: any = null;
+  lastRefresh = new Date();
 
   constructor(private adminService: AdminService) {}
 
@@ -426,25 +433,20 @@ export class GuidesListComponent implements OnInit {
     this.showHistoryModal = true;
     this.historyLoading = true;
     this.historyLogs = [];
+    this.lastRefresh = new Date();
 
-    // Forzamos la limpieza de caché en la petición
     this.adminService.getInventoryLogs(pricingId).subscribe({
       next: (res: any) => {
         this.historyLoading = false;
         if (res && res.success) {
-          // Ordenamos por fecha de forma descendente por seguridad
-          this.historyLogs = (res.data || []).sort((a: any, b: any) => 
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
+          this.historyLogs = res.data || [];
         } else {
           this.historyLogs = [];
-          console.warn('Bitácora vacía para ID:', pricingId);
         }
       },
-      error: (err) => {
+      error: () => {
         this.historyLoading = false;
-        console.error('Error al cargar bitácora:', err);
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los movimientos.', background: '#1e293b', color: '#fff' });
+        this.historyLogs = [];
       }
     });
   }

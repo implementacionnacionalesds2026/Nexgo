@@ -82,11 +82,32 @@ const updatePricingRule = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Tarifa no encontrada' });
     }
 
-    // 2. Registrar en historial
+    // 2. Registrar en historial general de tarifas
     await query(
       'INSERT INTO pricing_history (pricing_rule_id, changed_by, old_values, new_values) VALUES ($1, $2, $3, $4)',
       [req.params.id, req.user.id, JSON.stringify(oldValues), JSON.stringify(result.rows[0])]
     );
+
+    // 3. SI LAS GUÍAS CAMBIARON, registrar específicamente en la bitácora de inventario
+    const oldGuides = oldValues.available_guides || 0;
+    const newGuides = result.rows[0].available_guides || 0;
+    
+    if (oldGuides !== newGuides) {
+      const diff = newGuides - oldGuides;
+      await query(
+        `INSERT INTO guide_inventory_logs (pricing_rule_id, admin_id, previous_balance, added_amount, new_balance, reason)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          req.params.id, 
+          req.user.id, 
+          oldGuides, 
+          diff, 
+          newGuides, 
+          `Ajuste manual de inventario (Edición de perfil)`
+        ]
+      );
+      logger.info(`Bitácora de inventario actualizada: ${req.params.id} (Dif: ${diff})`);
+    }
 
     logger.info(`Tarifa actualizada: ${req.params.id} por usuario ${req.user.id}`);
     return successResponse(res, result.rows[0], 'Tarifa actualizada');
@@ -159,11 +180,28 @@ const createPricingRule = async (req, res, next) => {
       ]
     );
 
-    // Registrar creación en historial
+    // Registrar creación en historial general de tarifas
     await query(
       'INSERT INTO pricing_history (pricing_rule_id, changed_by, old_values, new_values) VALUES ($1, $2, $3, $4)',
       [result.rows[0].id, req.user.id, null, JSON.stringify(result.rows[0])]
     );
+
+    // SI TIENE GUÍAS INICIALES, registrar en la bitácora de inventario
+    const initialGuides = result.rows[0].available_guides || 0;
+    if (initialGuides > 0) {
+      await query(
+        `INSERT INTO guide_inventory_logs (pricing_rule_id, admin_id, previous_balance, added_amount, new_balance, reason)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          result.rows[0].id, 
+          req.user.id, 
+          0, 
+          initialGuides, 
+          initialGuides, 
+          'Carga inicial de inventario'
+        ]
+      );
+    }
 
     return successResponse(res, result.rows[0], 'Tarifa creada', 201);
   } catch (err) {
@@ -216,7 +254,7 @@ const getInventoryLogs = async (req, res, next) => {
     const ruleId = parseInt(req.params.id);
     console.log('>>> Solicitando bitácora para ID:', ruleId);
     
-    // 1. Intentamos buscar por el ID directo de la tarifa
+    // 1. Búsqueda Directa (Por ID de Tarifa)
     let result = await query(
       `SELECT l.*, COALESCE(u.name, 'Admin') as admin_name 
        FROM guide_inventory_logs l 
@@ -226,23 +264,23 @@ const getInventoryLogs = async (req, res, next) => {
       [ruleId]
     );
 
-    // 2. Si no hay nada, es posible que el ID sea en realidad un userId o haya un desajuste.
-    // Buscamos todas las tarifas relacionadas a ese cliente y traemos su historial.
+    // 2. Búsqueda por Usuario (Si la directa falla o para completar)
     if (result.rowCount === 0) {
-      console.log('>>> Fallback: Buscando logs por relación de usuario...');
+      console.log('>>> Intentando Búsqueda por Usuario (Triple-Lookup)...');
       result = await query(
         `SELECT l.*, COALESCE(u.name, 'Admin') as admin_name 
          FROM guide_inventory_logs l 
          LEFT JOIN users u ON l.admin_id = u.id 
          WHERE l.pricing_rule_id IN (
            SELECT id FROM pricing_rules WHERE user_id = (SELECT user_id FROM pricing_rules WHERE id = $1)
+           OR user_id = (SELECT id FROM users WHERE name = (SELECT name FROM pricing_rules WHERE id = $1))
          )
          ORDER BY l.created_at DESC`,
         [ruleId]
       );
     }
     
-    console.log(`>>> Resultado: ${result.rowCount} registros encontrados.`);
+    console.log(`>>> Resultado Final: ${result.rowCount} registros hallados.`);
     return successResponse(res, result.rows);
   } catch (err) {
     next(err);
