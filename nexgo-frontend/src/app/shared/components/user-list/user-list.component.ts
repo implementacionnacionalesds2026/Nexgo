@@ -84,9 +84,9 @@ import Swal from 'sweetalert2';
 
 
         <div class="nx-grid kpi-grid" style="margin-bottom:1.5rem;">
-          @for (role of roles; track role.id) {
+          @for (role of sortedRoles; track role.id) {
             <div class="nx-kpi-card" [class.active]="activeRoleFilter === role.name" (click)="toggleRoleFilter(role.name)" style="position:relative; overflow:hidden;">
-              <div class="kpi-label">{{ (role.description || role.name) | uppercase }}</div>
+              <div class="kpi-label">{{ getShortRoleLabel(role) | uppercase }}</div>
               <div class="kpi-value" [style.color]="getRoleColor(role.name)">{{ countByRole(role.name) }}</div>
               <span class="material-symbols-outlined kpi-bg-icon">{{ getRoleIcon(role.name) }}</span>
             </div>
@@ -451,6 +451,15 @@ export class UserListComponent implements OnInit {
     });
   }
 
+  get sortedRoles(): any[] {
+    const order = ['ADMIN', 'GESTOR_ADMINISTRATIVO', 'REPARTIDOR', 'SMALL_CUSTOMER', 'AVERAGE_CUSTOMER', 'FULL_CUSTOMER'];
+    return [...this.roles].sort((a, b) => {
+      const idxA = order.indexOf(a.name);
+      const idxB = order.indexOf(b.name);
+      return idxA - idxB;
+    });
+  }
+
   get filteredUsers(): any[] {
     let result = [...this.users];
     result = result.filter(u => u.is_active === this.viewActive);
@@ -598,6 +607,14 @@ export class UserListComponent implements OnInit {
       REPARTIDOR: 'Repartidor'
     };
     return labels[role] || role;
+  }
+
+  getShortRoleLabel(role: any): string {
+    const desc = role.description || role.name;
+    if (desc === 'Gestor Administrativo' || role.name === 'GESTOR_ADMINISTRATIVO') {
+      return 'Gestor Admin';
+    }
+    return desc;
   }
 
   toggleUserStatus(u: any) {
