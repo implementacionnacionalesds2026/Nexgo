@@ -73,6 +73,7 @@ export class SidebarComponent implements OnInit {
     // ADMIN & GESTOR
     { label: 'Dashboard',     icon: 'dashboard', route: '/admin/dashboard',     roles: ['ADMIN'] },
     { label: 'Tarifas',       icon: 'payments', route: '/admin/tarifas',        roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
+    { label: 'Guías',         icon: 'assignment', route: '/admin/guias',        roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
     { label: 'Usuarios',      icon: 'group', route: '/admin/usuarios',       roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
     { label: 'Envíos',        icon: 'inventory_2', route: '/admin/envios',         roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },
     { label: 'Repartidores',  icon: 'directions_bike', route: '/admin/repartidores', roles: ['ADMIN', 'GESTOR_ADMINISTRATIVO'] },

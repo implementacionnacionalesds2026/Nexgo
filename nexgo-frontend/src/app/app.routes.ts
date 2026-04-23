@@ -41,6 +41,11 @@ export const routes: Routes = [
           import('./features/admin/tarifas/tarifas.component').then((m) => m.AdminTarifasComponent),
       },
       {
+        path: 'guias',
+        loadComponent: () =>
+          import('./features/admin/guias/guias.component').then((m) => m.GuiasComponent),
+      },
+      {
         path: 'repartidores',
         loadComponent: () =>
           import('./features/admin/repartidores/repartidores-list.component').then((m) => m.RepartidoresListComponent),

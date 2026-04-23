@@ -131,9 +131,8 @@ import Swal from 'sweetalert2';
                         }
 
                         <button (click)="viewHistory(user, $event)" class="dropdown-item">
-                          <span class="material-symbols-outlined">history</span> Ver Historial
+                          <span class="material-symbols-outlined">history</span> Bitácora de Cambios
                         </button>
-
                       </div>
                     </div>
                   </td>
@@ -207,7 +206,7 @@ import Swal from 'sweetalert2';
       content: ''; position: absolute; top: 0; bottom: 0; right: 250px;
       width: 1px; background: rgba(255, 255, 255, 0.1); pointer-events: none; z-index: 10;
     }
-    .actions-column { width: 250px; text-align: left !important; padding-left: 10px !important; }
+    .actions-column { width: 250px; text-align: left !important; padding-left: 15px !important; }
 
     .user-avatar-small {
       width: 32px; height: 32px; border-radius: 8px;
@@ -443,7 +442,6 @@ export class PricingListComponent implements OnInit {
       return;
     }
 
-    // Notificación de carga elegante
     const loadingToast = Swal.mixin({
       toast: true,
       position: 'top-end',
@@ -473,7 +471,6 @@ export class PricingListComponent implements OnInit {
             `;
           } else {
             history.forEach((h: any) => {
-              // Aseguramos que el objeto Date entienda que la fecha viene en UTC si tiene el sufijo Z
               const dateObj = new Date(h.created_at);
               const date = dateObj.toLocaleString('es-GT', {
                 timeZone: 'America/Guatemala',
@@ -540,6 +537,8 @@ export class PricingListComponent implements OnInit {
 
     return changes.length > 0 ? changes.join('<br>') : '<i style="color:#94a3b8">Actualización de datos generales</i>';
   }
+
+  // viewInventoryLogs ya no se usa por separado, está integrado en viewHistory
 
   resetToDefault(user: any) {
     if (!user.pricing?.id || !user.hasCustomRate) return;

@@ -32,7 +32,8 @@ const updatePricingRule = async (req, res, next) => {
       weightUnit, weight_unit,
       extraWeightPrice, extra_weight_price,
       roleId, role_id,
-      userId, user_id
+      userId, user_id,
+      availableGuides, available_guides
     } = req.body;
 
     // 1. Obtener valores antiguos para el historial
@@ -54,8 +55,9 @@ const updatePricingRule = async (req, res, next) => {
            extra_weight_price = COALESCE($20, $21, extra_weight_price),
            role_id = COALESCE($22, $23, role_id),
            user_id = COALESCE($24, $25, user_id),
+           available_guides = COALESCE($26, $27, available_guides),
            updated_at = NOW()
-       WHERE id = $26
+       WHERE id = $28
        RETURNING *`,
       [
         name, 
@@ -71,6 +73,7 @@ const updatePricingRule = async (req, res, next) => {
         extraWeightPrice, extra_weight_price,
         roleId, role_id,
         userId, user_id,
+        availableGuides, available_guides,
         req.params.id
       ]
     );
@@ -128,16 +131,17 @@ const createPricingRule = async (req, res, next) => {
       weight_unit, weightUnit,
       extra_weight_price, extraWeightPrice,
       role_id, roleId,
-      user_id, userId
+      user_id, userId,
+      available_guides, availableGuides
     } = req.body;
 
     const result = await query(
       `INSERT INTO pricing_rules (
         name, base_price, price_per_kg, price_per_km, price_per_extra_pkg, 
         dimension_surcharge, max_weight_kg, base_weight, weight_unit, 
-        extra_weight_price, role_id, user_id
+        extra_weight_price, role_id, user_id, available_guides
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
       [
         name, 
         base_price || basePrice, 
@@ -150,7 +154,8 @@ const createPricingRule = async (req, res, next) => {
         weight_unit || weightUnit || 'LB',
         extra_weight_price || extraWeightPrice || 0,
         role_id || roleId,
-        user_id || userId
+        user_id || userId,
+        available_guides || availableGuides || 0
       ]
     );
 
@@ -166,4 +171,67 @@ const createPricingRule = async (req, res, next) => {
   }
 };
 
-module.exports = { getPricingRules, updatePricingRule, createPricingRule, getPricingHistory };
+/**
+ * POST /api/pricing/:id/add-guides
+ */
+const addGuides = async (req, res, next) => {
+  try {
+    const { amount, reason } = req.body;
+    const ruleId = req.params.id;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Cantidad inválida' });
+    }
+
+    // 1. Obtener balance actual
+    const ruleRes = await query('SELECT available_guides FROM pricing_rules WHERE id = $1', [ruleId]);
+    if (!ruleRes.rows[0]) {
+      return res.status(404).json({ success: false, message: 'Tarifa no encontrada' });
+    }
+
+    const prevBalance = ruleRes.rows[0].available_guides || 0;
+    const newBalance = prevBalance + parseInt(amount);
+
+    // 2. Actualizar balance
+    await query('UPDATE pricing_rules SET available_guides = $1, updated_at = NOW() WHERE id = $2', [newBalance, ruleId]);
+
+    // 3. Registrar en bitácora
+    await query(
+      `INSERT INTO guide_inventory_logs (pricing_rule_id, admin_id, previous_balance, added_amount, new_balance, reason)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [ruleId, req.user.id, prevBalance, amount, newBalance, reason]
+    );
+
+    return successResponse(res, { newBalance }, 'Guías agregadas exitosamente');
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/pricing/:id/inventory-logs
+ */
+const getInventoryLogs = async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT l.*, u.name as admin_name 
+       FROM guide_inventory_logs l 
+       JOIN users u ON l.admin_id = u.id 
+       WHERE l.pricing_rule_id = $1 
+       ORDER BY l.created_at DESC`,
+      [req.params.id]
+    );
+    return successResponse(res, result.rows);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { 
+  getPricingRules, 
+  updatePricingRule, 
+  createPricingRule, 
+  getPricingHistory,
+  addGuides,
+  getInventoryLogs
+};

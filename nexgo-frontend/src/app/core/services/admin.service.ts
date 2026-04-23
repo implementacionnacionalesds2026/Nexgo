@@ -63,6 +63,14 @@ export class AdminService {
     return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/history`);
   }
 
+  addGuides(id: number, amount: number, reason: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/pricing/${id}/add-guides`, { amount, reason });
+  }
+
+  getInventoryLogs(id: number): Observable<ApiResponse<any[]>> {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/pricing/${id}/inventory-logs`);
+  }
+
   // ── Tracking ───────────────────────────────────────────────
   getActiveDriverLocations(): Observable<ApiResponse<any[]>> {
     return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/tracking/repartidores`);

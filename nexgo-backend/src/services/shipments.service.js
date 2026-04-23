@@ -116,6 +116,33 @@ const createShipment = async (data, clientId) => {
 
   const shipment = result.rows[0];
 
+  // Restar guías del inventario si aplica
+  if (finalPricingRuleId) {
+    try {
+      const pieces = parseInt(quantity) || 1;
+      const ruleRes = await query('SELECT available_guides FROM pricing_rules WHERE id = $1', [finalPricingRuleId]);
+      
+      if (ruleRes.rows[0]) {
+        const currentGuides = ruleRes.rows[0].available_guides || 0;
+        
+        // Si el balance es mayor a 0, restamos. Si es 0 o menor, lanzamos error si es restrictivo.
+        // El usuario dijo: "en base a esta cantidad el cliente pueda tener acceso"
+        if (currentGuides < pieces) {
+          // Si no tiene guías suficientes, borramos el envío y lanzamos error
+          // (Aunque lo ideal sería transaccional, aquí lo simplificamos)
+          await query('DELETE FROM shipments WHERE id = $1', [shipment.id]);
+          throw Object.assign(new Error(`No tienes guías suficientes disponibles. Disponibles: ${currentGuides}, Requeridas: ${pieces}`), { statusCode: 400 });
+        }
+
+        await query('UPDATE pricing_rules SET available_guides = available_guides - $1 WHERE id = $2', [pieces, finalPricingRuleId]);
+        logger.info(`Guías restadas (${pieces}) de la tarifa ${finalPricingRuleId} por envío ${shipment.id}`);
+      }
+    } catch (invError) {
+      if (invError.statusCode === 400) throw invError;
+      logger.error('Error al actualizar inventario de guías:', invError);
+    }
+  }
+
   // Registrar estado inicial
   await query(
     `INSERT INTO shipment_status (shipment_id, status, notes, updated_by)

@@ -157,5 +157,7 @@ export interface PricingRule {
   extra_weight_price?: number;
   role_id?: number;
   user_id?: string;
+  available_guides?: number;
+  availableGuides?: number;
   isActive: boolean;
 }

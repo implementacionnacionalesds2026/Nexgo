@@ -15,5 +15,7 @@ router.use(authorize('ADMIN', 'GESTOR_ADMINISTRATIVO'));
 router.post('/',        pricingCtrl.createPricingRule);
 router.get('/:id/history', pricingCtrl.getPricingHistory);
 router.put('/:id',      pricingCtrl.updatePricingRule);
+router.post('/:id/add-guides', pricingCtrl.addGuides);
+router.get('/:id/inventory-logs', pricingCtrl.getInventoryLogs);
 
 module.exports = router;
